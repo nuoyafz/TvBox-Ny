@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  面板内可聚焦按钮（20 个布局复用）。
+  旧版：蓝色实心焦点态 + 青色描边，彩色元素过多。
+  新版：常态 12% 白玻璃，焦点态整块纯白 —— 与设置页同一套反色语言。
+  配套文字色 @color/atv_btn_text（焦点时翻黑）。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_button" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_button" />
+            <solid android:color="#4DFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_button" />
+            <solid android:color="#1FFFFFFF" />
+        </shape>
+    </item>
+</selector>

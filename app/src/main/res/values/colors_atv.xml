@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Apple TV (tvOS) 调色板
+  设计原则：纯黑底 + 中性灰阶层次 + 单一冷白高光，不用彩色边框。
+-->
+<resources>
+    <!-- 背景层：tvOS 用近乎纯黑，让海报本身成为画面主角 -->
+    <color name="atv_bg">#FF000000</color>
+    <color name="atv_bg_elevated">#FF0A0A0C</color>
+    <color name="atv_bg_gradient_top">#00000000</color>
+    <color name="atv_bg_gradient_bottom">#E6000000</color>
+
+    <!-- 表面层：卡片/面板，对应 tvOS 的 Material Thick -->
+    <color name="atv_surface">#FF1C1C1E</color>
+    <color name="atv_surface_glass">#B31C1C1E</color>
+    <color name="atv_surface_high">#FF2C2C2E</color>
+    <color name="atv_divider">#33FFFFFF</color>
+
+    <!-- 面板层：弹窗底板。比纯黑高一档、带一点透明度，叠在内容上仍能看见背后的画面 -->
+    <color name="atv_panel_bg">#F2161618</color>
+    <color name="atv_panel_bg_solid">#FF161618</color>
+    <color name="atv_control_bg">#1FFFFFFF</color>
+    <color name="atv_control_bg_focus">#FFFFFFFF</color>
+    <color name="atv_input_bg">#14FFFFFF</color>
+
+    <!-- 文字层：tvOS 主文字纯白，次级 60% 白 -->
+    <color name="atv_text_primary">#FFFFFFFF</color>
+    <color name="atv_text_secondary">#99FFFFFF</color>
+    <color name="atv_text_tertiary">#66FFFFFF</color>
+
+    <!-- 高光/焦点：tvOS 焦点是纯白高光，不是彩色描边 -->
+    <color name="atv_focus_ring">#FFFFFFFF</color>
+    <color name="atv_focus_glow">#33FFFFFF</color>
+    <color name="atv_focus_fill">#26FFFFFF</color>
+
+    <!-- 强调色：tvOS 系统蓝，仅用于进度/选中指示 -->
+    <color name="atv_accent">#FF0A84FF</color>
+    <color name="atv_accent_dim">#660A84FF</color>
+
+    <!-- 遮罩：海报底部渐变，替代原来的硬色块 -->
+    <color name="atv_scrim_top">#00000000</color>
+    <color name="atv_scrim_mid">#80000000</color>
+    <color name="atv_scrim_bottom">#CC000000</color>
+
+    <!-- 圆角规格（与 dimensions 的 mm 体系一致） -->
+    <dimen name="atv_radius_card">12mm</dimen>
+    <dimen name="atv_radius_panel">18mm</dimen>
+    <dimen name="atv_radius_pill">100mm</dimen>
+    <!-- 列表行/按钮圆角：比卡片略小，形成"行比块轻"的层级 -->
+    <dimen name="atv_radius_row">6mm</dimen>
+    <dimen name="atv_radius_button">8mm</dimen>
+    <dimen name="atv_stroke_focus">2mm</dimen>
+    <dimen name="atv_stroke_hairline">1mm</dimen>
+</resources>

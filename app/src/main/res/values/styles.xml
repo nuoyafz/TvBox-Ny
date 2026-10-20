@@ -1,0 +1,139 @@
+<resources>
+    <!-- Base application theme. -->
+    <!-- Apple TV 风格基线：深色 NoActionBar + 纯黑窗口背景 -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/atv_surface</item>
+        <item name="colorPrimaryDark">@color/atv_bg</item>
+        <item name="colorAccent">@color/atv_accent</item>
+        <item name="android:windowBackground">@drawable/bg_atv</item>
+        <item name="android:textColorPrimary">@color/atv_text_primary</item>
+        <item name="android:textColorSecondary">@color/atv_text_secondary</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>//全屏即无通知栏
+        <item name="android:windowContentOverlay">@null</item>//是否有遮盖
+        <item name="windowNoTitle">true</item>
+        <item name="android:keepScreenOn">true</item>
+        <!--        <item name="android:windowBackground">@drawable/main_bg</item>-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <!-- 自定义dialog样式 -->
+    <style name="CustomDialogStyle" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+    <style name="CustomDialogStyleDim" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="epg_window_btn">
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/item_bg_selector_right</item>
+        <item name="android:paddingLeft">0dip</item>
+        <item name="android:paddingRight">0dip</item>
+        <item name="android:focusable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:clickable">true</item>
+        <item name="android:drawablePadding">10.0dip</item>
+        <item name="android:radius">10dp</item>
+    </style>
+
+    <!-- 首次启动更新说明用的行样式 -->
+    <style name="ChangelogRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">@dimen/vs_18</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="ChangelogDot">
+        <item name="android:layout_width">@dimen/vs_6</item>
+        <item name="android:layout_height">@dimen/vs_6</item>
+        <item name="android:layout_marginTop">@dimen/vs_10</item>
+        <item name="android:background">@drawable/shape_neon_dot</item>
+    </style>
+
+    <style name="ChangelogText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">@dimen/vs_14</item>
+        <item name="android:layout_marginLeft">@dimen/vs_14</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="ChangelogTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/neon_text_primary</item>
+        <item name="android:textSize">@dimen/ts_22</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ChangelogDesc">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/vs_4</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+        <item name="android:textColor">@color/neon_text_secondary</item>
+        <item name="android:textSize">@dimen/ts_18</item>
+    </style>
+
+    <!--
+      首页底部文字入口（直播/历史/收藏/推送/搜索/设置）
+      原来这 6 个是大图标方块，改成一行小字：图标全部去掉，只留文字 + 一层极淡的焦点底，
+      这样主视觉和片单才是屏幕上唯一的重心。
+    -->
+    <style name="FooterLink">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">34mm</item>
+        <item name="android:background">@drawable/bg_text_link</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:paddingLeft">14mm</item>
+        <item name="android:paddingRight">14mm</item>
+        <item name="android:textColor">@color/footer_link_text</item>
+        <item name="android:textSize">16mm</item>
+    </style>
+
+    <!-- 顶栏行2 的快捷入口（直播/历史/收藏/推送/搜索/设置） -->
+    <style name="TopLink">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">34mm</item>
+        <item name="android:background">@drawable/bg_text_link</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:paddingLeft">10mm</item>
+        <item name="android:paddingRight">10mm</item>
+        <item name="android:textColor">@color/footer_link_text</item>
+        <item name="android:textSize">15mm</item>
+    </style>
+</resources>

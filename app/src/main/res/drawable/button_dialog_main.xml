@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通用按钮（投屏弹窗、筛选值、播放器控制条）。
+  胶囊 → 6mm 小圆角，蓝灰底 → 暖白低透底，焦点统一白色 2mm 环。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#1FFAF6F0" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#14FAF6F0" />
+        </shape>
+    </item>
+</selector>

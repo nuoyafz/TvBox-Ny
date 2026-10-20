@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 海报底部 scrim：从透明渐变到黑，模仿 tvOS 海报下的信息渐隐 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners
+        android:bottomLeftRadius="@dimen/atv_radius_card"
+        android:bottomRightRadius="@dimen/atv_radius_card" />
+    <gradient
+        android:angle="270"
+        android:centerColor="@color/atv_scrim_mid"
+        android:endColor="@color/atv_scrim_bottom"
+        android:startColor="@color/atv_scrim_top"
+        android:type="linear" />
+</shape>

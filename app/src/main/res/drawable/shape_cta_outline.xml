@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 主行动按钮（继续播放）：琥珀细描边 + 极低填充，焦点时描边提亮 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="2mm" />
+            <stroke android:width="1.5mm" android:color="@color/neon_accent" />
+            <solid android:color="#24DFA35C" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="2mm" />
+            <stroke android:width="1.5mm" android:color="#80DFA35C" />
+            <solid android:color="#0CDFA35C" />
+        </shape>
+    </item>
+</selector>

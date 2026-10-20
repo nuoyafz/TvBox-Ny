@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 海报底板（未开预览时）：与 shape_detail_thumb_bg 同一规格，只少一圈焦点环 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="8mm" />
+    <solid android:color="@color/neon_surface" />
+    <stroke
+        android:width="1mm"
+        android:color="@color/neon_glass_border" />
+</shape>

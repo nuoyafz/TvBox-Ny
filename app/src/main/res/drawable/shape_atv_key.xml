@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  软键盘单个按键。
+  旧版是 2mm 白描边的空心方块，一屏 38 个键全是白框，视觉噪音极大。
+  新版：常态 8% 白填充无描边（靠填充区分边界），焦点整块纯白反色。
+  配套文字色 @color/atv_btn_text。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#4DFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#14FFFFFF" />
+        </shape>
+    </item>
+</selector>

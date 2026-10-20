@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  分类页海报焦点环。
+  原来这里是"琥珀 + 深琥珀"双色环 + 24mm 大圆角，属于旧的第四套焦点系统，
+  和首页的白色单环完全不是一族。现在统一：白色 2mm 单环 + 8mm 圆角（与卡片一致）。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="8mm" />
+    <solid android:color="@android:color/transparent" />
+    <stroke
+        android:width="2mm"
+        android:color="#EBFAF6F0" />
+</shape>

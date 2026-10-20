@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 画报底色：暖墨黑竖向渐变，只在顶部留一点点焦褐，避免纯黑死板 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="#110E0C"
+        android:endColor="#0B0A09"
+        android:startColor="#191411" />
+</shape>

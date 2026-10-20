@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  个人中心大图标按钮（历史/直播/搜索/推送/收藏/设置）。
+  与设置页同一套语言：常态 8% 白玻璃，焦点整块纯白。
+  图标用 android:tint 跟随焦点翻黑（vector 图标 fillColor 是写死的 #ffffff，
+  不 tint 的话压在白底上会完全消失）。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_card" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_card" />
+            <solid android:color="#14FFFFFF" />
+        </shape>
+    </item>
+</selector>

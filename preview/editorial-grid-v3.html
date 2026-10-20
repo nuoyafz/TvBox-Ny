@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>NOYA · Grid 跨页版 v3</title>
+<style>
+  :root{
+    --ink:#0B0A09; --ink2:#141210; --amber:#DFA35C; --cream:#EFEAE2;
+    --t2:#A89F92; --t3:#6E665C; --rule:rgba(239,234,226,.09);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1280px;height:720px;background:var(--ink);overflow:hidden;
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--cream);}
+  .latin{font-family:Georgia,"Times New Roman",serif;letter-spacing:.34em;text-transform:uppercase;}
+  /* 纸感：极淡的竖栏线 + 细噪点 */
+  .grain{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(90deg,rgba(239,234,226,.022) 0 1px,transparent 1px 216px);}
+
+  /* ── 顶栏 ── */
+  .topbar{height:90px;padding:10px 40px 0;display:flex;flex-direction:column;position:relative;z-index:3;}
+  .row1{height:30px;display:flex;align-items:center;gap:16px;}
+  .brand{font-size:21px;font-weight:800;letter-spacing:.16em;}
+  .src{font-size:14px;color:var(--t2);}
+  .row1 .sp{flex:1;}
+  .entry{font-size:14px;color:var(--t3);}
+  .date{font-size:13px;color:var(--t3);}
+  .row2{height:46px;display:flex;align-items:center;gap:32px;}
+  .tab{font-size:18px;color:var(--t3);position:relative;padding-bottom:8px;}
+  .tab.on{color:var(--cream);font-weight:700;}
+  .tab.on::after{content:"";position:absolute;left:0;bottom:2px;width:30px;height:3px;background:var(--amber);}
+
+  /* ── 主视觉跨页 ── */
+  .spread{position:relative;height:268px;margin:2px 40px 0;display:flex;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);overflow:hidden;}
+  .spread-bg{position:absolute;inset:0;filter:blur(34px) saturate(.85) brightness(.5);
+    transform:scale(1.25);background:linear-gradient(120deg,#1a2a30,#2f5a63 45%,#0d1418);opacity:.85;}
+  .spread-veil{position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(11,10,9,.97) 0%,rgba(11,10,9,.9) 34%,rgba(11,10,9,.55) 62%,rgba(11,10,9,.86) 100%);}
+  .spread-l{position:relative;width:520px;padding:34px 0 26px;display:flex;flex-direction:column;justify-content:flex-end;}
+  .sp-kicker{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .sp-kicker .latin{font-size:11px;color:var(--amber);}
+  .sp-kicker .ln{width:40px;height:1.5px;background:var(--amber);}
+  .sp-kicker .cn{font-size:13px;color:var(--t3);letter-spacing:.1em;}
+  .sp-title{font-size:54px;font-weight:800;letter-spacing:.03em;line-height:1.02;}
+  .sp-title em{font-style:normal;color:var(--amber);}
+  .sp-meta{margin-top:12px;font-size:15px;color:var(--t2);}
+  .sp-desc{margin-top:10px;font-size:14px;color:var(--t3);line-height:1.6;max-width:440px;}
+  .sp-cta{margin-top:20px;display:flex;align-items:center;gap:14px;}
+  .cta{height:40px;padding:0 26px;display:flex;align-items:center;font-size:16px;font-weight:700;
+    letter-spacing:.08em;border-radius:5px;}
+  .cta.main{background:var(--amber);color:#1a1208;}
+  .cta.ghost{border:1px solid rgba(239,234,226,.28);color:var(--cream);font-weight:400;}
+  .sp-page{position:absolute;right:26px;top:24px;text-align:right;}
+  .sp-page .n{font-family:Georgia,serif;font-size:15px;color:var(--t2);letter-spacing:.2em;}
+  .sp-page .l{font-size:10px;color:var(--t3);letter-spacing:.3em;margin-top:3px;}
+
+  /* 跨页右侧：焦点片实体海报 */
+  .spread-r{position:relative;flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;}
+  .hero-art{width:196px;height:258px;border-radius:6px;overflow:hidden;position:relative;
+    box-shadow:0 18px 48px rgba(0,0,0,.6);outline:2px solid var(--cream);outline-offset:5px;}
+  .hero-art .art{width:100%;height:100%;}
+  .hero-reflect{position:absolute;right:8px;top:0;width:196px;height:258px;border-radius:6px;
+    background:linear-gradient(180deg,rgba(239,234,226,.1),transparent 40%);pointer-events:none;}
+
+  /* ── 选片架 ── */
+  .shelf{display:flex;align-items:center;gap:14px;padding:20px 40px 12px;}
+  .shelf .latin{font-size:10px;color:var(--amber);}
+  .shelf .ln{flex:1;height:1px;background:var(--rule);}
+  .shelf .ct{font-size:12px;color:var(--t3);}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px 22px;padding:0 40px;position:relative;z-index:2;}
+  .card{position:relative;}
+  .poster{width:100%;aspect-ratio:190/250;border-radius:6px;overflow:hidden;position:relative;
+    outline:2px solid transparent;outline-offset:4px;
+    transition:transform .22s cubic-bezier(.22,1,.36,1),outline-color .22s;}
+  .art{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:19px;font-weight:800;color:rgba(255,255,255,.9);text-align:center;padding:8px;
+    letter-spacing:.04em;text-shadow:0 2px 10px rgba(0,0,0,.6);}
+  .art span{writing-mode:vertical-rl;letter-spacing:.16em;}
+  .grid.dim .card:not(.focus) .poster{filter:brightness(.5) saturate(.85);}
+  .card.focus .poster{outline-color:var(--cream);transform:translateY(-4px) scale(1.04);}
+  .idx{font-family:Georgia,serif;font-size:11px;color:var(--t3);letter-spacing:.14em;margin-top:9px;}
+  .card.focus .idx{color:var(--amber);}
+  .title{margin-top:3px;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .grid.dim .card:not(.focus) .title{color:var(--t2);}
+  .card.focus .title{color:#fff;}
+  .sub{margin-top:2px;font-size:12px;color:var(--t3);}
+  .card.focus .sub{color:var(--t2);}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="topbar">
+  <div class="row1">
+    <div class="brand">NOYA</div>
+    <div class="src">◐ 文采｜秒播</div>
+    <div class="sp"></div>
+    <div class="entry">直播</div><div class="entry">历史</div><div class="entry">收藏</div>
+    <div class="entry">推送</div><div class="entry">遥控</div><div class="entry">搜索</div><div class="entry">设置</div>
+    <div class="date">2026/10/20 周二 17:14</div>
+  </div>
+  <div class="row2">
+    <div class="tab">主页</div><div class="tab on">电影 ▾</div><div class="tab">电视剧</div>
+    <div class="tab">动漫</div><div class="tab">综艺</div>
+  </div>
+</div>
+
+<section class="spread">
+  <div class="spread-bg"></div>
+  <div class="spread-veil"></div>
+  <div class="spread-l">
+    <div class="sp-kicker">
+      <span class="latin">Movie · 2026</span><span class="ln"></span><span class="cn">悬疑 / 犯罪 · 108 分钟</span>
+    </div>
+    <div class="sp-title">空门<em>迷影</em></div>
+    <div class="sp-meta">豆瓣 7.4 · 1,284 部可选 · 蓝光 · 简中</div>
+    <div class="sp-desc">一场深夜劫案之后，六个陌生人被锁进同一间密室。钥匙在死者手里，而监控录像少了整整十九分钟。</div>
+    <div class="sp-cta">
+      <div class="cta main">▶ 立即播放</div>
+      <div class="cta ghost">手机播放</div>
+      <div class="cta ghost">收藏</div>
+    </div>
+  </div>
+  <div class="spread-r">
+    <div class="hero-art">
+      <div class="art" style="background:linear-gradient(170deg,#0d161b,#2a5866 55%,#080d10)"><span style="color:#e8dfc9">空门迷影</span></div>
+      <div class="hero-reflect"></div>
+    </div>
+  </div>
+  <div class="sp-page"><div class="n">P.01 / 12</div><div class="l latin">Page</div></div>
+</section>
+
+<div class="shelf">
+  <span class="latin">Browse · 1,284 Titles</span>
+  <span class="ln"></span>
+  <span class="ct">筛选 全部 ▾</span>
+</div>
+
+<div class="grid dim">
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#8f1712,#c8341f 50%,#3d0a08)"><span>猫鼬</span></div></div><div class="idx">001</div><div class="title">猫鼬</div><div class="sub">2026 · 动作</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#2c4a18,#6f8f34 45%,#1a2a10)"><span>丛林野人</span></div></div><div class="idx">002</div><div class="title">丛林野人</div><div class="sub">2025 · 冒险</div></div>
+  <div class="card focus"><div class="poster" style="outline-color:var(--cream);transform:translateY(-4px) scale(1.04)"><div class="art" style="background:linear-gradient(170deg,#0d161b,#2a5866 55%,#080d10)"><span style="color:#e8dfc9">空门迷影</span></div></div><div class="idx" style="color:var(--amber)">003</div><div class="title" style="color:#fff">空门迷影</div><div class="sub" style="color:var(--t2)">2026 · 悬疑</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#b5336a,#e8799f 48%,#52122f)"><span>狠狠骗我</span></div></div><div class="idx">004</div><div class="title">狠狠骗我</div><div class="sub">2026 · 喜剧</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#12414f,#2d8aa6 50%,#0a2029)"><span>杯雪一战成名</span></div></div><div class="idx">005</div><div class="title">杯雪一战成名</div><div class="sub">2025 · 武侠</div></div>
+
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#3d4550,#7f8b98 50%,#1c2126)"><span>促织</span></div></div><div class="idx">006</div><div class="title">促织</div><div class="sub">2024 · 剧情</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#6d5a33,#b39a63 45%,#2b2314)"><span>偷天父子兵</span></div></div><div class="idx">007</div><div class="title">偷天父子兵</div><div class="sub">2025 · 喜剧</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#5e0d0d,#a81c17 50%,#250606)"><span>闹鬼呼啸山庄</span></div></div><div class="idx">008</div><div class="title">闹鬼呼啸山庄：诅咒</div><div class="sub">2026 · 恐怖</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#1d3f7a,#4b8ede 45%,#0d1c33)"><span>乐高好朋友</span></div></div><div class="idx">009</div><div class="title">乐高好朋友：心湖城</div><div class="sub">2026 · 动画</div></div>
+  <div class="card"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#8a2740,#d1596f 48%,#3a1019)"><span>NORM</span></div></div><div class="idx">010</div><div class="title">Norm：诺曼·麦克唐纳</div><div class="sub">2025 · 纪录</div></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>NOYA · 首页跨页版 v4</title>
+<style>
+  :root{
+    --ink:#0B0A09; --ink2:#141210; --amber:#DFA35C; --cream:#EFEAE2;
+    --t2:#A89F92; --t3:#6E665C; --rule:rgba(239,234,226,.09);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1280px;height:720px;background:var(--ink);overflow:hidden;
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--cream);}
+  .latin{font-family:Georgia,"Times New Roman",serif;letter-spacing:.34em;text-transform:uppercase;}
+  .grain{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(90deg,rgba(239,234,226,.022) 0 1px,transparent 1px 216px);}
+
+  .topbar{height:90px;padding:10px 40px 0;display:flex;flex-direction:column;position:relative;z-index:3;}
+  .row1{height:30px;display:flex;align-items:center;gap:16px;}
+  .brand{font-size:21px;font-weight:800;letter-spacing:.16em;}
+  .src{font-size:14px;color:var(--t2);}
+  .row1 .sp{flex:1;}
+  .entry{font-size:14px;color:var(--t3);}
+  .date{font-size:13px;color:var(--t3);}
+  .row2{height:46px;display:flex;align-items:center;gap:32px;}
+  .tab{font-size:18px;color:var(--t3);position:relative;padding-bottom:8px;}
+  .tab.on{color:var(--cream);font-weight:700;}
+  .tab.on::after{content:"";position:absolute;left:0;bottom:2px;width:30px;height:3px;background:var(--amber);}
+
+  /* ── 主视觉跨页 ── */
+  .spread{position:relative;height:322px;margin:2px 40px 0;display:flex;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);overflow:hidden;}
+  .spread-bg{position:absolute;inset:0;filter:blur(36px) saturate(.9) brightness(.5);
+    transform:scale(1.28);background:linear-gradient(120deg,#2a1c10,#6b4a24 42%,#10161c);}
+  .spread-veil{position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(11,10,9,.97) 0%,rgba(11,10,9,.9) 33%,rgba(11,10,9,.5) 60%,rgba(11,10,9,.88) 100%);}
+  .spread-l{position:relative;width:560px;padding:30px 0 28px;display:flex;flex-direction:column;justify-content:flex-end;}
+  .kicker{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .kicker .latin{font-size:11px;color:var(--amber);}
+  .kicker .ln{width:40px;height:1.5px;background:var(--amber);}
+  .kicker .cn{font-size:13px;color:var(--t3);letter-spacing:.1em;}
+  .hero-title{font-size:56px;font-weight:800;letter-spacing:.03em;line-height:1.02;}
+  .hero-title em{font-style:normal;color:var(--amber);}
+  .hero-meta{margin-top:12px;font-size:15px;color:var(--t2);}
+  .prog{margin-top:16px;width:420px;height:3px;background:rgba(239,234,226,.16);border-radius:2px;overflow:hidden;}
+  .prog i{display:block;height:100%;width:62%;background:var(--amber);}
+  .prog-txt{margin-top:7px;font-size:12px;color:var(--t3);letter-spacing:.06em;}
+  .hero-cta{margin-top:18px;display:flex;align-items:center;gap:14px;}
+  .cta{height:42px;padding:0 28px;display:flex;align-items:center;font-size:16px;font-weight:700;
+    letter-spacing:.1em;border-radius:5px;}
+  .cta.main{background:var(--amber);color:#1a1208;}
+  .cta.ghost{border:1px solid rgba(239,234,226,.28);color:var(--cream);font-weight:400;}
+  .spread-r{position:relative;flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;}
+  .hero-art{width:198px;height:262px;border-radius:6px;overflow:hidden;position:relative;
+    box-shadow:0 18px 48px rgba(0,0,0,.6);outline:2px solid var(--cream);outline-offset:5px;}
+  .hero-art .art{width:100%;height:100%;}
+  .hero-flag{position:absolute;left:0;top:0;background:var(--amber);color:#1a1208;
+    font-size:11px;font-weight:800;letter-spacing:.18em;padding:5px 10px;border-radius:0 0 6px 0;}
+
+  /* ── 接着看横排 ── */
+  .shelf{display:flex;align-items:center;gap:14px;padding:20px 40px 12px;}
+  .shelf .latin{font-size:10px;color:var(--amber);}
+  .shelf .ln{flex:1;height:1px;background:var(--rule);}
+  .shelf .ct{font-size:12px;color:var(--t3);}
+  .rail{display:flex;gap:20px;padding:0 40px;}
+  .rc{width:172px;}
+  .rc .poster{width:172px;height:226px;border-radius:6px;overflow:hidden;position:relative;
+    outline:2px solid transparent;outline-offset:3px;}
+  .rc .art{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:800;color:rgba(255,255,255,.88);text-align:center;padding:8px;}
+  .rc .art span{writing-mode:vertical-rl;letter-spacing:.16em;}
+  .rc .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(11,10,9,.6);}
+  .rc .bar i{display:block;height:100%;background:var(--amber);}
+  .rc .ep{position:absolute;left:0;top:0;background:rgba(11,10,9,.78);color:var(--cream);
+    font-size:10px;letter-spacing:.12em;padding:4px 8px;border-radius:0 0 5px 0;}
+  .rc .t{margin-top:9px;font-size:14px;font-weight:700;color:var(--t2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rc.focus .poster{outline-color:var(--cream);transform:translateY(-3px);}
+  .rc.focus .t{color:#fff;}
+  .rc.focus .art{filter:none;}
+  .rail .rc:not(.focus) .art{filter:brightness(.55);}
+
+  /* ── 底部目录条 ── */
+  .index{position:absolute;left:40px;right:40px;bottom:18px;display:flex;gap:0;
+    border-top:1px solid var(--rule);padding-top:14px;}
+  .ix{flex:1;display:flex;flex-direction:column;gap:5px;padding-left:18px;
+    border-left:1px solid var(--rule);}
+  .ix:first-child{padding-left:0;border-left:none;}
+  .ix .l{font-size:9px;color:var(--t3);letter-spacing:.3em;}
+  .ix .c{font-size:15px;color:var(--t2);font-weight:600;}
+  .ix.on .c{color:var(--cream);}
+  .ix.on .l{color:var(--amber);}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="topbar">
+  <div class="row1">
+    <div class="brand">NOYA</div>
+    <div class="src">◐ 文采｜秒播</div>
+    <div class="sp"></div>
+    <div class="entry">直播</div><div class="entry">历史</div><div class="entry">收藏</div>
+    <div class="entry">推送</div><div class="entry">遥控</div><div class="entry">搜索</div><div class="entry">设置</div>
+    <div class="date">2026/10/20 周二 17:19</div>
+  </div>
+  <div class="row2">
+    <div class="tab on">主页</div><div class="tab">电影 ▾</div><div class="tab">电视剧</div>
+    <div class="tab">动漫</div><div class="tab">综艺</div>
+  </div>
+</div>
+
+<section class="spread">
+  <div class="spread-bg"></div>
+  <div class="spread-veil"></div>
+  <div class="spread-l">
+    <div class="kicker">
+      <span class="latin">Continue · S02</span><span class="ln"></span><span class="cn">第 8 集 / 共 12 集</span>
+    </div>
+    <div class="hero-title">漫长的<em>季节</em></div>
+    <div class="hero-meta">悬疑 / 剧情 · 12 集 · 观看于 今天 15:42 · 蓝光</div>
+    <div class="prog"><i></i></div>
+    <div class="prog-txt">已观看 62% · 剩余 41 分钟</div>
+    <div class="hero-cta">
+      <div class="cta main">▶ 继续播放</div>
+      <div class="cta ghost">从头开始</div>
+    </div>
+  </div>
+  <div class="spread-r">
+    <div class="hero-art">
+      <div class="hero-flag">EP.08</div>
+      <div class="art" style="background:linear-gradient(165deg,#2a1c10,#7a5426 50%,#14100a)"><span style="color:#f0e6d4">漫长的季节</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="shelf">
+  <span class="latin">Continue Watching</span>
+  <span class="ln"></span>
+  <span class="ct">全部 12 部 ›</span>
+</div>
+
+<div class="rail">
+  <div class="rc focus"><div class="poster"><div class="art" style="background:linear-gradient(165deg,#2a1c10,#7a5426 50%,#14100a)"><span style="color:#f0e6d4">漫长的季节</span></div><div class="ep">EP.08</div><div class="bar"><i style="width:62%"></i></div></div><div class="t">漫长的季节</div></div>
+  <div class="rc"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#0f2a2a,#2f7a72 45%,#081a1a)"><span>漫长的季节·外传</span></div><div class="ep">EP.03</div><div class="bar"><i style="width:28%"></i></div></div><div class="t">白夜行者</div></div>
+  <div class="rc"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#3a1c2c,#8f4a72 48%,#1a0c14)"><span>狂飙</span></div><div class="ep">EP.24</div><div class="bar"><i style="width:88%"></i></div></div><div class="t">狂飙</div></div>
+  <div class="rc"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#1c2438,#4a5f96 45%,#0c1020)"><span>三体</span></div><div class="ep">EP.11</div><div class="bar"><i style="width:45%"></i></div></div><div class="t">三体</div></div>
+  <div class="rc"><div class="poster"><div class="art" style="background:linear-gradient(160deg,#2e2412,#7d6a2e 45%,#151109)"><span>琅琊榜</span></div><div class="ep">EP.30</div><div class="bar"><i style="width:96%"></i></div></div><div class="t">琅琊榜</div></div>
+</div>
+
+<div class="index">
+  <div class="ix on"><span class="l latin">Live</span><span class="c">直播</span></div>
+  <div class="ix"><span class="l latin">History</span><span class="c">历史</span></div>
+  <div class="ix"><span class="l latin">Collection</span><span class="c">收藏</span></div>
+  <div class="ix"><span class="l latin">Push</span><span class="c">推送</span></div>
+  <div class="ix"><span class="l latin">Search</span><span class="c">搜索</span></div>
+  <div class="ix"><span class="l latin">Settings</span><span class="c">设置</span></div>
+</div>
+
+</body>
+</html>

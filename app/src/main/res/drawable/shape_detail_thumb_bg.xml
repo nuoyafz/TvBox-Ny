@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  详情页海报底板：8mm 小圆角（和首页片单卡片同规格），
+  常态只有 1mm 极淡细边把海报从背景里"托"出来，焦点态才是白色 2mm 环。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="@color/neon_surface" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="@color/neon_surface" />
+            <stroke android:width="1mm" android:color="@color/neon_glass_border" />
+        </shape>
+    </item>
+
+</selector>

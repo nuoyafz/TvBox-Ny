@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>NOYA · 设置页</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#000;display:grid;place-items:center;overflow:hidden;
+    font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .tv{
+    position:relative;width:1280px;height:720px;overflow:hidden;
+    transform-origin:center center;display:flex;
+    background:linear-gradient(180deg,#191411 0%,#110E0C 45%,#0B0A09 100%);
+    color:#FAF6F0;--amber:#DFA35C;--dim:#A79D91;--dimmer:#6E665C;
+    --hair:rgba(255,255,255,.07);
+  }
+  .grain{
+    position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* 左栏 */
+  .rail{width:200px;padding:16px 12px 24px 16px;position:relative;z-index:2}
+  .rail h1{font-size:22px;font-weight:700;letter-spacing:.12em;padding-left:14px}
+  .rail .latin{
+    margin-top:7px;padding-left:14px;font-family:Georgia,serif;
+    font-size:11px;letter-spacing:.32em;color:var(--amber);
+  }
+  .nav{margin-top:20px}
+  .nav .it{
+    position:relative;height:52px;display:flex;align-items:center;
+    padding-left:30px;font-size:18px;letter-spacing:.1em;color:var(--dimmer);
+  }
+  .nav .it.on{color:#FAF6F0}
+  .nav .it.on::before{
+    content:"";position:absolute;left:16px;top:15px;bottom:15px;width:3px;background:var(--amber);
+  }
+
+  .divider{width:1px;background:var(--hair);margin:24px 0}
+
+  /* 右栏 */
+  .pane{flex:1;padding:30px 120px 30px 40px;position:relative;z-index:2;overflow:hidden}
+  .pane .group{
+    font-family:Georgia,serif;font-size:11px;letter-spacing:.3em;
+    color:var(--amber);text-transform:uppercase;margin-bottom:6px;
+  }
+  .pane .title{font-size:22px;letter-spacing:.16em;color:var(--amber);margin-bottom:22px}
+
+  .row{
+    height:52px;display:flex;align-items:center;padding:0 20px;border-radius:6px;
+    border:1.5px solid transparent;
+  }
+  .row .k{font-size:24px;color:rgba(250,246,240,.72);letter-spacing:.02em}
+  .row .v{margin-left:auto;font-size:24px;color:rgba(250,246,240,.5);letter-spacing:.02em}
+  .row.on{
+    border-color:rgba(250,246,240,.90);background:rgba(255,255,255,.08);
+  }
+  .row.on .k{color:#FAF6F0}
+  .row.on .v{color:var(--amber)}
+
+  .sep{height:1px;background:var(--hair);margin:12px 0 12px}
+</style>
+</head>
+<body>
+<div class="tv" id="tv">
+  <div class="grain"></div>
+
+  <div class="rail">
+    <h1>设置</h1>
+    <div class="latin">SETTINGS</div>
+    <div class="nav">
+      <div class="it on">接口与源</div>
+      <div class="it">首页与搜索</div>
+      <div class="it">播放</div>
+      <div class="it">系统</div>
+      <div class="it">数据与外观</div>
+      <div class="it">关于</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="pane">
+    <div class="pane-head">
+      <div class="group">Source</div>
+      <div class="title">接口与源</div>
+    </div>
+
+    <div class="row">
+      <span class="k">配置地址</span>
+      <span class="v">https://9280.kstore.vip/newwex.json</span>
+    </div>
+    <div class="row on">
+      <span class="k">线路选择</span>
+      <span class="v">默认线路 ›</span>
+    </div>
+    <div class="row">
+      <span class="k">接口检测</span>
+      <span class="v">正常 · 0.4s</span>
+    </div>
+    <div class="sep"></div>
+    <div class="row">
+      <span class="k">点播源</span>
+      <span class="v">已启用 12 个</span>
+    </div>
+    <div class="row">
+      <span class="k">直播源</span>
+      <span class="v">已启用 3 个</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fit(){
+    const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.getElementById('tv').style.transform = 'scale(' + s + ')';
+  }
+  fit();
+  window.addEventListener('resize', fit);
+</script>
+</body>
+</html>

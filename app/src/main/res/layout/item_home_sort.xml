@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 顶栏分类项：文字 + 焦点下划线。没有胶囊、没有底色、没有缩放 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="15mm"
+    android:paddingRight="15mm">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="44mm"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.1"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/nav_item_text"
+            android:textSize="18mm" />
+
+        <ImageView
+            android:id="@+id/tvFilter"
+            android:layout_width="18mm"
+            android:layout_height="18mm"
+            android:layout_marginStart="6mm"
+            android:duplicateParentState="true"
+            android:src="@drawable/icon_filter"
+            android:tint="@color/nav_item_text"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/tvFilterColor"
+            android:layout_width="18mm"
+            android:layout_height="18mm"
+            android:layout_marginStart="4mm"
+            android:duplicateParentState="true"
+            android:src="@drawable/icon_filter_color"
+            android:tint="@color/nav_item_text"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5mm"
+        android:background="@drawable/bg_nav_underline"
+        android:duplicateParentState="true" />
+
+</LinearLayout>

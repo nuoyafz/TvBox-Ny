@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Apple TV 详情页遮罩：
+  顶部压暗保证标题可读 → 中部透出背景大图 → 底部压黑保证简介/按钮可读。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#CC000000"
+        android:centerColor="#59000000"
+        android:endColor="#F2000000"
+        android:type="linear" />
+</shape>

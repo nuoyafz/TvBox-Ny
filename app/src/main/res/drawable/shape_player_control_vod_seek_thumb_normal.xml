@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <!-- Apple TV 进度条圆点：纯白 -->
+    <solid android:color="@color/atv_text_primary" />
+    <size
+        android:width="@dimen/vs_30"
+        android:height="@dimen/vs_30" />
+</shape>

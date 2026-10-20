@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分类胶囊文字：聚焦反色（白底黑字），常态 60% 白 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF000000" />
+    <item android:color="@color/atv_text_secondary" />
+</selector>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首页第一屏 · 杂志跨页（v4）
+
+  版面三块：
+  1) 主视觉跨页：最近观看片的模糊暗化背景 + 左栏大标题/元信息/描边按钮 + 右侧实体海报(白描边 + 琥珀集数角标)
+  2) 一条横向片单「接着看」
+  3) 一行极小的文字入口（6 大图标已上移顶栏，这里不抢戏）
+
+  中段留白是刻意的。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- 主视觉模糊暗化背景（取最近观看片的海报） -->
+    <ImageView
+        android:id="@+id/ivHeroBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_spot_scrim" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginTop="-30mm"
+        android:layout_marginRight="-16mm"
+        android:alpha="0.05"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.02"
+        android:singleLine="true"
+        android:text="NOYA"
+        android:textColor="@color/neon_text_primary"
+        android:textSize="150mm"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:paddingLeft="56mm"
+        android:paddingRight="56mm">
+
+        <!--
+          主视觉吃掉所有弹性空间（weight=1），片单区固定高度。
+        -->
+        <LinearLayout
+            android:id="@+id/tvHeroBlock"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8mm"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <!-- 左：刊头 / 大标题 / 元信息 / 琥珀线 / 按钮 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvHeroKicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.26"
+                    android:text="CONTINUE"
+                    android:textColor="@color/neon_accent"
+                    android:textSize="13mm" />
+
+                <TextView
+                    android:id="@+id/tvHeroTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14mm"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.02"
+                    android:maxLines="1"
+                    android:maxWidth="760mm"
+                    android:textColor="@color/neon_text_primary"
+                    android:textSize="46mm"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvHeroMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12mm"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.08"
+                    android:maxLines="1"
+                    android:textColor="@color/neon_text_secondary"
+                    android:textSize="16mm" />
+
+                <View
+                    android:layout_width="64mm"
+                    android:layout_height="2mm"
+                    android:layout_marginTop="14mm"
+                    android:background="@color/neon_accent" />
+
+                <TextView
+                    android:id="@+id/tvHeroPlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40mm"
+                    android:layout_marginTop="18mm"
+                    android:background="@drawable/shape_cta_outline"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.14"
+                    android:paddingLeft="28mm"
+                    android:paddingRight="28mm"
+                    android:text="继续播放  ▸"
+                    android:textColor="@color/neon_accent"
+                    android:textSize="16mm" />
+
+            </LinearLayout>
+
+            <!-- 右：实体海报 + 白描边 + 琥珀集数角标 -->
+            <FrameLayout
+                android:id="@+id/heroPosterBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40mm"
+                android:layout_marginLeft="40mm"
+                android:background="@color/neon_text_primary"
+                android:padding="4mm">
+
+                <ImageView
+                    android:id="@+id/ivHeroPoster"
+                    android:layout_width="200mm"
+                    android:layout_height="280mm"
+                    android:scaleType="fitXY" />
+
+                <TextView
+                    android:id="@+id/tvHeroEp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="8mm"
+                    android:layout_marginEnd="8mm"
+                    android:layout_marginRight="8mm"
+                    android:background="@color/neon_accent"
+                    android:includeFontPadding="false"
+                    android:paddingLeft="10mm"
+                    android:paddingTop="4mm"
+                    android:paddingRight="10mm"
+                    android:paddingBottom="4mm"
+                    android:textColor="@color/neon_bg"
+                    android:textSize="16mm"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="22mm"
+                android:layout_height="1.5mm"
+                android:background="@color/neon_accent" />
+
+            <TextView
+                android:id="@+id/tvRowLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14mm"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.1"
+                android:text="接着看"
+                android:textColor="@color/neon_text_primary"
+                android:textSize="18mm" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.12"
+                android:text="全部 ›"
+                android:textColor="@color/neon_text_tertiary"
+                android:textSize="14mm" />
+
+        </LinearLayout>
+
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/tvHotList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14mm"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:visibility="gone"
+            app:tv_horizontalSpacingWithMargins="24mm"
+            app:tv_selectedItemIsCentered="false" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20mm" />
+
+    </LinearLayout>
+
+</FrameLayout>

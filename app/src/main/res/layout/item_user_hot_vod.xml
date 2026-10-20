@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首页片单卡片 · 画报规格
+  210×290、圆角 8mm（小圆角才有印刷感，20mm 大圆角是"App 感"的来源）。
+  一屏 5~6 张（1280 逻辑宽下）；164×226 会挤到 7.8 张，显得密而小。
+  焦点反馈全站统一：白色 2mm 环，不发光、不弹跳。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/selector_poster_card"
+    android:focusable="true"
+    android:padding="2mm">
+
+    <FrameLayout
+        android:id="@+id/mItemFrame"
+        android:layout_width="210mm"
+        android:layout_height="290mm"
+        android:background="@drawable/shape_media_card"
+        android:clipToOutline="true">
+
+        <ImageView
+            android:id="@+id/ivThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="96mm"
+            android:layout_gravity="bottom"
+            android:background="@drawable/shape_poster_scrim" />
+
+        <TextView
+            android:id="@+id/tvRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12mm"
+            android:layout_marginTop="11mm"
+            android:alpha="0.78"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.1"
+            android:maxLines="1"
+            android:textColor="@color/neon_text_primary"
+            android:textSize="13mm" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:paddingLeft="12mm"
+            android:paddingRight="12mm"
+            android:paddingBottom="12mm">
+
+            <TextView
+                android:id="@+id/tvNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4mm"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.08"
+                android:maxLines="1"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="13mm" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.02"
+                android:maxLines="1"
+                android:text="Title"
+                android:textColor="@color/neon_text_primary"
+                android:textSize="19mm" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/delFrameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_user_delete"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="60mm"
+                android:layout_height="60mm"
+                android:layout_gravity="center"
+                android:src="@drawable/icon_delete" />
+
+        </FrameLayout>
+
+    </FrameLayout>
+
+</FrameLayout>

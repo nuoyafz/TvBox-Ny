@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置页列表行（画报版）。
+
+  旧版焦点是"整行反白 + 文字翻黑"，那是 tvOS 列表的做法，和首页的
+  「卡片外圈白环」完全是两套语言，两个页面来回切会觉得不是一个 App。
+
+  现在统一成首页那套：常态完全透明，焦点只加一圈白色 1.5mm 环 + 8% 白底，
+  文字由 atv_row_text / setting_row_text 提亮，不会出现一大块白。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <stroke android:width="1.5mm" android:color="#E6FAF6F0" />
+            <solid android:color="#14FFFFFF" />
+        </shape>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#0DFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 首次启动的更新说明 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="@dimen/vs_600"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/shape_danmu_setting_bg"
+        android:orientation="vertical"
+        android:padding="@dimen/vs_36">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.02"
+            android:text="本次更新"
+            android:textColor="@color/neon_text_primary"
+            android:textSize="@dimen/ts_40"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/vs_8"
+            android:includeFontPadding="false"
+            android:text="界面全面重构 · 侧栏式首页"
+            android:textColor="@color/neon_accent2"
+            android:textSize="@dimen/ts_20" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/vs_28"
+            android:orientation="vertical">
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="全新侧栏式首页" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="分类挪到左侧竖排，整屏纵向空间留给海报" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="卡片重做" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="去掉压暗遮罩，片名移到海报外，圆角加大到 20mm" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="焦点改为发光描边" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="不再是刺眼的白底黑字，改成紫青双层描边" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="设置页分组" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="六大类分开成页，不再是一条滚到底的长列表" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="内置片源已更新" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="原来的三个地址全部失效，换成 4 个实测可用的并支持自动降级" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/ChangelogRow">
+
+                <View style="@style/ChangelogDot" />
+
+                <LinearLayout style="@style/ChangelogText">
+
+                    <TextView
+                        style="@style/ChangelogTitle"
+                        android:text="首页搜索入口" />
+
+                    <TextView
+                        style="@style/ChangelogDesc"
+                        android:text="右上角一屏直达，不用再点开菜单" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnOk"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/vs_50"
+            android:layout_marginTop="@dimen/vs_30"
+            android:background="@drawable/button_danmu_setting"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:text="开始使用"
+            android:textColor="@color/atv_btn_text"
+            android:textSize="@dimen/ts_24" />
+
+    </LinearLayout>
+</FrameLayout>

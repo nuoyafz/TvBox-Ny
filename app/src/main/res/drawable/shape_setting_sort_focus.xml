@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置菜单/列表项焦点底。与 shape_setting_model_focus 同一套反色语言：
+  常态透明，焦点整块纯白。
+  原先的"半透明填充 + 2mm 白描边"是 2016 年 Android 的写法——
+  描边会让一屏出现十几个白色空心框，视觉噪音极大，也是"年代感"的主要来源之一。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

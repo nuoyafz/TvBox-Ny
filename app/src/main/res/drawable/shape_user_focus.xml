@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Apple TV 通用可聚焦底：聚焦为白描边高光，静息态接近透明 -->
+    <item android:state_focused="true">
+        <shape>
+            <corners android:radius="@dimen/atv_radius_card" />
+            <stroke android:width="@dimen/atv_stroke_focus" android:color="@color/atv_focus_ring" />
+            <solid android:color="@color/atv_focus_fill" />
+        </shape>
+    </item>
+    <item android:state_focused="false">
+        <shape>
+            <corners android:radius="@dimen/atv_radius_card" />
+            <solid android:color="#14FFFFFF" />
+        </shape>
+    </item>
+</selector>

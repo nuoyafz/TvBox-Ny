@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  图标按钮（历史/收藏页右上角的删除、清空）。
+  常态只有极淡底 + 细边，焦点白环 —— 输入框/按钮体系里最"安静"的一档，
+  避免小图标按钮在深底上变成一个突兀的深灰方块。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="#1FFAF6F0" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="#0DFAF6F0" />
+            <stroke android:width="1mm" android:color="@color/neon_glass_border" />
+        </shape>
+    </item>
+
+</selector>

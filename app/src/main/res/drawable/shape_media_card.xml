@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 海报底色：8mm 小圆角（去"大圆角 App 感"），配合 clipToOutline 裁图 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="8mm" />
+    <solid android:color="@color/neon_surface" />
+</shape>

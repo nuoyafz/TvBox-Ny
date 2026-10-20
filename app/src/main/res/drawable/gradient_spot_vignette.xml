@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  聚光区径向暗角：中心透明、四周渐变到暖墨黑。
+  作用：把模糊海报的彩色边缘压死，只留中央一点氛围光，整体立刻"沉静"不花。
+  叠在 gradient_spot_scrim（左暗+底暗）之上。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="62%p"
+        android:centerX="50%"
+        android:centerY="40%"
+        android:startColor="#00000000"
+        android:centerColor="#1F0B0A09"
+        android:endColor="#F20B0A09" />
+</shape>

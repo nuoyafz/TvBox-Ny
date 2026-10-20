@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  详情页次按钮（快速搜索 / 简介 / 加入收藏 / 切源）：细描边幽灵按钮。
+  和主按钮同一套圆角与焦点环，只靠"有没有填充"区分主次，
+  不再像原来那样每个按钮各一个颜色。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#1FFAF6F0" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="@android:color/transparent" />
+            <stroke android:width="1.5mm" android:color="#3DFAF6F0" />
+        </shape>
+    </item>
+
+</selector>

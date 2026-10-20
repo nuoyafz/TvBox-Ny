@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  软键盘按键。原来是一圈白描边的空心方块 —— 一屏 38 个白框，背景越黑噪音越重。
+  现在靠 8% 白填充区分边界，焦点整块翻白、文字翻黑。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/vs_44"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/vs_5"
+    android:background="@drawable/shape_atv_key"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/keyName"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:duplicateParentState="true"
+        android:gravity="center"
+        android:textAlignment="gravity"
+        android:textColor="@color/atv_btn_text"
+        android:textSize="@dimen/ts_20" />
+</FrameLayout>

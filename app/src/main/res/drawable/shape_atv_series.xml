@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  剧集列表项。
+  不用"纯白反色"是因为 EpisodeAdapter 会在代码里硬写文字色（当前集=强调色，其余=白），
+  白底白字会直接看不见内容。改用 tvOS 卡片式聚焦：2mm 白环 + 18% 白填充，任何字色都安全。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <stroke
+                android:width="@dimen/atv_stroke_focus"
+                android:color="@color/atv_focus_ring" />
+            <solid android:color="#2EFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#0FFFFFFF" />
+        </shape>
+    </item>
+</selector>

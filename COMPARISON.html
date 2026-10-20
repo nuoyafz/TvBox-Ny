@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TvBox-NY · 升级了什么（代码视角）</title>
+<style>
+  :root{
+    --ink:#17130e; --paper:#f5efe4; --amber:#e0912f; --amber-deep:#a86418;
+    --muted:#8d8271; --line:#d8cfbc;
+    --code-bg:#1c1812; --code-ink:#e8ddc8; --code-dim:#7d7462;
+    --kw:#e0912f; --str:#9cbf6a; --cmt:#6f6454; --fn:#d9b06c; --num:#c98a5e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--amber);color:var(--ink)}
+
+  /* ---------- 头版 ---------- */
+  header{
+    background:var(--ink); color:var(--paper);
+    padding:clamp(52px,9vw,110px) clamp(20px,6vw,96px) clamp(44px,7vw,84px);
+    position:relative; overflow:hidden;
+  }
+  header::after{
+    content:"NOYA"; position:absolute; right:-.04em; bottom:-.28em;
+    font-size:clamp(120px,24vw,340px); font-weight:900; letter-spacing:-.02em;
+    color:transparent; -webkit-text-stroke:1px rgba(224,145,47,.26);
+    line-height:1; pointer-events:none; user-select:none;
+  }
+  .brandline{display:flex;align-items:center;gap:14px;font-size:13px;
+    letter-spacing:.42em;color:var(--amber);text-transform:uppercase;margin-bottom:26px}
+  .brandline::before{content:"";width:44px;height:1px;background:var(--amber)}
+  header h1{
+    font-family:"Source Han Serif SC","Noto Serif SC",serif; font-weight:900;
+    font-size:clamp(32px,5.6vw,66px); line-height:1.16; max-width:15em;
+  }
+  header h1 em{font-style:normal;color:var(--amber)}
+  .lede{margin-top:24px;max-width:36em;color:#b8ad99;font-size:clamp(15px,1.6vw,18px)}
+  .lede strong{color:var(--paper);font-weight:600}
+  .meta{margin-top:36px;display:flex;flex-wrap:wrap;gap:10px 28px;font-size:13px;color:#8d8271}
+  .meta b{color:var(--amber);font-weight:600}
+
+  nav{
+    background:var(--ink); border-top:1px solid rgba(224,145,47,.25);
+    padding:0 clamp(20px,6vw,96px); display:flex;flex-wrap:wrap;
+    position:sticky;top:0;z-index:9; box-shadow:0 1px 0 rgba(224,145,47,.25);
+  }
+  nav a{color:#b8ad99;text-decoration:none;font-size:13px;letter-spacing:.14em;
+    padding:15px 18px 15px 0;margin-right:26px;border-bottom:2px solid transparent;
+    transition:color .2s ease-out,border-color .2s ease-out}
+  nav a:hover{color:var(--amber);border-color:var(--amber)}
+
+  main{max-width:1100px;margin:0 auto;padding:0 clamp(20px,5vw,64px)}
+  section{padding:clamp(52px,8vw,100px) 0 0}
+  .secno{font-family:"Source Han Serif SC","Noto Serif SC",serif;font-size:15px;
+    color:var(--amber-deep);letter-spacing:.3em;margin-bottom:10px}
+  section h2{font-family:"Source Han Serif SC","Noto Serif SC",serif;font-weight:900;
+    font-size:clamp(25px,3.4vw,38px);line-height:1.25;margin-bottom:12px}
+  section h2 span{color:var(--amber-deep)}
+  .intro{max-width:40em;color:#5f5546;margin-bottom:34px;font-size:15.5px}
+
+  /* ---------- 代码对照块 ---------- */
+  .duo{
+    display:grid;grid-template-columns:1fr 1fr;gap:16px;
+    margin:26px 0 34px;
+  }
+  .codecard{
+    background:var(--code-bg);border-radius:10px;overflow:hidden;
+    box-shadow:0 12px 32px -18px rgba(23,19,14,.55);
+  }
+  .codecard.bad{outline:1px solid #d8cfbc}
+  .codecard.good{outline:1px solid var(--amber)}
+  .codehead{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 16px;font-size:12px;letter-spacing:.16em;
+    color:var(--code-dim);border-bottom:1px solid rgba(232,221,200,.08);
+  }
+  .codehead .dot{width:8px;height:8px;border-radius:50%}
+  .bad .codehead .dot{background:#8a5a4a}
+  .good .codehead .dot{background:var(--amber)}
+  .codehead .who{margin-left:auto;color:var(--code-dim)}
+  .bad .codehead .who{color:#a08474}
+  .good .codehead .who{color:var(--amber)}
+  pre{
+    padding:16px 18px;overflow-x:auto;
+    font-family:"Cascadia Code","JetBrains Mono",Consolas,monospace;
+    font-size:12.8px;line-height:1.7;color:var(--code-ink);
+    tab-size:4;
+  }
+  .k{color:var(--kw)} .s{color:var(--str)} .c{color:var(--cmt);font-style:italic}
+  .f{color:var(--fn)} .n{color:var(--num)} .t{color:#c9a06a}
+  .codenote{
+    font-size:13.5px;color:#5f5546;margin-top:-22px;margin-bottom:30px;
+    padding-left:14px;border-left:2px solid var(--amber);
+  }
+  .codenote b{color:var(--amber-deep)}
+
+  /* ---------- 架构管线图（代码风） ---------- */
+  .pipeline{
+    background:var(--code-bg);border-radius:10px;padding:22px 22px 26px;
+    margin:26px 0 34px;overflow-x:auto;outline:1px solid var(--amber);
+  }
+  .pipeline pre{padding:0;color:var(--code-ink);font-size:13px;line-height:1.9}
+  .pipeline .cap{font-size:12px;letter-spacing:.22em;color:var(--amber);
+    margin-bottom:12px;font-family:inherit}
+
+  /* ---------- 编号清单 ---------- */
+  .feats{counter-reset:f;list-style:none;border-top:1px solid var(--line)}
+  .feats li{counter-increment:f;display:grid;grid-template-columns:64px 1fr;
+    padding:24px 0;border-bottom:1px solid var(--line)}
+  .feats li::before{content:"0" counter(f);
+    font-family:"Source Han Serif SC",serif;font-size:26px;font-weight:900;
+    color:transparent;-webkit-text-stroke:1.2px var(--amber-deep);line-height:1.2}
+  .feats h3{font-size:17px;margin-bottom:4px}
+  .feats p{color:#5f5546;font-size:14.5px;max-width:44em}
+  .feats code, .intro code, .codenote code{
+    font-family:"Cascadia Code",Consolas,monospace;font-size:.86em;
+    background:#ece3d0;border-radius:4px;padding:1px 6px;color:var(--amber-deep)}
+
+  /* ---------- 表 ---------- */
+  table{width:100%;border-collapse:collapse;border-top:2px solid var(--ink)}
+  th{text-align:left;font-size:11.5px;letter-spacing:.24em;color:var(--muted);
+    font-weight:600;padding:14px 12px 12px 0;border-bottom:1px solid var(--line)}
+  td{padding:16px 12px 16px 0;border-bottom:1px solid var(--line);font-size:14.5px;vertical-align:top}
+  td:nth-child(2){color:#8d8271}
+  td:first-child{font-weight:700}
+  td .ok{color:var(--amber-deep);font-weight:700}
+
+  .spec{margin-top:40px;background:var(--ink);color:var(--paper);
+    padding:clamp(28px,4vw,48px);display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:28px}
+  .spec dt{font-size:11px;letter-spacing:.3em;color:var(--amber);margin-bottom:8px}
+  .spec dd{font-family:"Source Han Serif SC",serif;font-size:22px;font-weight:900}
+  footer{margin-top:clamp(60px,9vw,104px);border-top:1px solid var(--line);
+    padding:34px 0 60px;display:flex;flex-wrap:wrap;justify-content:space-between;
+    gap:12px;font-size:13px;color:var(--muted)}
+  footer b{color:var(--amber-deep);font-weight:700}
+
+  @media (max-width:820px){
+    .duo{grid-template-columns:1fr}
+    .feats li{grid-template-columns:44px 1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brandline">TvBox-NY · NOYA Edition</div>
+  <h1>每一处升级，<br>都对应<em>一段真的代码</em>。</h1>
+  <p class="lede">
+    和原版 TVBoxOSC 的差别，不用形容词讲——<strong>左边是原版的写法，右边是这一版的写法</strong>，
+    中间是它解决了什么问题。改动全部落在真实提交里，可对照源码验证。
+  </p>
+  <div class="meta">
+    <span>作者 <b>漩涡鸣人</b></span><span>QQ <b>723167066</b></span>
+    <span>包 <b>java64 · ≈25MB</b></span><span>适配 <b>Android TV 5.0+</b></span>
+  </div>
+</header>
+
+<nav>
+  <a href="#s1">手机播放</a><a href="#s2">遥控引擎</a><a href="#s3">壁纸多源</a>
+  <a href="#s4">UI 重设计</a><a href="#s5">修复清单</a><a href="#s6">规格</a>
+</nav>
+
+<main>
+
+<!-- 01 手机播放 -->
+<section id="s1">
+  <div class="secno">01 / MOBILE PLAY</div>
+  <h2>手机接着看：<span>直链直发，中转兜底</span></h2>
+  <p class="intro">
+    原版根本没这个功能。初版实现犯过一个错：把「播放地址」直接塞二维码——但那经常是网页/解析页，
+    或者 <code>127.0.0.1:9978/proxy</code> 这种只有电视自己能访问的本机代理。现在的逻辑是
+    <b>双通道</b>：真直链免 WiFi 直发，防盗链源回退电视中转。
+  </p>
+
+  <div class="pipeline">
+    <div class="cap">MOBILE PLAY · 决策管线</div>
+    <pre><span class="c">┌──────────────────────┐      ┌───────────────────────────────┐</span>
+<span class="c">│  点击「手机播放」  </span><span class="c">│ ───▶ │ 缓存命中? goPlayUrl 落点缓存   │</span>
+<span class="c">└──────────────────────┘      │ App.getResolvedPlay(key)      │</span>
+<span class="c">                              └──────────────┬────────────────┘</span>
+<span class="c">                                             ▼</span>
+<span class="c">                        ┌────────  isDirectPlayUrl()?  ────────┐</span>
+<span class="c">                        │ http(s) 且无 127.0.0.1/localhost//proxy?│</span>
+<span class="c">                        ▼                                      ▼</span>
+<span class="c">              ┌───────────────────┐              ┌───────────────────────┐</span>
+<span class="c">              │ 默认中转模式      │              │ 直链模式(可切换)      │</span>
+<span class="c">              │ /m?u=base64(addr) │              │ QR = 播放地址本身     │</span>
+<span class="c">              │ 电视带UA/Referer  │              │ 免WiFi·防盗链源会403  │</span>
+<span class="c">              └───────────────────┘              └───────────────────────┘</span></pre>
+  </div>
+
+  <div class="duo">
+    <div class="codecard bad">
+      <div class="codehead"><span class="dot"></span>BEFORE<span class="who">原版 / 初版</span></div>
+<pre><span class="c">// 地址从显示层 TextView 抠出来，</span>
+<span class="c">// 经常是解析页或本机回环代理</span>
+String raw = tvPlayUrl.getText()<span class="f">.toString</span>()
+    .replace(<span class="s">"播放地址："</span>, <span class="s">""</span>);
+<span class="c">// 无脑 base64 塞进中转页</span>
+String qr = base + <span class="s">"m?u="</span> + <span class="f">encode</span>(raw);</pre>
+    </div>
+    <div class="codecard good">
+      <div class="codehead"><span class="dot"></span>AFTER<span class="who">TvBox-NY</span></div>
+<pre><span class="c">// ① 起播时缓存真实解析后地址（PlayFragment.goPlayUrl）</span>
+App.<span class="f">getInstance</span>().<span class="f">putResolvedPlay</span>(
+    sourceKey + <span class="s">"|"</span> + vodInfo.playFlag + <span class="s">"|"</span> + vodInfo.playIndex, url);
+
+<span class="c">// ② 直链判定：回环/代理地址手机指不到</span>
+<span class="k">private static</span> <span class="t">boolean</span> <span class="f">isDirectPlayUrl</span>(String u) {
+    <span class="k">return</span> u.startsWith(<span class="s">"http"</span>)
+        &amp;&amp; !u.contains(<span class="s">"127.0.0.1"</span>)
+        &amp;&amp; !u.contains(<span class="s">"localhost"</span>)
+        &amp;&amp; !u.contains(<span class="s">"/proxy?"</span>);
+}
+
+<span class="c">// ③ 双模式：默认中转(防盗链源可播)，OK 键切直链(免WiFi)</span>
+<span class="k">new</span> <span class="f">MobilePlayDialog</span>(ctx, relayUrl, playAddr).<span class="f">show</span>();</pre>
+    </div>
+  </div>
+  <p class="codenote">
+    关键认知：<b>直链不是万能的</b>。源站校验 UA/Referer 时手机浏览器裸拉就是 403，
+    所以默认走电视中转（同一 WiFi，电视代为带正确的头拉流），弹窗里按 OK 一键切直链。
+  </p>
+</section>
+
+<!-- 02 遥控 -->
+<section id="s2">
+  <div class="secno">02 / REMOTE ENGINE</div>
+  <h2>网页遥控器：<span>自己造焦点引擎</span></h2>
+  <p class="intro">
+    原版遥控网页形同虚设。深挖后发现问题在 Android 的焦点管线：
+    <code>dispatchKeyEvent</code> 手动派发<b>不走 ViewRootImpl 的焦点查找 fallback</b>，
+    触摸模式下更是没有任何 View 持有焦点——按什么都没用。所以方向键不能"派发"，
+    要<b>自己做焦点导航</b>。
+  </p>
+
+  <div class="duo">
+    <div class="codecard bad">
+      <div class="codehead"><span class="dot"></span>BEFORE<span class="who">直觉写法（全部失效）</span></div>
+<pre><span class="c">// ✗ dispatchKeyEvent 不做焦点查找</span>
+<span class="c">//   (卡在 ViewPostImeInputStage)</span>
+activity.<span class="f">dispatchKeyEvent</span>(<span class="k">new</span> <span class="f">KeyEvent</span>(KEYCODE_DPAD_DOWN));
+
+<span class="c">// ✗ Instrumentation API 28+ 要 INJECT_EVENTS 权限</span>
+<span class="k">new</span> <span class="f">Instrumentation</span>().<span class="f">sendKeyDownUpSync</span>(code);
+
+<span class="c">// ✗ focusSearch 传 keycode 直接崩：</span>
+<span class="c">//   Unknown direction: 22</span>
+view.<span class="f">focusSearch</span>(keyCode);</pre>
+    </div>
+    <div class="codecard good">
+      <div class="codehead"><span class="dot"></span>AFTER<span class="who">RemoteServer.handleWithFocus</span></div>
+<pre><span class="c">// 方向键：keycode → View.FOCUS_* 方向常量</span>
+<span class="k">int</span> dir = keyCode == <span class="n">20</span> ? View.<span class="n">FOCUS_DOWN</span>
+        : keyCode == <span class="n">19</span> ? View.<span class="n">FOCUS_UP</span>
+        : keyCode == <span class="n">21</span> ? View.<span class="n">FOCUS_LEFT</span>
+        : View.<span class="n">FOCUS_RIGHT</span>;
+View next = decor.<span class="f">findFocus</span>().<span class="f">focusSearch</span>(dir);
+<span class="k">if</span> (next != <span class="k">null</span>) next.<span class="f">requestFocus</span>(dir);
+<span class="k">else</span> decor.<span class="f">requestFocusFromTouch</span>();  <span class="c">// 无焦点兜底</span>
+
+<span class="c">// OK=performClick · BACK=onBackPressed · 其余键 dispatchKeyEvent 兜底</span>
+<span class="c">// 每次按键返回回执: "focus:20:TvRecyclerView"</span></pre>
+    </div>
+  </div>
+  <p class="codenote">
+    前端同样配合：<b>摇杆带 16px 死区 + 三档连发（340/190/115ms）+ 换向震动</b>，
+    每个按键的回执直接显示在遥控页状态行（<code>上 ✓ sent:19:HomeActivity</code>），问题看得见。
+  </p>
+</section>
+
+<!-- 03 壁纸 -->
+<section id="s3">
+  <div class="secno">03 / WALLPAPER</div>
+  <h2>壁纸引擎：<span>多源兜底链 + 真解码校验</span></h2>
+  <p class="intro">
+    "换张壁纸接口全失败"的根因：单源 + 只重试一次，而且有些图床返回 200 + HTML——
+    HTTP 层看着成功，落盘全是文本。解法是<b>按类别排序的候选源链</b> + <b>BitmapFactory 真解码一次</b>。
+  </p>
+
+  <div class="duo">
+    <div class="codecard bad">
+      <div class="codehead"><span class="dot"></span>BEFORE<span class="who">原版思路</span></div>
+<pre><span class="c">// 单源，失败只重试一次同一源</span>
+<span class="k">private static final</span> String ENDPOINT =
+    <span class="s">"https://uapis.cn/api/v1/random/image"</span>;
+
+<span class="k">void</span> <span class="f">retryOrGiveUp</span>(String failedUrl) {
+    String next = <span class="f">nextUrl</span>();      <span class="c">// 还是同一个源</span>
+    <span class="k">if</span> (!next.equals(failedUrl)) <span class="f">download</span>(next);
+    <span class="k">else</span> <span class="f">toast</span>(<span class="s">"失败"</span>);           <span class="c">// 单源挂=永远失败</span>
+}
+<span class="c">// 且不校验内容：200 + HTML 也当成功</span></pre>
+    </div>
+    <div class="codecard good">
+      <div class="codehead"><span class="dot"></span>AFTER<span class="who">WallpaperHelper.nextFallback</span></div>
+<pre><span class="c">// 候选链：主源 → 类别匹配备源 → 通用兜底</span>
+<span class="f">nextFallback</span>(category, tried) →
+    uapis.cn?category=cat        <span class="c">// 主源</span>
+  → t.alcy.cc/ycy <span class="k">or</span> /pc        <span class="c">// 樱花,按类别选</span>
+  → api.paugram.com/wallpaper    <span class="c">// 通用兜底</span>
+
+<span class="c">// 已失败的源按裸前缀记入 wpTried，逐个换源,</span>
+<span class="c">// 每个候选拼时间戳防 CDN 缓存; 全试过才放弃</span>
+
+<span class="c">// 不信任状态码，真解码一次：</span>
+BitmapFactory.<span class="f">decodeFile</span>(tmp, opts.<span class="f">setJustDecodeBounds</span>());
+<span class="k">return</span> opts.outWidth &gt; <span class="n">0</span> &amp;&amp; opts.outHeight &gt; <span class="n">0</span>;</pre>
+    </div>
+  </div>
+  <p class="codenote">下载先落 <code>wp_tmp</code>，校验通过才 rename 成 <code>wp</code>——图源抽风也不会把原来那张能用的壁纸冲掉。</p>
+</section>
+
+<!-- 04 UI -->
+<section id="s4">
+  <div class="secno">04 / UI</div>
+  <h2>界面重设计：<span>一套画报语言，全部重排</span></h2>
+  <p class="intro">原版的视觉是模板直出。这一版定了一套语言：近黑底 + 琥珀主色 + 中文粗体节标题配小拉丁标签，然后逐页执行。</p>
+
+  <div class="duo">
+    <div class="codecard bad">
+      <div class="codehead"><span class="dot"></span>BEFORE<span class="who">原版 item_dialog_select</span></div>
+<pre><span class="c">&lt;!-- 白色文字长列表，无层次 --&gt;</span>
+&lt;<span class="t">TextView</span> android:id=<span class="s">"@+id/tvName"</span>
+    android:layout_width=<span class="s">"match_parent"</span>
+    android:padding=<span class="s">"14dp"</span>
+    android:textColor=<span class="s">"#FFFFFF"</span> /&gt;
+
+<span class="c">&lt;!-- 海报选中后整层压暗 --&gt;</span>
+&lt;<span class="t">View</span> android:background=<span class="s">"#99000000"</span> /&gt;</pre>
+    </div>
+    <div class="codecard good">
+      <div class="codehead"><span class="dot"></span>AFTER<span class="who">Netflix 磁贴 + 焦点白环</span></div>
+<pre><span class="c">// 8 色品牌渐变磁贴（SelectDialogAdapter）</span>
+<span class="t">GradientDrawable</span> g = <span class="k">new</span> <span class="t">GradientDrawable</span>(
+    TL_BR, <span class="k">new</span> <span class="t">int</span>[]{ <span class="f">lighten</span>(brand, <span class="n">1.12f</span>),
+                      <span class="f">darken</span>(brand, <span class="n">0.45f</span>) });
+g.<span class="f">setCornerRadius</span>(<span class="f">mm2px</span>(<span class="n">6</span>));
+selected: <span class="f">setStroke</span>(<span class="n">3</span>mm, <span class="n">0xFFFFFFFF</span>);  <span class="c">// 白粗环</span>
+
+<span class="c">// 海报原彩直出 —— DIM_FILTER 全部删除</span>
+<span class="f">AtvFocusHelper.bind</span>(itemView, mFocusListener);
+<span class="c">// 焦点 = 白环 + 1.03 缩放, mm 单位跨分辨率稳定</span></pre>
+    </div>
+  </div>
+
+  <ul class="feats">
+    <li><div>
+      <h3>搜索页三栏对齐</h3>
+      <p>原版按钮等宽堆叠、三栏参差。现在：搜索主键琥珀实心、次键 ghost；节标题统一为「大家都在搜 <code>HOT</code> / 搜索结果 <code>RESULTS</code> / 搜索历史 <code>HISTORY</code>」，三栏顶部基线对齐；键盘按键 50→44 收敛降噪。</p>
+    </div></li>
+    <li><div>
+      <h3>遥控网页单屏重构</h3>
+      <p>208px 导航环 + 76px 琥珀 OK 钮 + 摇杆 + 大返回（<code>onBackPressed</code> 级别，不是模拟器小返回），1080×1920 零滚动。</p>
+    </div></li>
+    <li><div>
+      <h3>NTP 毫秒级卡点</h3>
+      <p>同步阿里云 <code>ntp.aliyun.com</code>，定时任务精准到毫秒——卡点场景不再差半拍。</p>
+    </div></li>
+    <li><div>
+      <h3>省份并发 + 集中日志</h3>
+      <p>多省份请求并发提速，日志集中汇总回显；遥控按键带回执，出问题一眼定位。</p>
+    </div></li>
+  </ul>
+</section>
+
+<!-- 05 修复 -->
+<section id="s5">
+  <div class="secno">05 / FIXES</div>
+  <h2>被骂出来的<span>修复清单</span></h2>
+  <table>
+    <thead><tr><th>问题</th><th>原版表现</th><th>本版结果</th></tr></thead>
+    <tbody>
+      <tr><td>遥控方向键</td><td>网页按键电视毫无反应</td><td><span class="ok">已修</span> 自建焦点引擎，全链路带回执</td></tr>
+      <tr><td>手机播放地址</td><td>网页/解析页直接塞二维码</td><td><span class="ok">已修</span> 起播落点缓存真实地址，直链+中转双模式</td></tr>
+      <tr><td>壁纸换一张</td><td>单源失败=永远失败</td><td><span class="ok">已修</span> 多源链轮换 + 真解码校验</td></tr>
+      <tr><td>播放地址显示</td><td>单行截断像"半截地址"</td><td><span class="ok">已修</span> 多行完整显示</td></tr>
+      <tr><td>投屏二维码</td><td>常驻占半屏，键盘被挤没</td><td><span class="ok">已修</span> 改为按需显示</td></tr>
+      <tr><td>海报变暗</td><td>点选后整体发灰</td><td><span class="ok">已修</span> 压暗滤镜整个移除</td></tr>
+      <tr><td>超长剧集选集</td><td>千集动漫焦点滚动卡死</td><td><span class="ok">已修</span> scrollToPositionWithOffset 修复</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 06 规格 -->
+<section id="s6">
+  <div class="secno">06 / SPEC</div>
+  <h2>包规格</h2>
+  <dl class="spec">
+    <div><dt>包体</dt><dd>java64 · ≈25MB</dd></div>
+    <div><dt>系统要求</dt><dd>Android 5.0+</dd></div>
+    <div><dt>设备</dt><dd>电视 / 盒子 / 投屏器</dd></div>
+    <div><dt>安装</dt><dd>签名包直装</dd></div>
+  </dl>
+  <footer>
+    <span>TVBox-NY · NOYA Edition — 基于开源 TVBoxOSC 深度定制，仅作技术研究与学习用途</span>
+    <span>作者 <b>漩涡鸣人</b> · QQ <b>723167066</b></span>
+  </footer>
+</section>
+
+</main>
+</body>
+</html>

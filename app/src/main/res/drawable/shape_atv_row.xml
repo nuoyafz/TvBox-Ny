@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通用列表行（首页列表模式 / 选源 / 历史列表）。
+  焦点整行纯白反色 + 文字翻黑，是本项目最核心的 tvOS 交互语言。
+  常态只留 3% 白，让行与行之间有极轻的层次，不靠横线分隔。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#33FFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_row" />
+            <solid android:color="#0AFFFFFF" />
+        </shape>
+    </item>
+</selector>

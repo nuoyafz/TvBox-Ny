@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  详情页主按钮（立即播放）：整页唯一的琥珀实心色块。
+  焦点态与全站统一 —— 白色 2mm 环 + 底色提亮，不发光、不弹跳。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#F5C08445" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="@color/neon_accent" />
+        </shape>
+    </item>
+
+</selector>

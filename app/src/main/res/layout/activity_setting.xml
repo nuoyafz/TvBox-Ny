@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置页 · 双栏（画报版）
+
+  对齐首页的三条规则：
+  1. 左侧栏不再用"更深的底色"分区（换成暖墨黑后底色和背景几乎同色，分区已经失效），
+     改用一条 1mm 半透明竖线切分；
+  2. 抬头改成「设置 + SETTINGS」两行，和首页主视觉同一套大小字对比；
+  3. 分组入口行高 52mm、字号 18mm、字距 0.1，焦点只在左侧出现一条琥珀竖条。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_window_scrim"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="200mm"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="16mm"
+        android:paddingBottom="24mm">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20mm"
+            android:orientation="vertical"
+            android:paddingLeft="30mm">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.12"
+                android:text="设置"
+                android:textColor="@color/neon_text_primary"
+                android:textSize="22mm"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7mm"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.32"
+                android:text="SETTINGS"
+                android:textColor="@color/neon_accent"
+                android:textSize="11mm" />
+
+        </LinearLayout>
+
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/mGridView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingLeft="16mm"
+            android:paddingRight="12mm" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="1mm"
+        android:layout_height="match_parent"
+        android:layout_marginTop="24mm"
+        android:layout_marginBottom="24mm"
+        android:background="@color/neon_divider" />
+
+    <com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager
+        android:id="@+id/mViewPager"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+
+</LinearLayout>

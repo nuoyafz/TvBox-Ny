@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分类页海报底板：与首页片单同一档小圆角 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="8mm" />
+    <solid android:color="@color/neon_surface" />
+</shape>

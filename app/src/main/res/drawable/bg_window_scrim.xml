@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  窗口遮罩：和 gradient_neon_bg 同样的暖墨黑渐变，但整层带透明度。
+  App 自己下载的壁纸画在 windowBackground 上，如果根布局铺一层不透明的
+  gradient_neon_bg，壁纸就被整块盖死了 —— 表现就是"换了壁纸没反应"。
+  这里只留 4%～15% 的通透度：壁纸作为一层很淡的底纹透出来，换图能明显看出变化，
+  但正文/标题的白字对比度基本不受影响（最亮处也压到 #2A2622 以内）。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#D9191411"
+        android:centerColor="#E6110E0C"
+        android:endColor="#F50B0A09" />
+</shape>

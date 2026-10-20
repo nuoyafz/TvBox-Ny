@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Apple TV 海报卡片背景态
+  未聚焦：完全透明，不遮挡海报
+  聚焦：  纯白 2mm 描边（tvOS 焦点环）+ 极轻白色填充提亮
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_card" />
+            <stroke
+                android:width="@dimen/atv_stroke_focus"
+                android:color="@color/atv_focus_ring" />
+            <solid android:color="@color/atv_focus_fill" />
+        </shape>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_card" />
+            <stroke
+                android:width="@dimen/atv_stroke_hairline"
+                android:color="@color/atv_divider" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/atv_radius_card" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

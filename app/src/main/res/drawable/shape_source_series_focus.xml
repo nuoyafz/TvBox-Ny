@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  详情页片源线路 / 选集排序按钮。
+  常态只有一层极淡底 + 细边，焦点才出白色 2mm 环 —— 与全站焦点系统一致。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+            <solid android:color="#1FFAF6F0" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="6mm" />
+            <solid android:color="#14FAF6F0" />
+            <stroke android:width="1mm" android:color="@color/neon_glass_border" />
+        </shape>
+    </item>
+</selector>

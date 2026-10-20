@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置页列表行文字色（只给 fragment_model.xml 用）。
+  不能直接改 atv_row_text：那个 selector 还服务于搜索页和列表模式，
+  那几处焦点是"整行反白"，文字必须翻黑；设置页改成白环后文字必须变白，
+  两边需求相反，所以拆成独立的一份。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/neon_text_primary" />
+    <item android:state_selected="true" android:color="@color/neon_accent" />
+    <item android:color="#B8FAF6F0" />
+</selector>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 设置页导航项焦点底：一路渐隐的琥珀，不再是紫→青渐变 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="4mm" />
+    <gradient
+        android:angle="0"
+        android:endColor="#0FDFA35C"
+        android:startColor="#3DDFA35C" />
+</shape>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  可聚焦按钮（弹窗/面板内）的文字色。
+  普通态：白字压在 12% 白玻璃底上；
+  焦点态：底变纯白，字翻黑 —— 与设置页同一套语言，全 App 一致。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF000000" />
+    <item android:color="#FFFFFFFF" />
+</selector>

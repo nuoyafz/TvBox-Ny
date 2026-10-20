@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  剧集列表项（详情页选集弹窗，单列）。
+  保持 50mm 行高不动 —— EpisodeDialog 有基于行高的滚动定位逻辑。
+  只换皮：把旧版"深灰块 + 白描边"换成 tvOS 卡片式聚焦（白环 + 18% 白填充）。
+  不用纯白反色，是因为 EpisodeAdapter 会硬写文字色（当前集强调色 / 其余白），
+  白底白字会直接看不到。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/vs_6"
+    android:layout_marginTop="@dimen/vs_5"
+    android:layout_marginRight="@dimen/vs_6"
+    android:layout_marginBottom="@dimen/vs_5"
+    android:background="@drawable/shape_atv_series"
+    android:focusable="true"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/tvSeries"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/vs_50"
+        android:ellipsize="marquee"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.04"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:paddingLeft="@dimen/vs_16"
+        android:paddingRight="@dimen/vs_16"
+        android:singleLine="true"
+        android:textColor="@color/neon_text_primary"
+        android:textSize="@dimen/ts_16" />
+</LinearLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apple TV 海报底部信息层：渐隐黑，替代原来的实心色块 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners
+        android:bottomLeftRadius="@dimen/atv_radius_card"
+        android:bottomRightRadius="@dimen/atv_radius_card" />
+    <gradient
+        android:angle="270"
+        android:startColor="#00000000"
+        android:centerColor="#73000000"
+        android:endColor="#D9000000"
+        android:type="linear" />
+</shape>

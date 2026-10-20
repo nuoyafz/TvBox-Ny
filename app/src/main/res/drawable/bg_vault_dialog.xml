@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 放映厅底座：近黑圆角面板 + 顶部一道暖色放映光 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="10mm" />
+            <solid android:color="#F211100E" />
+            <stroke android:width="1mm" android:color="#2A2520" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="10mm" />
+            <gradient
+                android:angle="270"
+                android:centerColor="#0DDFA35C"
+                android:endColor="#00DFA35C"
+                android:startColor="#2EDFA35C"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

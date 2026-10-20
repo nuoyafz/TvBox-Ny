@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  海报角标：半透明黑胶囊，替代原来垫在文字上的渐变块。
+  只做"压暗背景保证可读"，本身不产生色块感，tvOS 的角标就是这个套路。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="6mm" />
+    <solid android:color="#B3000000" />
+</shape>

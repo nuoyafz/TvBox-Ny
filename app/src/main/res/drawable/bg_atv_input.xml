@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  搜索输入框。
+  圆角从 28mm 胶囊降到 8mm —— 全站卡片/按钮都走小圆角，
+  只有输入框还是胶囊会显得像从另一个 App 借来的控件。
+  底色也从冷白 (#1AFFFFFF) 换成暖白，和主题一致。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <stroke
+                android:width="2mm"
+                android:color="#EBFAF6F0" />
+            <solid android:color="#1FFAF6F0" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="#12FAF6F0" />
+            <stroke
+                android:width="1mm"
+                android:color="@color/neon_glass_border" />
+        </shape>
+    </item>
+</selector>

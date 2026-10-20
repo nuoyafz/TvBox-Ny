@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  tvOS 设置页/列表行的文字色。
+  焦点行整行反白（背景变纯白），文字同步翻成黑色，这是 tvOS 列表最核心的交互特征，
+  比"灰底+白描边"高一个时代。
+  非焦点行落在纯黑背景上，用 90% 白保证长文本可读性。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF000000" />
+    <item android:state_selected="true" android:color="#FF0A84FF" />
+    <item android:color="#E6FFFFFF" />
+</selector>

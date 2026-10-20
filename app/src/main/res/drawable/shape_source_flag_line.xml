@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 线路选中下划线：原来是 #1890FF 蓝色（旧霓虹残留），统一为琥珀 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <size
+        android:width="40mm"
+        android:height="3mm" />
+    <corners android:radius="1.5mm" />
+    <solid android:color="@color/neon_accent" />
+</shape>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首页底部文字入口的文字色。
+
+  为什么单独建一个：原来复用 nav_item_text，常态是 #6E665C（tertiary），
+  在 #0B0A09 底上对比度不到 3.6:1，加上贴在屏幕最底部，
+  实际效果等于"看不见"——用户反馈找不到设置入口就是这个原因。
+  这里常态提到 secondary（#A79D91），焦点态纯白。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/neon_text_primary" />
+    <item android:color="@color/neon_text_secondary" />
+</selector>

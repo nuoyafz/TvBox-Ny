@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置页左侧分组入口 · 画报规格
+  焦点反馈与首页同族：左侧一条 3mm 琥珀竖条 + 文字变白，不再整块渐变底。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="52mm"
+    android:layout_marginBottom="2mm"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:paddingLeft="16mm"
+    android:paddingRight="10mm">
+
+    <View
+        android:layout_width="3mm"
+        android:layout_height="22mm"
+        android:layout_gravity="left|center_vertical"
+        android:background="@drawable/bg_nav_underline"
+        android:duplicateParentState="true" />
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:duplicateParentState="true"
+        android:gravity="left|center_vertical"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.1"
+        android:paddingLeft="14mm"
+        android:singleLine="true"
+        android:textColor="@color/nav_item_text"
+        android:textSize="18mm" />
+
+</FrameLayout>

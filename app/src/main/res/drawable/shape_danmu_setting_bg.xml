@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App 内所有弹窗/面板的统一底板（19 个布局复用）。
+  旧版：10mm 小圆角 + 15% 白描边 + #1C1C1E → 像 2016 年的系统对话框。
+  新版：22mm 大圆角（tvOS 面板观感），去掉描边，靠明度差与背景分离；
+        底色压到 #F2161618，比纯黑浅一档，弹出时像"浮起的一层"而不是"贴了个框"。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/atv_radius_panel" />
+    <solid android:color="@color/atv_panel_bg" />
+</shape>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  详情页遮罩（画报语言）。
+  两层叠加，替代原来的上下黑渐变：
+  1) 横向：左侧压到接近实底，保证标题/简介压在浅色海报上仍然可读；
+  2) 纵向：顶部透明、底部渐隐到 #0B0A09，让海报自然沉进背景，不出现硬边。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:centerColor="#B80B0A09"
+                android:endColor="#3D0B0A09"
+                android:startColor="#F20B0A09"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:centerColor="#000B0A09"
+                android:endColor="#F70B0A09"
+                android:startColor="#000B0A09"
+                android:type="linear" />
+        </shape>
+    </item>
+
+</layer-list>

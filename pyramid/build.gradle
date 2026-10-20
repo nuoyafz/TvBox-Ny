@@ -1,0 +1,79 @@
+plugins {
+    id 'com.android.library'
+    id 'com.chaquo.python'
+}
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        python {
+            // 原版写死作者本机路径 D:/Programs/Python/Python38/python.exe，
+            // 导致任何人 clone 后 gradle sync 直接失败。
+            // 现改为：优先 gradle 属性 PYTHON_EXE，其次环境变量，最后 PATH 里的 python。
+            def pyExe = project.findProperty("PYTHON_EXE") ?: System.getenv("PYTHON_EXE") ?: "python"
+            buildPython(pyExe)
+            pip {
+                install "lxml"
+                install "ujson"
+                install "pyquery==2.0.2"
+                install "requests"
+                install "jsonpath"
+                install "cachetools"
+                install 'pycryptodome'
+                install 'beautifulsoup4'
+            }
+        }
+    }
+
+    flavorDimensions "mode"
+    productFlavors {
+        python {
+            dimension "mode"
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
+        }
+        python32 {
+            dimension "mode"
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
+        python64 {
+            dimension "mode"
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main{
+            // Android代码模块
+            setRoot "src/main"
+            // Python代码模块，也就是你的Python源码所在项目中的文件夹
+            python.srcDirs = ["src/python"]
+        }
+    }
+    buildToolsVersion '30.0.3'
+}
+
+dependencies {
+
+}

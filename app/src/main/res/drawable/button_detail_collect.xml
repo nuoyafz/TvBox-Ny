@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape>
+            <corners android:radius="@dimen/atv_radius_pill" />
+            <solid android:color="#59FFFFFF" />
+            <stroke android:width="2mm" android:color="#CCFFFFFF" />
+        </shape>
+    </item>
+    <item android:state_focused="false">
+        <shape>
+            <corners android:radius="@dimen/atv_radius_pill" />
+            <solid android:color="#26FFFFFF" />
+        </shape>
+    </item>
+</selector>

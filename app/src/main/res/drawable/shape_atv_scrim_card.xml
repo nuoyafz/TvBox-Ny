@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  海报底部信息层：从透明渐入到 90% 黑，只覆盖下 40%。
+  比原来整块半透明色条轻，海报本身仍然是主体。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners
+        android:bottomLeftRadius="@dimen/atv_radius_card"
+        android:bottomRightRadius="@dimen/atv_radius_card" />
+    <gradient
+        android:angle="270"
+        android:startColor="#00000000"
+        android:centerColor="#59000000"
+        android:endColor="#E6000000"
+        android:type="linear" />
+</shape>

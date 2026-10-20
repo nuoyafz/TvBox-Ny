@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首页 · 画报式（两行顶栏）
+
+  顶栏结构（改前请先读）：
+    行1 高 30mm：NOYA · 当前源 ────── 直播 历史 收藏 推送 搜索 设置 ── 时间
+    行2 高 46mm：分类 tab（独占整行，可横向滚动）
+
+  为什么入口组放行1：
+  之前"分类 tab + 6 个入口"塞在同一行，分类是横向 RecyclerView，
+  焦点走到最后一个分类按右键时会被 RecyclerView 自己吃掉（尝试继续滚动），
+  永远移不到右边的入口组。现在分类独占一行，右移到头就停在末尾，不再卡住。
+
+  注意：mGridView 必须给固定高度。横向 RecyclerView 配 wrap_content 高度、
+  item 又是 wrap_content 时，测量结果是 0，整条分类会变成空白。
+
+  颜色全部走 colors_neon.xml（暖墨黑 + 单一琥珀），这里不写死色值。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_window_scrim"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="match_parent"
+        android:layout_height="90mm"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:paddingLeft="56mm"
+        android:paddingRight="56mm"
+        android:paddingTop="10mm">
+
+        <!-- 行1：品牌 / 当前源 / 快捷入口 / 时间 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30mm"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.26"
+                android:maxLines="1"
+                android:text="NOYA"
+                android:textColor="@color/neon_text_primary"
+                android:textSize="22mm"
+                android:textStyle="bold" />
+
+            <!-- 当前首页源名：可聚焦，确认键切源 -->
+            <TextView
+                android:id="@+id/tvSource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="18mm"
+                android:background="@drawable/bg_text_link"
+                android:clickable="true"
+                android:ellipsize="end"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.08"
+                android:maxLines="1"
+                android:maxWidth="240mm"
+                android:paddingLeft="10mm"
+                android:paddingTop="5mm"
+                android:paddingRight="10mm"
+                android:paddingBottom="5mm"
+                android:textColor="@color/nav_item_text"
+                android:textSize="16mm" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvLive"
+                style="@style/TopLink"
+                android:text="直播" />
+
+            <TextView
+                android:id="@+id/tvHistory"
+                style="@style/TopLink"
+                android:text="历史" />
+
+            <TextView
+                android:id="@+id/tvFavorite"
+                style="@style/TopLink"
+                android:text="收藏" />
+
+            <TextView
+                android:id="@+id/tvPush"
+                style="@style/TopLink"
+                android:text="推送" />
+
+            <!-- 手机遥控：扫码后手机变摇杆，入口和推送放一起 -->
+            <TextView
+                android:id="@+id/tvRemote"
+                style="@style/TopLink"
+                android:text="遥控" />
+
+            <TextView
+                android:id="@+id/tvSearch"
+                style="@style/TopLink"
+                android:text="搜索" />
+
+            <TextView
+                android:id="@+id/tvSetting"
+                style="@style/TopLink"
+                android:text="设置" />
+
+            <View
+                android:layout_width="1mm"
+                android:layout_height="18mm"
+                android:layout_marginLeft="16mm"
+                android:layout_marginRight="16mm"
+                android:background="@color/neon_divider" />
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.12"
+                android:maxLines="1"
+                android:textColor="@color/neon_text_tertiary"
+                android:textSize="14mm"
+                tools:text="2026/10/20  周二  11:32" />
+
+        </LinearLayout>
+
+        <!-- 行2：分类 tab 独占整行 -->
+        <com.owen.tvrecyclerview.widget.TvRecyclerView
+            android:id="@+id/mGridView"
+            android:layout_width="match_parent"
+            android:layout_height="46mm"
+            android:layout_marginTop="4mm"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/contentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="vertical">
+
+        <com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager
+            android:id="@+id/mViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+</LinearLayout>

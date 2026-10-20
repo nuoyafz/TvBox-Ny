@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通用列表行（首页列表模式 / 选源 / 搜索结果纵向态）。
+
+  旧版问题：
+  1. 缩略图紧贴左边缘、只有 1mm 内缩，行与行直接叠在一起，没有呼吸感；
+  2. 名字和备注都是 match_parent 又要参加 weight，测量顺序错乱，长标题会把备注挤没；
+  3. 全白文字没有主次，扫读时必须逐字读；
+  4. 焦点只有一圈描边，看不出"整行被选中"。
+
+  新版：行高 80mm、12mm 内缩、圆角行卡，焦点整行纯白反色、文字同步翻黑。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/vs_80"
+    android:layout_margin="@dimen/vs_6"
+    android:background="@drawable/shape_atv_row"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/vs_12"
+        android:paddingRight="@dimen/vs_16">
+
+        <ImageView
+            android:id="@+id/ivThumb"
+            android:layout_width="@dimen/vs_60"
+            android:layout_height="@dimen/vs_60"
+            android:background="#1AFFFFFF"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="0mm"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_16"
+            android:layout_weight="1"
+            android:duplicateParentState="true"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textColor="@color/atv_row_text"
+            android:textSize="@dimen/ts_22" />
+
+        <TextView
+            android:id="@+id/tvNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_10"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:gravity="center_vertical|end"
+            android:maxWidth="@dimen/vs_240"
+            android:singleLine="true"
+            android:textColor="@color/atv_row_text"
+            android:textSize="@dimen/ts_18" />
+    </LinearLayout>
+</FrameLayout>

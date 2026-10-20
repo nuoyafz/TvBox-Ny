@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 顶栏 scrim：顶部黑到透明，让导航文字压在海报上依然清晰（tvOS 顶部栏同款） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:centerColor="#80000000"
+        android:endColor="@android:color/transparent"
+        android:startColor="#E6000000"
+        android:type="linear" />
+</shape>

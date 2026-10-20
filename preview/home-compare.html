@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>首页对比 · 原版 vs Apple TV</title>
+<style>
+  :root{--page-bg:#0b0b0d;--page-line:#26262b;--text:#f2f2f4;--text-dim:#8e8e96;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 620px at 50% -12%,#1a1a20 0%,transparent 62%),var(--page-bg);
+    color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Microsoft YaHei",sans-serif;
+    padding:48px 40px 72px;
+  }
+  .wrap{max-width:1520px;margin:0 auto;}
+  header{margin-bottom:32px;}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;}
+  h1{font-size:33px;font-weight:700;letter-spacing:-.02em;}
+  h1 span{color:#4a4a52;font-weight:300;margin:0 .18em;}
+  .sub{margin-top:12px;font-size:14px;color:var(--text-dim);line-height:1.75;max-width:880px;}
+  .sub b{color:#d6d6de;font-weight:600;}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  .col-label{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+  .tag{font-size:11px;font-weight:600;letter-spacing:.08em;padding:4px 9px;border-radius:5px;background:#242429;color:#b9b9c2;}
+  .tag.new{background:rgba(10,132,255,.16);color:#6fb4ff;}
+  .col-label h2{font-size:15px;font-weight:600;}
+  .tv{border-radius:14px;padding:9px;background:linear-gradient(180deg,#2a2a30,#141418);
+      box-shadow:0 40px 80px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.06) inset;}
+  .screen{position:relative;width:100%;aspect-ratio:16/9;border-radius:6px;overflow:hidden;
+          container-type:size;background:#000;}
+
+  /* 顶栏 */
+  .topbar{position:absolute;left:0;right:0;top:0;height:5.9cqw;display:flex;align-items:center;
+          padding:0 4.7cqw;background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.55) 60%,transparent 100%);}
+  .brand{font-weight:700;letter-spacing:.02em;}
+  .clock{margin-left:auto;}
+  .old .brand{font-size:2.66cqw;} .old .clock{font-size:1.72cqw;color:#9a9aa0;}
+  .new .brand{font-size:3.13cqw;} .new .clock{font-size:1.56cqw;color:rgba(255,255,255,.4);}
+
+  /* 分类 */
+  .sorts{position:absolute;left:4.7cqw;right:4.7cqw;top:7.4cqw;display:flex;}
+  .sort{display:flex;align-items:center;justify-content:center;border-radius:100px;font-size:2.03cqw;}
+  .old .sort{height:3.52cqw;padding:0 1.56cqw;color:#fff;border:0.14cqw solid rgba(255,255,255,.5);margin-right:.35cqw;}
+  .old .sort.on{background:rgba(255,255,255,.26);border-color:#fff;}
+  .new .sort{height:3.44cqw;padding:0 2.03cqw;color:rgba(255,255,255,.62);}
+  .new .sort.on{background:#fff;color:#000;font-weight:600;}
+
+  /* 网格 */
+  .grid{position:absolute;left:4.7cqw;right:4.7cqw;top:12.4cqw;display:grid;
+        grid-template-columns:repeat(5,1fr);gap:1.25cqw;align-items:start;}
+  .card{position:relative;width:100%;height:0;padding-top:130.84%;}
+  .card::after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;
+        pointer-events:none;z-index:9;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.20);}
+  .old .card::after{border-radius:0;}
+  .new .card::after{border-radius:.94cqw;}
+  .poster{position:absolute;inset:0;overflow:hidden;}
+  .poster::after{content:"";position:absolute;inset:0;
+        background:linear-gradient(200deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 42%);}
+  .ghost{position:absolute;right:-.6cqw;bottom:.2cqw;font-size:11cqw;font-weight:900;
+         color:rgba(255,255,255,.11);line-height:1;letter-spacing:-.04em;}
+  .sheen{position:absolute;inset:0;background:
+        radial-gradient(52% 42% at 68% 24%,rgba(255,255,255,.20),transparent 74%),
+        radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.10),transparent 62%);}
+
+  /* 旧卡片 */
+  .old .card{background:#000;}
+  .old .chips{position:absolute;left:.5cqw;top:.5cqw;display:flex;gap:.28cqw;}
+  .old .chip{background:#fff;color:#111;font-size:1.22cqw;padding:.08cqw .4cqw;border-radius:.2cqw;font-weight:600;line-height:1.5;}
+  .old .chip.g{background:rgba(255,255,255,.85);}
+  .old .info{position:absolute;left:0;right:0;bottom:0;
+             background:linear-gradient(180deg,transparent,rgba(0,0,0,.6) 40%,rgba(0,0,0,.9));padding:.45cqw;}
+  .old .note{display:inline-block;background:rgba(0,0,0,.5);color:#fff;font-size:1.22cqw;
+             padding:.05cqw .32cqw;border-radius:.18cqw;margin-bottom:.28cqw;line-height:1.6;}
+  .old .name{color:#fff;font-size:1.6cqw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* 新卡片 */
+  .new .card{background:#0c0c0e;border-radius:.94cqw;}
+  .new .poster{border-radius:.94cqw;}
+  .new .chip1{position:absolute;left:.78cqw;top:.78cqw;background:rgba(0,0,0,.7);color:#fff;
+              font-size:1.15cqw;padding:.12cqw .55cqw;border-radius:.45cqw;line-height:1.6;}
+  .new .info{position:absolute;left:0;right:0;bottom:0;height:8.4cqw;border-radius:0 0 .94cqw .94cqw;
+             background:linear-gradient(180deg,transparent,rgba(0,0,0,.30) 45%,rgba(0,0,0,.78));
+             display:flex;flex-direction:column;justify-content:flex-end;padding:0 .9cqw .9cqw;}
+  .new .name{color:#fff;font-size:1.52cqw;font-weight:700;line-height:1.28;
+             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .new .note{color:rgba(255,255,255,.55);font-size:1.1cqw;margin-top:.22cqw;white-space:nowrap;overflow:hidden;}
+
+  .old .card.focus{transform:scale(1.07);}
+  .new .card.focus{transform:scale(1.08);box-shadow:0 0 0 .245cqw #fff,0 1.6cqw 3.4cqw rgba(0,0,0,.8);z-index:5;}
+  .new .card.focus .poster{filter:brightness(1.07);}
+
+  .fade{position:absolute;left:0;right:0;bottom:0;height:10cqw;background:linear-gradient(180deg,transparent,#000 95%);}
+
+  .tv-caption{display:flex;gap:8px;margin-top:12px;font-size:12px;line-height:1.7;color:#7d7d88;}
+  .tv-caption b{color:#c9c9d2;font-weight:600;}
+  .dot{width:6px;height:6px;border-radius:50%;margin-top:7px;flex:none;}
+  .dot.b{background:#ff453a;} .dot.a{background:#32d74b;}
+
+  /* ---------- 卡片特写 ---------- */
+  .zoom{margin-top:44px;}
+  .zoom-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;}
+  .zoom-head h2{font-size:17px;font-weight:600;}
+  .zoom-head span{font-size:12.5px;color:var(--text-dim);}
+  .zoom-row{display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap;}
+  .zcol{display:flex;flex-direction:column;gap:10px;align-items:center;flex:none;}
+  .zcol p{font-size:11.5px;color:#7d7d88;letter-spacing:.04em;}
+  .zcard{width:250px;height:327px;position:relative;background:#000;flex:none;overflow:hidden;
+         box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+  .zcard .poster{position:absolute;inset:0;overflow:hidden;}
+  .poster::after{content:"";position:absolute;inset:0;
+        background:linear-gradient(200deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 42%);}
+  .zcard .ghost{font-size:96px;right:-8px;bottom:0;}
+  .zcard .sheen{position:absolute;inset:0;background:
+        radial-gradient(52% 42% at 68% 24%,rgba(255,255,255,.22),transparent 74%),
+        radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.11),transparent 62%);}
+
+  .z-old .chips{position:absolute;left:6px;top:6px;display:flex;gap:4px;}
+  .z-old .chip{background:#fff;color:#111;font-size:15px;padding:0 6px;border-radius:3px;font-weight:600;}
+  .z-old .chip.g{background:rgba(255,255,255,.85);}
+  .z-old .info{position:absolute;left:0;right:0;bottom:0;top:auto;padding:6px;
+               background:linear-gradient(180deg,transparent,rgba(0,0,0,.55) 40%,rgba(0,0,0,.85));}
+  .z-old .note{display:inline-block;background:rgba(0,0,0,.5);color:#fff;font-size:15px;padding:1px 5px;border-radius:3px;margin-bottom:4px;}
+  .z-old .name{color:#fff;font-size:20px;text-align:center;background:rgba(0,0,0,.4);padding:2px;border-radius:3px;}
+
+  .z-new .zcard{background:#0c0c0e;border-radius:12px;}
+  .z-new .poster{border-radius:12px;}
+  .z-new .chip1{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.7);color:#fff;
+                font-size:14px;padding:2px 8px;border-radius:6px;}
+  .z-new .info{position:absolute;left:0;right:0;bottom:0;top:auto;height:110px;border-radius:0 0 12px 12px;
+               background:linear-gradient(180deg,transparent,rgba(0,0,0,.42) 42%,rgba(0,0,0,.92));
+               display:flex;flex-direction:column;justify-content:flex-end;padding:0 12px 12px;}
+  .z-new .name{color:#fff;font-size:19px;font-weight:700;line-height:1.25;
+               display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .z-new .note{color:rgba(255,255,255,.55);font-size:14px;margin-top:3px;}
+  .z-focus{box-shadow:0 0 0 3px #fff,0 20px 44px rgba(0,0,0,.8);border-radius:12px;transform:scale(1.04);}
+  .z-old.z-focus{box-shadow:none;border-radius:0;transform:scale(1.04);}
+
+  table{width:100%;border-collapse:collapse;margin-top:44px;font-size:13px;}
+  caption{text-align:left;font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+          color:var(--text-dim);padding-bottom:12px;}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--page-line);vertical-align:top;}
+  th{font-weight:500;color:var(--text-dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+  td:first-child{color:#6fb4ff;white-space:nowrap;font-family:ui-monospace,Menlo,monospace;font-size:12px;}
+  tr:last-child td{border-bottom:none;}
+  .k{color:#fff;font-weight:600;}
+
+  @media(max-width:1040px){.compare{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Home · 首页</div>
+    <h1>首页信息层级重做<span>/</span>原版 vs Apple TV</h1>
+    <p class="sub">
+      上一轮只换了外层容器和配色，卡片内部还是<b>「海报上压三行黑条」</b>的老结构，所以整体看着没变。
+      这一轮动的是卡片本身：chip 从三枚白底收敛成一枚半透明、文字从居中压图改成左对齐渐入、圆角海报 + 白环焦点。
+    </p>
+  </header>
+
+  <div class="compare">
+    <div class="old">
+      <div class="col-label"><span class="tag">BEFORE</span><h2>原版</h2></div>
+      <div class="tv"><div class="screen">
+        <div class="topbar"><div class="brand">TVBox</div><div class="clock">2026/06/16  周二  15:01</div></div>
+        <div class="sorts">
+          <div class="sort on">电影</div><div class="sort">剧集</div><div class="sort">综艺</div>
+          <div class="sort">动漫</div><div class="sort">纪录片</div>
+        </div>
+        <div class="grid" id="oldGrid"></div>
+        <div class="fade"></div>
+      </div></div>
+      <div class="tv-caption"><span class="dot b"></span>
+        <div>三枚 <b>白底黑字 chip</b> 是全屏最亮的东西 + 底部三行黑条，片名居中，卡片直角。</div>
+      </div>
+    </div>
+
+    <div class="new">
+      <div class="col-label"><span class="tag new">AFTER</span><h2>Apple TV 化</h2></div>
+      <div class="tv"><div class="screen">
+        <div class="topbar"><div class="brand">TVBox</div><div class="clock">2026/06/16  周二  15:01</div></div>
+        <div class="sorts">
+          <div class="sort on">电影</div><div class="sort">剧集</div><div class="sort">综艺</div>
+          <div class="sort">动漫</div><div class="sort">纪录片</div>
+        </div>
+        <div class="grid" id="newGrid"></div>
+        <div class="fade"></div>
+      </div></div>
+      <div class="tv-caption"><span class="dot a"></span>
+        <div>只留 <b>一枚半透明年份</b>；<b>透明渐入 scrim</b>，片名左对齐加粗、集数在下；<b>圆角 + 白环</b>。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="zoom">
+    <div class="zoom-head"><h2>卡片特写</h2><span>同一张海报，只改信息层与焦点态</span></div>
+    <div class="zoom-row">
+      <div class="zcol">
+        <div class="zcard z-old">
+          <div class="poster" style="background:linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)"></div>
+          <div class="ghost">三</div><div class="sheen"></div>
+          <div class="chips"><span class="chip">2023</span><span class="chip g">内地</span><span class="chip g">国语</span></div>
+          <div class="info"><div><span class="note">更新至30集</span></div><div class="name">三体</div></div>
+        </div>
+        <p>原版 · 常态</p>
+      </div>
+
+      <div class="zcol">
+        <div class="zcard z-old z-focus">
+          <div class="poster" style="background:linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)"></div>
+          <div class="ghost">三</div><div class="sheen"></div>
+          <div class="chips"><span class="chip">2023</span><span class="chip g">内地</span><span class="chip g">国语</span></div>
+          <div class="info"><div><span class="note">更新至30集</span></div><div class="name">三体</div></div>
+        </div>
+        <p>原版 · 聚焦（只是放大）</p>
+      </div>
+
+      <div class="zcol">
+        <div class="zcard z-new">
+          <div class="poster" style="background:linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)"></div>
+          <div class="ghost">三</div><div class="sheen"></div>
+          <div class="chip1">2023</div>
+          <div class="info"><div class="name">三体</div><div class="note">更新至30集</div></div>
+        </div>
+        <p>新版 · 常态</p>
+      </div>
+
+      <div class="zcol">
+        <div class="zcard z-new z-focus">
+          <div class="poster" style="background:linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)"></div>
+          <div class="ghost">三</div><div class="sheen"></div>
+          <div class="chip1">2023</div>
+          <div class="info"><div class="name">三体</div><div class="note">更新至30集</div></div>
+        </div>
+        <p>新版 · 聚焦（白环 + 提亮）</p>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <caption>这一轮具体改了什么</caption>
+    <thead><tr><th>位置</th><th>原来</th><th>现在</th><th>为什么</th></tr></thead>
+    <tbody>
+      <tr><td>item_grid.xml</td>
+        <td>左上角叠 <span class="k">3 枚白底 chip</span>；底部 3 行半透明黑条，片名居中</td>
+        <td>只剩 <span class="k">1 枚半透明胶囊</span>；底部 110mm 透明渐入 scrim，片名左对齐 <span class="k">ts_24 粗体</span></td>
+        <td>白底 chip 把视觉从海报上抢走；居中黑条是 2016 年 TV 应用的典型做法</td></tr>
+      <tr><td>item_grid.xml</td>
+        <td><span class="k">tvName 跑马灯</span>（marquee），压在图上</td>
+        <td>两行自动换行 + ellipsis</td>
+        <td>跑马灯要盯着才读完，tvOS 一律两行截断</td></tr>
+      <tr><td>item_home_sort.xml</td>
+        <td>白描边空胶囊，焦点 26% 白填充，文字<span class="k">不随焦点变色</span>（缺 duplicateParentState）</td>
+        <td>去描边只留文字，焦点整块 <span class="k">翻白底黑字</span></td>
+        <td>六七个空心框并排噪音太大；反色态才和设置页、搜索页统一</td></tr>
+      <tr><td>activity_home.xml</td>
+        <td>标题 ts_34，日期 ts_22 次级灰，顶栏 60mm</td>
+        <td>标题 <span class="k">ts_40</span> + 字间距，日期 ts_20 三级灰，顶栏 76mm</td>
+        <td>顶栏是唯一非内容区，拉大字号建立「应用感」</td></tr>
+      <tr><td>AtvFocusHelper</td>
+        <td>1.07 倍 / 220ms</td>
+        <td><span class="k">1.08 倍 / 200ms</span>，配 2mm 白环</td>
+        <td>焦点要「弹起来」的果断感，慢一点就显拖</td></tr>
+      <tr><td>收藏页 / 历史页</td>
+        <td>复用 item_grid，跟着旧样式</td>
+        <td>自动继承新卡片</td>
+        <td>同一份布局，改一处三页统一</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const films = [
+  ["三体","更新至30集","linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)","2023"],
+  ["漫长的季节","全12集","linear-gradient(160deg,#7d5c34,#3d2c14 55%,#241a0c)","2023"],
+  ["狂飙","全39集","linear-gradient(160deg,#643c64,#331c33 55%,#1d0f1d)","2023"],
+  ["去有风的地方","全40集","linear-gradient(160deg,#3d7d60,#1d3d2e 55%,#122019)","2023"],
+  ["流浪地球2","4K 杜比视界","linear-gradient(160deg,#3f5288,#1e2a47 55%,#141a2b)","2023"],
+  ["宇宙探索编辑部","1080P","linear-gradient(160deg,#7d5c34,#3d2c14 55%,#241a0c)","2023"],
+  ["满江红","全片","linear-gradient(160deg,#8c3e3e,#472020 55%,#261111)","2023"],
+  ["独行月球","会员","linear-gradient(160deg,#3f6685,#22364a 55%,#16202b)","2022"],
+  ["深海","国语","linear-gradient(160deg,#3d7d7d,#1d3d3d 55%,#122020)","2023"],
+  ["中国奇谭","更新至8集","linear-gradient(160deg,#7d7042,#3d3714 55%,#24200c)","2023"]
+];
+
+function card(f,i,mode,focus){
+  const [name,note,bg,year]=f;
+  const ghost=`<div class="ghost">${name[0]}</div><div class="sheen"></div>`;
+  if(mode==="old") return `<div class="card ${focus?'focus':''}">
+    <div class="poster" style="background:${bg}">${ghost}</div>
+    <div class="chips"><span class="chip">${year}</span><span class="chip g">内地</span><span class="chip g">国语</span></div>
+    <div class="info"><div><span class="note">${note}</span></div><div class="name">${name}</div></div>
+  </div>`;
+  return `<div class="card ${focus?'focus':''}">
+    <div class="poster" style="background:${bg}">${ghost}</div>
+    <div class="chip1">${year}</div>
+    <div class="info"><div class="name">${name}</div><div class="note">${note}</div></div>
+  </div>`;
+}
+
+document.getElementById('oldGrid').innerHTML = films.map((f,i)=>card(f,i,'old',i===1)).join('');
+document.getElementById('newGrid').innerHTML = films.map((f,i)=>card(f,i,'new',i===1)).join('');
+
+
+</script>
+</body>
+</html>

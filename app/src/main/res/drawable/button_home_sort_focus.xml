@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首页分类胶囊
+  常态：完全透明，只有文字（不画框、不画底，避免一排空心胶囊的噪音）
+  聚焦：整块翻白 —— 与设置页、搜索页同一套「焦点反色」语言
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape>
+            <corners android:radius="@dimen/atv_radius_pill" />
+            <solid android:color="@color/atv_control_bg_focus" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <corners android:radius="@dimen/atv_radius_pill" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

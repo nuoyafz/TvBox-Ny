@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>TVBox 深空霓虹 · 方案A 预览</title>
+<style>
+  :root{
+    --bg0:#08090F; --bg1:#171A2C; --g1:#6C5CE7; --g2:#00D2FF; --hot:#FF2D78;
+    --txt:#E8ECF5; --sub:#8A90A6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+  html,body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh}
+  .tv{width:1280px;height:720px;background:radial-gradient(120% 120% at 70% 0%,var(--bg1) 0%,var(--bg0) 70%);position:relative;overflow:hidden;color:var(--txt)}
+  .glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--g1) 0%,transparent 60%);opacity:.18;top:-200px;right:-100px;filter:blur(20px)}
+  /* top bar */
+  .top{display:flex;align-items:center;justify-content:space-between;padding:18px 40px}
+  .logo{font-size:30px;font-weight:800;letter-spacing:2px;
+    background:linear-gradient(90deg,var(--g1),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .icons{display:flex;gap:14px}
+  .ic{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--sub)}
+  /* channel pills */
+  .pills{display:flex;gap:14px;padding:6px 40px 14px}
+  .pill{font-size:18px;color:var(--sub);padding:7px 20px;border-radius:22px;background:rgba(255,255,255,.05);transition:.2s}
+  .pill.on{color:#fff;font-weight:700;background:linear-gradient(90deg,var(--g1),var(--g2));transform:scale(1.08);box-shadow:0 6px 18px rgba(108,92,231,.45)}
+  /* banner */
+  .banner{margin:4px 40px 16px;height:248px;border-radius:18px;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,#241b4d,#0e2a3a);border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 0 0 2px rgba(108,92,231,.0)}
+  .banner.focus{box-shadow:0 0 0 3px var(--g1),0 0 0 6px rgba(0,210,255,.5)}
+  .banner .poster{position:absolute;inset:0;background:
+    linear-gradient(0deg,rgba(8,9,15,.92) 0%,transparent 55%),
+    repeating-linear-gradient(135deg,#3a2a6e 0 18px,#172033 18px 36px);opacity:.9}
+  .banner .meta{position:absolute;left:34px;bottom:30px;z-index:2}
+  .banner .tag{display:inline-block;font-size:13px;color:#fff;background:linear-gradient(90deg,var(--g1),var(--g2));padding:3px 12px;border-radius:12px;margin-bottom:10px}
+  .banner h1{font-size:40px;font-weight:800;margin-bottom:10px}
+  .banner p{font-size:15px;color:var(--sub);max-width:640px;line-height:1.5}
+  .banner .play{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,var(--g1),var(--g2));color:#fff;font-weight:700;padding:10px 22px;border-radius:24px;font-size:16px}
+  /* rows */
+  .row{margin:0 40px 12px}
+  .row .h{font-size:18px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .row .h::before{content:"";width:4px;height:16px;border-radius:2px;background:linear-gradient(var(--g1),var(--g2))}
+  .cards{display:flex;gap:16px}
+  .card{width:148px;height:200px;border-radius:16px;position:relative;flex:none;
+    background:linear-gradient(160deg,#232a44,#10131f);border:1px solid rgba(255,255,255,.06)}
+  .card .t{position:absolute;left:0;right:0;bottom:-26px;text-align:center;font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  .card.focus{box-shadow:0 0 0 3px var(--g1),0 0 0 6px rgba(0,210,255,.5);transform:translateY(-4px)}
+  .card .badge{position:absolute;top:8px;left:8px;background:var(--hot);color:#fff;font-size:11px;padding:2px 7px;border-radius:9px}
+  .footer{position:absolute;bottom:8px;left:40px;color:#4a5066;font-size:12px}
+</style>
+</head>
+<body>
+<div class="tv">
+  <div class="glow"></div>
+  <div class="top">
+    <div class="logo">TVBOX</div>
+    <div class="icons">
+      <div class="ic">🔍</div><div class="ic">🔔</div><div class="ic">⚙</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <div class="pill on">主页</div>
+    <div class="pill">电影</div>
+    <div class="pill">电视剧</div>
+    <div class="pill">综艺</div>
+    <div class="pill">动漫</div>
+    <div class="pill">短剧</div>
+    <div class="pill">直播</div>
+    <div class="pill">收藏</div>
+    <div class="pill">历史</div>
+  </div>
+
+  <div class="banner focus">
+    <div class="poster"></div>
+    <div class="meta">
+      <span class="tag">今日推荐 · 4K HDR</span>
+      <h1>深空霓虹 · 首屏 Banner</h1>
+      <p>焦点落在大图上，按 OK 直接播放。右侧轮播可切换推荐位，背景自动取海报主色。</p>
+      <div class="play">▶ 立即播放</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="h">热播精选</div>
+    <div class="cards">
+      <div class="card focus"><span class="badge">热</span><div class="t">片名一</div></div>
+      <div class="card"><div class="t">片名二</div></div>
+      <div class="card"><div class="t">片名三</div></div>
+      <div class="card"><div class="t">片名四</div></div>
+      <div class="card"><div class="t">片名五</div></div>
+      <div class="card"><div class="t">片名六</div></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="h">最新上线</div>
+    <div class="cards">
+      <div class="card"><div class="t">片名七</div></div>
+      <div class="card"><div class="t">片名八</div></div>
+      <div class="card"><div class="t">片名九</div></div>
+      <div class="card"><div class="t">片名十</div></div>
+      <div class="card"><div class="t">片名十一</div></div>
+      <div class="card"><div class="t">片名十二</div></div>
+    </div>
+  </div>
+
+  <div class="footer">深空霓虹主题 · 方案A：顶部频道胶囊 + 全宽海报流（拟真预览，非最终渲染）</div>
+</div>
+</body>
+</html>

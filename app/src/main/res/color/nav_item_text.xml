@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  导航项文字：顶栏分类 / 源名 / 搜索入口 / 设置页左栏分组。
+
+  常态从 tertiary(#6E665C) 提到 secondary(#A79D91)：
+  tertiary 在 #0B0A09 上对比度只有 3.5:1，18mm 的字远看几乎融进背景，
+  顶栏看着"若有若无"，用户会以为导航栏消失了。焦点仍为纯白。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/neon_text_primary" />
+    <item android:color="@color/neon_text_secondary" />
+</selector>

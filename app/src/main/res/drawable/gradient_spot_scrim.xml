@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 聚光区遮罩：左暗 + 底暗，留出右上实体海报的亮度，保证左侧文字可读 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#E60B0A09"
+                android:centerColor="#800B0A09"
+                android:endColor="#330B0A09" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="#E60B0A09"
+                android:endColor="#00000000" />
+        </shape>
+    </item>
+</layer-list>

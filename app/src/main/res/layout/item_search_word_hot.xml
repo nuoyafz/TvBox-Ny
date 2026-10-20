@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  热词条目。旧版是整块 12% 白底 + 白描边的长方形，文字居中撑满一行。
+  新版收敛成小胶囊，高度跟着文字走，让一列热词读起来像标签云而不是表单。
+-->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvSearchWord"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:background="@drawable/shape_atv_key"
+    android:ellipsize="marquee"
+    android:focusable="true"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:minHeight="@dimen/vs_44"
+    android:paddingLeft="@dimen/vs_16"
+    android:paddingTop="@dimen/vs_8"
+    android:paddingRight="@dimen/vs_16"
+    android:paddingBottom="@dimen/vs_8"
+    android:singleLine="true"
+    android:textAlignment="center"
+    android:textColor="@color/atv_row_text"
+    android:textSize="@dimen/ts_20" />
