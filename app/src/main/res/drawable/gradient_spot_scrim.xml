@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 聚光区遮罩：左暗 + 底暗，留出右上实体海报的亮度，保证左侧文字可读 -->
+<!--
+  主视觉压暗 v3（沉浸光感）
+  v2 还在用 #B3（70% 黑）垫左侧文字，实测把左上角的霞橙天空整块盖死，
+  屏幕上半部分因此读成"一片暗红"。既然主视觉海报已经降到 7%，
+  这里不需要这么重的垫底：左侧 40% → 中段 10% → 右侧全放空。
+-->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape>
             <gradient
                 android:type="linear"
                 android:angle="0"
-                android:startColor="#E60B0A09"
-                android:centerColor="#800B0A09"
-                android:endColor="#330B0A09" />
+                android:startColor="#660B0A09"
+                android:centerColor="#1A0B0A09"
+                android:endColor="#00000000" />
         </shape>
     </item>
+    <!-- 底部一条极轻的压暗，给海报排落脚 -->
     <item>
         <shape>
             <gradient
                 android:type="linear"
-                android:angle="90"
-                android:startColor="#E60B0A09"
-                android:endColor="#00000000" />
+                android:angle="270"
+                android:startColor="#00000000"
+                android:centerColor="#00000000"
+                android:endColor="#330B0A09" />
         </shape>
     </item>
 </layer-list>

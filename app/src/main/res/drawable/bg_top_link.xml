@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  顶栏文字入口的焦点态（沉浸光感）
+  常态：全透明，只留字。
+  焦点：玻璃小块（18% 白 + 1mm 受光边 + 8mm 圆角），和顶栏毛玻璃是同一套材质语言。
+  原来焦点只有 8% 白，压在橙色天空上几乎看不出焦点落在哪个字上。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="#2EFFFFFF" />
+            <stroke android:width="1mm" android:color="#66FFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8mm" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

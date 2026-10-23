@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  详情页遮罩（画报语言）。
-  两层叠加，替代原来的上下黑渐变：
-  1) 横向：左侧压到接近实底，保证标题/简介压在浅色海报上仍然可读；
-  2) 纵向：顶部透明、底部渐隐到 #0B0A09，让海报自然沉进背景，不出现硬边。
+  详情页遮罩 v2（沉浸光感）
+  原来是左侧 #F2（95% 黑）、底部 #F7（97% 黑），等于在极光上面糊了两道实墙，
+  详情页因此永远是"一张海报 + 纯黑"，光感完全出不来。
+
+  现在：左侧 70% → 中间 30% → 右侧几乎透明；底部到 80%，
+  只保证标题/简介/剧集列表压得住，剩下的面积留给底下的日落光。
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 横向：左固右透 -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:angle="0"
-                android:centerColor="#B80B0A09"
-                android:endColor="#3D0B0A09"
-                android:startColor="#F20B0A09"
+                android:startColor="#B30B0A09"
+                android:centerColor="#4D0B0A09"
+                android:endColor="#0D0B0A09"
                 android:type="linear" />
         </shape>
     </item>
 
+    <!-- 纵向：顶部透明，底部收到 80% 让剧集列表有底 -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:angle="270"
-                android:centerColor="#000B0A09"
-                android:endColor="#F70B0A09"
                 android:startColor="#000B0A09"
+                android:centerColor="#1A0B0A09"
+                android:endColor="#CC0B0A09"
                 android:type="linear" />
         </shape>
     </item>

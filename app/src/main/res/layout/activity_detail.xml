@@ -14,12 +14,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 全屏背景大图：压低亮度，让信息层永远压得住 -->
+    <!--
+      全屏背景大图（沉浸光感）：原来 alpha=0.5 是一张实照片盖满全屏，
+      底下的极光完全出不来。降到 0.16，只当"剧照氛围"用，底色交给极光。
+    -->
     <ImageView
         android:id="@+id/ivBackdrop"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.5"
+        android:alpha="0.16"
         android:scaleType="centerCrop"
         android:visibility="invisible" />
 

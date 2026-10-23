@@ -19,6 +19,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +60,8 @@ import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.SourceHealth;
+import com.github.tvbox.osc.util.TasteProfile;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -134,19 +137,12 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     private final Runnable refreshTopLayoutRunnable = new Runnable() {
         @Override
         public void run() {
-            if (topLayout == null || isActivityUnavailable() || currentSelected != 0 || topHide != 0) {
-                return;
-            }
-            // OnePlus devices may finish applying immersive mode after the first measure.
-            // Re-apply the visible top state once the final display metrics are available.
+            if (topLayout == null || isActivityUnavailable()) return;
+            // 顶栏现在是叠加层：位置和高度都由布局固定，这里绝不能再改
+            // height / marginTop —— 每改一次就是一次 relayout，滚动时肉眼可见地卡。
             hideSysBar();
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) topLayout.getLayoutParams();
-            params.topMargin = AutoSizeUtils.mm2px(HomeActivity.this, TOPBAR_MARGIN_MM);
-            params.height = AutoSizeUtils.mm2px(HomeActivity.this, TOPBAR_HEIGHT_MM);
-            topLayout.setLayoutParams(params);
             topLayout.setAlpha(1.0f);
             refreshTopInfoTextSize();
-            topLayout.requestLayout();
         }
     };
 
@@ -245,6 +241,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 showSiteSwitch();
             }
         });
+        // 「⟳ 换源」按钮：才是给用户看的入口，tvSource 现在只负责显示源名
+        View switchSource = findViewById(R.id.tvSwitchSource);
+        if (switchSource != null) {
+            switchSource.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FastClickCheckUtil.check(v);
+                    showSiteSwitch();
+                }
+            });
+        }
+        applyTheme();
         sortAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -308,15 +316,22 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.mGridView.setOnInBorderKeyEventListener(new TvRecyclerView.OnInBorderKeyEventListener() {
             public boolean onInBorderKeyEvent(int direction, View view) {
                 if (direction == View.FOCUS_UP) {
-                    BaseLazyFragment baseLazyFragment = fragments.get(sortFocused);
-                    if (baseLazyFragment instanceof UserFragment) {
-                        refreshHomeSort();
-                        return true;
+                    // 【这是"遥控器上不去顶栏"的真正元凶】
+                    // 原版这里做的是：静默刷新当前分类，然后 return true 把这一次方向键
+                    // 整个吃掉。后果是纯遥控器用户在主页按上键**一点反应都没有**，
+                    // 焦点死死钉在分类 tab 第一项上（实测连按两次上键，
+                    // focused 的 bounds 仍然是 [84,66][190,135]，原地不动）。
+                    //
+                    // 现在把上键改成正经的"出口"：直接把焦点送到顶栏那颗「换源」胶囊。
+                    // 顶栏可见时才接管；收起状态（GONE）下返回 false，让按键照常走，
+                    // 不会出现"焦点被扔进看不见的顶栏"。
+                    if (topLayout != null && topLayout.getVisibility() == View.VISIBLE) {
+                        View chip = findViewById(R.id.tvSwitchSource);
+                        if (chip != null && chip.requestFocus()) {
+                            return true;
+                        }
                     }
-                    if (baseLazyFragment instanceof GridFragment) {
-                        ((GridFragment) baseLazyFragment).forceRefresh();
-                        return true;
-                    }
+                    return false;
                 }
                 if (direction != View.FOCUS_DOWN) {
                     return false;
@@ -366,8 +381,48 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             }
         });
         setLoadSir(this.contentLayout);
-        installTopBarAutoHide();
         //mHandler.postDelayed(mFindFocus, 500);
+    }
+
+    /**
+     * 把当前主题刷到首页会看到的每一处：极光层、换源胶囊、七个快捷入口、源名。
+     * 其它页面在切主题时会 recreate，跟着一起变。
+     */
+    private void applyTheme() {
+        com.github.tvbox.osc.ui.widget.AuroraBackgroundView aurora =
+                findViewById(R.id.auroraBg);
+        com.github.tvbox.osc.util.ThemeManager.applyTo(aurora);
+
+        View chip = findViewById(R.id.tvSwitchSource);
+        if (chip != null) {
+            // 半透明玻璃胶囊：本体无彩色（透出后面极光），强调色只做描边 / 焦点光晕
+            chip.setBackground(com.github.tvbox.osc.util.ThemeManager.glassChipSelector(this));
+            // 与上键形成回路：换源 → 下键回到分类 tab，不会掉进内容区
+            chip.setNextFocusDownId(R.id.mGridView);
+            if (chip instanceof TextView) {
+                ((TextView) chip).setTextColor(
+                        com.github.tvbox.osc.util.ThemeManager.glassChipTextColors());
+            }
+        }
+        int[] links = {R.id.tvLive, R.id.tvHistory, R.id.tvFavorite, R.id.tvPush,
+                R.id.tvRemote, R.id.tvSetting};
+        android.content.res.ColorStateList csl =
+                com.github.tvbox.osc.util.ThemeManager.topLinkColors();
+        for (int id : links) {
+            View v = findViewById(id);
+            if (v instanceof TextView) ((TextView) v).setTextColor(csl);
+        }
+        // 搜索做成常亮胶囊：它是最高频入口，不能跟着其他入口一起变灰
+        View search = findViewById(R.id.tvSearch);
+        if (search != null) {
+            search.setBackground(com.github.tvbox.osc.util.ThemeManager.searchChipSelector(this));
+            if (search instanceof TextView) {
+                ((TextView) search).setTextColor(
+                        com.github.tvbox.osc.util.ThemeManager.searchTextColors());
+            }
+        }
+        if (tvName != null) tvName.setTextColor(0xF2FDF6F2);
+        if (tvSource != null) tvSource.setTextColor(com.github.tvbox.osc.util.ThemeManager.accent());
     }
 
 
@@ -410,6 +465,152 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         });
     }
 
+    // ================= 顶栏随滚动收起 / 展开 =================
+
+    /** 已挂过监听、并在监听里的竖直列表（GridFragment 会复用同一个 mGridView 换页重挂，靠它去重） */
+    private final java.util.HashSet<RecyclerView> scrollBound = new java.util.HashSet<>();
+    private boolean topBarHidden = false;
+
+    private final RecyclerView.OnScrollListener topBarScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+            // 阈值 6px：遥控器一次按键的抖动不算，避免顶栏来回抽。
+            // 顶栏是叠加层，显隐只是一次 GPU 位移，不动内容布局，
+            // 所以这里可以放心按方向即时切换，不会再把焦点挤掉。
+            //
+            // 【必须判 canScrollVertically(-1)】列表还在顶部时不许收。
+            // 首页数据加载完、RecyclerView 从 0 高变成实际高度、恢复上次浏览位置，
+            // 都会在"没有用户操作"的情况下回调一次 dy>6 —— 上一版就是这么在启动瞬间
+            // 把顶栏吃掉的（表现为首页顶部空一条、看不到 NOYA 和分类 tab）。
+            if (dy > 6) {
+                if (rv.canScrollVertically(-1)) setTopBarHidden(true);
+            } else if (dy < -6) {
+                setTopBarHidden(false);
+            }
+        }
+
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView rv, int newState) {
+            // 滑回顶部（或一屏内容根本滑不动）时兜底展开，避免顶栏永久消失
+            if (newState == RecyclerView.SCROLL_STATE_IDLE && !rv.canScrollVertically(-1)) {
+                setTopBarHidden(false);
+            }
+        }
+    };
+
+    /**
+     * 下滑收起顶栏、上滑到顶展开。
+     *
+     * 顶栏是叠加层（FrameLayout 里画在内容之上）。收起时做三件事：
+     *   ① 顶栏自身 translationY(-h) + alpha(0)，结束后 GONE（不再参与 focus search）；
+     *   ② 内容层 paddingTop 90mm → 0。**这一步是"沉浸"的关键**：
+     *      顶栏没了却还留着 90mm 的内边距，那条空白露出来就是用户说的
+     *      "框架还在、内容没了"；
+     *   ③ padding 变化会让内容瞬间上移 h，所以同时给 mViewPager 一个 +h 的
+     *      translationY 抵消，再动画回 0 —— 画面连续，看到的是内容平滑地
+     *      长进顶栏让出来的位置。
+     *
+     * 之前试过把顶栏放在垂直 LinearLayout 里改 height，那会让整棵树 relayout，
+     * 正在聚焦的卡片被回收、焦点掉回导航栏，所以彻底弃用。
+     */
+    private void setTopBarHidden(boolean hide) {
+        if (topLayout == null) return;
+        if (topBarHidden == hide) return;
+        final int h = topLayout.getHeight() > 0
+                ? topLayout.getHeight()
+                : AutoSizeUtils.mm2px(this, TOPBAR_HEIGHT_MM);
+        topBarHidden = hide;
+        LOG.i("NYTOP topBar=" + (hide ? "HIDE" : "SHOW"));
+        topLayout.animate().cancel();
+        topLayout.removeCallbacks(topBarSettleRunnable);
+        applyContentInset(hide, h);
+
+        if (hide) {
+            // 收起中先把后代从焦点链摘掉，避免方向键挑中正在淡出的分类 tab
+            topLayout.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+            topLayout.animate().translationY(-h).alpha(0f)
+                    .setDuration(200)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .withEndAction(topBarSettleRunnable).start();
+            // 兜底：连续快滑时 ViewPropertyAnimator 会被下一次调用 cancel，
+            // withEndAction 不执行，顶栏就停在半透明状态（看上去只剩一条框架）。
+            // 260ms 后无条件收口一次，幂等。
+            topLayout.postDelayed(topBarSettleRunnable, 260);
+            return;
+        }
+
+        topLayout.setVisibility(View.VISIBLE);
+        topLayout.setTranslationY(-h);
+        topLayout.setAlpha(0f);
+        topLayout.animate().translationY(0f).alpha(1f)
+                .setDuration(200)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (topBarHidden) return;
+                        topLayout.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+                    }
+                }).start();
+    }
+
+    /** 顶栏收起后的收口动作：GONE + 复位。动画结束和超时兜底两条路径都走它，幂等 */
+    private final Runnable topBarSettleRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!topBarHidden || topLayout == null) return;
+            topLayout.setVisibility(View.GONE);
+            topLayout.setTranslationY(0f);
+            topLayout.setAlpha(1f);
+        }
+    };
+
+    /**
+     * 内容区顶部内边距跟着顶栏一起走：收起 → 0，展开 → h。
+     * padding 变化会立刻 relayout，所以先用 translationY 抵消这次位移，再反向动画回 0。
+     */
+    private void applyContentInset(boolean hide, int h) {
+        if (contentLayout == null || mViewPager == null) return;
+        int inset = hide ? 0 : h;
+        if (contentLayout.getPaddingTop() == inset) return;
+        contentLayout.setPadding(contentLayout.getPaddingLeft(), inset,
+                contentLayout.getPaddingRight(), contentLayout.getPaddingBottom());
+        mViewPager.animate().cancel();
+        mViewPager.setTranslationY(hide ? h : -h);
+        mViewPager.animate().translationY(0f)
+                .setDuration(200)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+
+    /** 递归找当前页里的竖直列表挂滚动监听（横向的分类 tab / 海报排会被跳过） */
+    private void installScrollHide(View v) {
+        if (v == null) return;
+        if (v instanceof RecyclerView) {
+            RecyclerView rv = (RecyclerView) v;
+            if (!scrollBound.contains(rv) && isVerticalList(rv)) {
+                scrollBound.add(rv);
+                rv.addOnScrollListener(topBarScrollListener);
+            }
+            return;
+        }
+        if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0, n = g.getChildCount(); i < n; i++) {
+                installScrollHide(g.getChildAt(i));
+            }
+        }
+    }
+
+    private boolean isVerticalList(RecyclerView rv) {
+        RecyclerView.LayoutManager lm = rv.getLayoutManager();
+        if (!(lm instanceof androidx.recyclerview.widget.LinearLayoutManager)) return false;
+        return ((androidx.recyclerview.widget.LinearLayoutManager) lm).getOrientation()
+                == RecyclerView.VERTICAL;
+    }
+
+    private boolean pageChangeHooked = false;
     private boolean dataInitOk = false;
     private boolean jarInitOk = false;
     private boolean searchSpiderWarmStarted = false;
@@ -616,6 +817,19 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             mViewPager.setPageTransformer(true, new DefaultTransformer());
             mViewPager.setAdapter(pageAdapter);
             mViewPager.setCurrentItem(currentSelected, false);
+            // 顶栏收起：挂到当前页的竖直列表上；换页要重新挂（GridFragment 会把 mGridView 到处搬）
+            if (!pageChangeHooked) {
+                pageChangeHooked = true;
+                mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        setTopBarHidden(false);
+                        mViewPager.postDelayed(() -> installScrollHide(mViewPager), 350);
+                    }
+                });
+            }
+            mViewPager.postDelayed(() -> installScrollHide(mViewPager), 800);
+            mViewPager.postDelayed(() -> installScrollHide(mViewPager), 2500);
         }
     }
 
@@ -731,7 +945,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     protected void onResume() {
         super.onResume();
         // 从详情/搜索/设置返回时顶栏必须恢复显示；随后由焦点监听决定是否再收起
-        changeTop(false);
+        setTopBarHidden(false);
         refreshTopInfoTextSize();
         mHandler.removeCallbacks(refreshTopInfoTextSizeRunnable);
         mHandler.postDelayed(refreshTopInfoTextSizeRunnable, 350);
@@ -794,7 +1008,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (sortFocused != currentSelected) {
                     currentSelected = sortFocused;
                     mViewPager.setCurrentItem(sortFocused, false);
-                    // 顶栏不再跟着分类切换无条件隐藏：显隐改由焦点位置驱动（见 installTopBarAutoHide）
+                    // 顶栏显隐由滚动位置驱动，切分类时保持现状即可
                     if (baseLazyFragment instanceof GridFragment && ((GridFragment) baseLazyFragment).shouldReloadOnSelect()) {
                         ((GridFragment) baseLazyFragment).forceRefresh();
                     }
@@ -835,36 +1049,10 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     private static final long LONG_PRESS_THRESHOLD = 2000; // 设置长按的阈值，单位是毫秒
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (topHide < 0)
-            return false;
         int keyCode = event.getKeyCode();
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP && topHide == 1) {
-                // 往回走：先把顶栏放出来。
-                // 顶栏高度是动画恢复的，这一帧只有 1px，接不住焦点，
-                // 所以先吞掉这次按键，等动画走完再把焦点交回当前分类项。
-                changeTop(false);
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        RecyclerView.LayoutManager lm = mGridView.getLayoutManager();
-                        View child = lm == null ? null : lm.findViewByPosition(Math.max(0, sortFocused));
-                        if (child != null) {
-                            child.requestFocus();
-                        } else {
-                            mGridView.requestFocus();
-                        }
-                    }
-                }, 240);
-                return true;
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && topHide == 0) {
-                View focus = getCurrentFocus();
-                if (focus != null && !isInTopBar(focus)) {
-                    mHandler.removeCallbacks(topBarAutoHide);
-                    mHandler.postDelayed(topBarAutoHide, TOP_BAR_HIDE_DELAY);
-                }
-            }
-        }
+        // 顶栏显隐现在完全由滚动驱动（见 topBarScrollListener），
+        // 这里不再拦方向键、也不再抢焦点：以前吞掉 DPAD_UP 再 240ms 后
+        // 把焦点硬塞给分类 tab，就是"上滑两下直接回到导航栏"的直接原因。
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 menuKeyDownTime = System.currentTimeMillis();
@@ -880,107 +1068,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         return super.dispatchKeyEvent(event);
     }
 
-    byte topHide = 0;
-    private AnimatorSet topBarAnim;
-    /** 焦点离开顶栏多久后收起（毫秒） */
-    private static final long TOP_BAR_HIDE_DELAY = 700L;
-
-    /** 焦点已经不在顶栏 → 延时收起，避免往下浏览时顶栏一直占着 92mm */
-    private final Runnable topBarAutoHide = new Runnable() {
-        @Override
-        public void run() {
-            View focus = getCurrentFocus();
-            if (focus != null && isInTopBar(focus)) {
-                return;
-            }
-            changeTop(true);
-        }
-    };
-
-    private boolean isInTopBar(View v) {
-        View cur = v;
-        while (cur != null) {
-            if (cur == topLayout) {
-                return true;
-            }
-            android.view.ViewParent parent = cur.getParent();
-            cur = (parent instanceof View) ? (View) parent : null;
-        }
-        return false;
-    }
-
     /**
-     * 顶栏显隐。
-     *
-     * 规则：往下浏览内容时收起，往回走（DPAD_UP）时重新出现；从任何页面返回首页必须恢复显示。
-     *
-     * 这里必须先把 topHide 置位再启动动画。原实现只在 onAnimationEnd 里置位，
-     * 动画进行中再次触发判断时 topHide 还是旧值，会同时起一个 hide 和一个 show，
-     * 两个动画互相打断，最终停在半透明状态 —— 这就是"返回后导航栏不见了"的成因。
-     */
-    private void changeTop(boolean hide) {
-        final byte target = (byte) (hide ? 1 : 0);
-        if (topHide == target) {
-            return;
-        }
-        topHide = target;
-        mHandler.removeCallbacks(topBarAutoHide);
-        if (topBarAnim != null) {
-            topBarAnim.cancel();
-            topBarAnim = null;
-        }
-        ViewObj viewObj = new ViewObj(topLayout, (ViewGroup.MarginLayoutParams) topLayout.getLayoutParams());
-        AnimatorSet set = new AnimatorSet();
-        float fromAlpha = topLayout.getAlpha();
-        if (hide) {
-            set.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this.mContext, TOPBAR_MARGIN_MM),
-                            AutoSizeUtils.mm2px(this.mContext, 0.0f)),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this.mContext, TOPBAR_HEIGHT_MM),
-                            AutoSizeUtils.mm2px(this.mContext, 1.0f)),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", fromAlpha, 0.0f));
-        } else {
-            set.playTogether(ObjectAnimator.ofObject(viewObj, "marginTop", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this.mContext, 0.0f),
-                            AutoSizeUtils.mm2px(this.mContext, TOPBAR_MARGIN_MM)),
-                    ObjectAnimator.ofObject(viewObj, "height", new IntEvaluator(),
-                            AutoSizeUtils.mm2px(this.mContext, 1.0f),
-                            AutoSizeUtils.mm2px(this.mContext, TOPBAR_HEIGHT_MM)),
-                    ObjectAnimator.ofFloat(this.topLayout, "alpha", fromAlpha, 1.0f));
-        }
-        set.setDuration(200);
-        set.start();
-        topBarAnim = set;
-    }
-
-    /**
-     * 沉浸式滑隐入口：GridFragment 网格滚动时回调。
-     * 下滑(dy>0)收起、上滑/回顶放出，200ms 动画走 changeTop。
-     * 只在分类页（非主页 tab）生效，主页顶栏常驻。
+     * 兼容入口：GridFragment 网格滚动时回调。
+     * 现在 HomeActivity 自己给每个竖直列表挂了 topBarScrollListener，
+     * 这里直接转发，保证两条来源不会各弹一套逻辑（以前就是两套在打架）。
      */
     public void onGridScrollHide(boolean hide) {
         if (topLayout == null || isActivityUnavailable()) return;
-        if (currentSelected == 0) return; // 主页不参与
-        changeTop(hide);
-    }
-
-    /** 焦点驱动显隐：进顶栏立刻显示，离开顶栏延时收起 */
-    private void installTopBarAutoHide() {        getWindow().getDecorView().getViewTreeObserver()
-                .addOnGlobalFocusChangeListener(new ViewTreeObserver.OnGlobalFocusChangeListener() {
-                    @Override
-                    public void onGlobalFocusChanged(View oldFocus, View newFocus) {
-                        if (newFocus == null) {
-                            return;
-                        }
-                        if (isInTopBar(newFocus)) {
-                            changeTop(false);
-                            return;
-                        }
-                        mHandler.removeCallbacks(topBarAutoHide);
-                        mHandler.postDelayed(topBarAutoHide, TOP_BAR_HIDE_DELAY);
-                    }
-                });
+        setTopBarHidden(hide);
     }
 
     @Override
@@ -1002,13 +1097,13 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private SelectDialog<SourceBean> mSiteSwitchDialog;
+    /** 源检测进行中（防止连点重复扫） */
+    private boolean siteScanning = false;
 
     void showSiteSwitch() {
         if (isActivityUnavailable()) return;
         List<SourceBean> sites = ApiConfig.get().getSwitchSourceBeanList();
         if (sites.isEmpty()) return;
-        int select = sites.indexOf(ApiConfig.get().getHomeSourceBean());
-        if (select < 0 || select >= sites.size()) select = 0;
         if (mSiteSwitchDialog == null) {
             mSiteSwitchDialog = new SelectDialog<>(HomeActivity.this);
             TvRecyclerView tvRecyclerView = mSiteSwitchDialog.findViewById(R.id.list);
@@ -1020,7 +1115,49 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             ViewGroup.LayoutParams clp = cl_root.getLayoutParams();
             clp.width = AutoSizeUtils.mm2px(mSiteSwitchDialog.getContext(), 360 + 130 * spanCount);
             mSiteSwitchDialog.setTip("请选择首页数据源");
+            // 数据源弹窗才有的工具条：源检测 + 健康度排序
+            mSiteSwitchDialog.showSourceTools(true,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startSiteScan();
+                        }
+                    },
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            boolean now = !Hawk.get("smart_source_sort", false);
+                            Hawk.put("smart_source_sort", now);
+                            if (mSiteSwitchDialog != null) {
+                                mSiteSwitchDialog.setSortActive(now);
+                                mSiteSwitchDialog.setToolHint(now
+                                        ? "已按健康度重排 · 快源在前"
+                                        : "已恢复源列表原始顺序");
+                            }
+                            bindSiteList();
+                        }
+                    });
         }
+        bindSiteList();
+        mSiteSwitchDialog.setSourceCountText("共 " + sites.size() + " 个源");
+        mSiteSwitchDialog.setSortActive(Hawk.get("smart_source_sort", false));
+        String last = SourceHealth.lastScanText();
+        mSiteSwitchDialog.setToolHint(last == null || last.isEmpty() ? "点「源检测」给源打分" : last);
+        if (!mSiteSwitchDialog.isShowing())
+            mSiteSwitchDialog.show();
+    }
+
+    /** 重新灌一次源列表（切源、体检完成、切换排序都要重来一遍） */
+    private void bindSiteList() {
+        if (mSiteSwitchDialog == null) return;
+        List<SourceBean> sites = ApiConfig.get().getSwitchSourceBeanList();
+        if (sites.isEmpty()) return;
+        // 智能选源：仅当开关打开时才重排（默认关，避免打乱肌肉记忆）
+        if (Hawk.get("smart_source_sort", false)) {
+            SourceHealth.sortByHealth(sites);
+        }
+        int select = sites.indexOf(ApiConfig.get().getHomeSourceBean());
+        if (select < 0 || select >= sites.size()) select = 0;
         mSiteSwitchDialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<SourceBean>() {
             @Override
             public void click(SourceBean value, int pos) {
@@ -1029,22 +1166,54 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 ApiConfig.get().setSourceBean(value);
                 refreshHome(false);
             }
+
             @Override
             public String getDisplay(SourceBean val) {
-                return val.getName();
+                // 「名字｜健康度」：SelectDialogAdapter 会把 ｜ 后面的拆成卡下小注
+                String health = SourceHealth.label(val.getKey());
+                return health.isEmpty() ? val.getName() : val.getName() + "｜" + health;
             }
         }, new DiffUtil.ItemCallback<SourceBean>() {
             @Override
             public boolean areItemsTheSame(@NonNull SourceBean oldItem, @NonNull SourceBean newItem) {
                 return oldItem == newItem;
             }
+
             @Override
             public boolean areContentsTheSame(@NonNull SourceBean oldItem, @NonNull SourceBean newItem) {
                 return oldItem.getKey().equals(newItem.getKey());
             }
         }, sites, select);
-        if (!mSiteSwitchDialog.isShowing())
-            mSiteSwitchDialog.show();
+    }
+
+    /** 一键体检：并发探活，进度直接写在弹窗工具条上 */
+    private void startSiteScan() {
+        if (siteScanning || mSiteSwitchDialog == null) return;
+        final List<SourceBean> sites = ApiConfig.get().getSwitchSourceBeanList();
+        if (sites.isEmpty()) return;
+        siteScanning = true;
+        mSiteSwitchDialog.setToolHint("检测中…");
+        SourceHealth.checkAll(sites, new SourceHealth.ScanCallback() {
+            @Override
+            public void onProgress(int done, int total) {
+                if (mSiteSwitchDialog != null && mSiteSwitchDialog.isShowing()) {
+                    mSiteSwitchDialog.setToolHint("检测中 " + done + "/" + total);
+                }
+            }
+
+            @Override
+            public void onDone(String summary) {
+                siteScanning = false;
+                SourceHealth.markScanned();
+                if (mSiteSwitchDialog != null && mSiteSwitchDialog.isShowing()) {
+                    mSiteSwitchDialog.setToolHint(summary);
+                    // 体检完如果开着智能排序，直接重排，用户立刻看到"快源在前"
+                    if (Hawk.get("smart_source_sort", false)) {
+                        bindSiteList();
+                    }
+                }
+            }
+        });
     }
 
     private void refreshHome()
@@ -1069,6 +1238,13 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         refreshHomeRec = false;
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) != 1) return;
         if (absXml == null || absXml.videoList == null || UserFragment.homeHotVodAdapter == null) return;
+        // 口味画像排序：看过的类型优先（纯本地统计，分数=1+3×观看次数）
+        try {
+            java.util.Collections.sort(absXml.videoList, (a, b) ->
+                    Float.compare(TasteProfile.scoreOf(b == null ? null : b.type),
+                            TasteProfile.scoreOf(a == null ? null : a.type)));
+        } catch (Throwable ignored) {
+        }
         UserFragment.homeHotVodAdapter.setNewData(absXml.videoList);
     }
 

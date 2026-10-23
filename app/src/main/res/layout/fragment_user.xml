@@ -16,12 +16,17 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <!-- 主视觉模糊暗化背景（取最近观看片的海报） -->
+    <!--
+      主视觉背景（取最近观看片的海报）
+      沉浸光感前提：这层必须"退到后面去"。原来是 alpha=0.5 盖满全屏，
+      把下层极光整个压死，所以改了配色也看不出来。现在降到 0.20，
+      只留一点影像暗示，真正的底色交给 AuroraBackgroundView 的极光光斑。
+    -->
     <ImageView
         android:id="@+id/ivHeroBg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.5"
+        android:alpha="0.07"
         android:scaleType="centerCrop" />
 
     <View
@@ -66,12 +71,23 @@
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <!-- 左：刊头 / 大标题 / 元信息 / 琥珀线 / 按钮 -->
+            <!--
+              左：刊头 / 大标题 / 元信息 / 琥珀线 / 按钮
+              沉浸光感：这一栏改成一块浮在日落底图上的毛玻璃板。
+              没有实体面板，光感和材质在首页就没有"落点"——顶栏一条太窄，
+              眼睛会读成"只是背景变了个色"。这里是整屏最大的一块玻璃。
+            -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="24mm"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:background="@drawable/bg_glass_body"
+                android:orientation="vertical"
+                android:paddingLeft="30mm"
+                android:paddingTop="26mm"
+                android:paddingRight="30mm"
+                android:paddingBottom="26mm">
 
                 <TextView
                     android:id="@+id/tvHeroKicker"

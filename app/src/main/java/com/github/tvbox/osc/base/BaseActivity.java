@@ -62,6 +62,50 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         }
     };
 
+    /**
+     * 全站底色跟随主题（设置页 / 搜索页 / 详情页 / 收藏 / 历史…都用这一张）。
+     *
+     * 三层，跟首页 AuroraBackgroundView 同族，只是不跑动画：
+     *   底   bgA→bgB 垂直渐变（主题底色）
+     *   上   accent 从顶部衰减（天空光）
+     *   下   ground 从底部上升（地面光）
+     *
+     * 注意必须用 Window.setBackgroundDrawable，不能只改 DecorView：
+     * 后面 updateWallpaper() 里 else 分支会再设一次资源背景，
+     * 用 window 这条通道才能保证"主题底"是最终状态。
+     */
+    private android.graphics.drawable.Drawable themeBackdrop() {
+        int bgA = com.github.tvbox.osc.util.ThemeManager.bgA();
+        int bgB = com.github.tvbox.osc.util.ThemeManager.bgB();
+        android.graphics.drawable.GradientDrawable base =
+                new android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                        new int[]{bgA, bgB});
+        android.graphics.drawable.GradientDrawable sky =
+                new android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                        new int[]{com.github.tvbox.osc.util.ThemeManager.withA(
+                                com.github.tvbox.osc.util.ThemeManager.accent(), 0x3D),
+                                com.github.tvbox.osc.util.ThemeManager.withA(
+                                        com.github.tvbox.osc.util.ThemeManager.accent(), 0x00)});
+        android.graphics.drawable.GradientDrawable ground =
+                new android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.BOTTOM_TOP,
+                        new int[]{com.github.tvbox.osc.util.ThemeManager.withA(
+                                com.github.tvbox.osc.util.ThemeManager.ground(), 0x5C),
+                                com.github.tvbox.osc.util.ThemeManager.withA(
+                                        com.github.tvbox.osc.util.ThemeManager.ground(), 0x00)});
+        return new android.graphics.drawable.LayerDrawable(
+                new android.graphics.drawable.Drawable[]{base, sky, ground});
+    }
+
+    private void applyThemeBackdrop() {
+        try {
+            getWindow().setBackgroundDrawable(themeBackdrop());
+        } catch (Throwable ignored) {
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         try {
@@ -75,12 +119,33 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         }
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResID());
+        applyThemeBackdrop();
         mContext = this;
         initSystemUiListener();
         CutoutUtil.adaptCutoutAboveAndroidP(mContext, true);//设置刘海
         AppManager.getInstance().addActivity(this);
         init();
         initFocusSound();
+        installThemeTintFix();
+    }
+
+    /**
+     * 布局里写死的 @color/neon_accent（=#FF9A5A）是编译期常量，换主题纹丝不动，
+     * 于是"首页绿松、设置页还是霞橙"。minSdk 19 用不了 ThemeOverlay，
+     * 只能运行时扫一遍视图树把旧值换成当前 accent；RecyclerView 的复用 item
+     * 由 ThemeManager 里挂的附加监听兜住，所以后面加载出来的也能跟上。
+     */
+    private void installThemeTintFix() {
+        final View decor = getWindow().getDecorView();
+        final Runnable fix = new Runnable() {
+            @Override
+            public void run() {
+                com.github.tvbox.osc.util.ThemeManager.applyAccentFix(decor);
+            }
+        };
+        decor.post(fix);
+        decor.postDelayed(fix, 700);
+        decor.postDelayed(fix, 2000);
     }
 
     /**
@@ -379,6 +444,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         if (globalWp != null)
             getWindow().setBackgroundDrawable(globalWp);
         else
-            getWindow().setBackgroundDrawableResource(R.drawable.bg_atv);
+            // 没有自定义壁纸 → 用当前主题底，而不是写死的日落 bg_atv
+            getWindow().setBackgroundDrawable(themeBackdrop());
     }
 }

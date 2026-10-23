@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  沉浸光感 · 顶栏玻璃条
+  和 bg_glass_thin 的区别：整条贴边铺满，所以不做圆角（做了会在屏幕两侧切出假的圆角缺口），
+  只留"下半部一道 1mm 受光线"来交代玻璃的厚度，这是华为那套材质里最关键的一笔。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 半透白本体 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/glass_thin" />
+        </shape>
+    </item>
+    <!-- 顶部受光：越往下越透明 -->
+    <item android:gravity="top" android:height="26mm">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="@color/glass_top_light"
+                android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+    <!-- 底部收边：玻璃下沿的反光线 -->
+    <item android:gravity="bottom" android:height="1mm">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/neon_glass_border" />
+        </shape>
+    </item>
+</layer-list>

@@ -28,6 +28,7 @@ import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.SourceHealth;
 import com.github.tvbox.osc.util.thunder.Thunder;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -215,6 +216,8 @@ public class SourceViewModel extends ViewModel {
             sortResult.postValue(new AbsSortXml());
             return;
         }
+        // 源健康度计时起点：成功/失败都回写，供"智能选源"排序
+        final long healthT0 = System.currentTimeMillis();
 
         // 优先检查缓存
         SourceBean sourceBean = ApiConfig.get().getSource(sourceKey);
@@ -292,6 +295,7 @@ public class SourceViewModel extends ViewModel {
                                 cacheSort(sourceKey, sortXml);
                             }
                         } else {
+                            SourceHealth.reportFail(sourceKey);
                             postSortResult(sourceKey, null);
                         }
                         try {
@@ -326,6 +330,11 @@ public class SourceViewModel extends ViewModel {
                                 String json = response.body();
                                 sortXml = sortJson(sortResult, json);
                             }
+                            if (sortXml != null) {
+                                SourceHealth.reportSuccess(sourceKey, System.currentTimeMillis() - healthT0);
+                            } else {
+                                SourceHealth.reportFail(sourceKey);
+                            }
                             attachSortSource(sourceKey, sortXml);
                             if (sortXml != null && Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1 && sortXml.list != null && sortXml.list.videoList != null && sortXml.list.videoList.size() > 0) {
                                 ArrayList<String> ids = new ArrayList<>();
@@ -350,6 +359,7 @@ public class SourceViewModel extends ViewModel {
                         @Override
                         public void onError(Response<String> response) {
                             super.onError(response);
+                            SourceHealth.reportFail(sourceKey);
                             postSortResult(sourceKey, null);
                         }
                     });
@@ -875,6 +885,7 @@ public class SourceViewModel extends ViewModel {
 
                         @Override
                         public void onSuccess(Response<String> response) {
+                            SourceHealth.reportSuccess(sourceBean.getKey(), 400);
                             if (type == 0) {
                                 String xml = response.body();
                                 xml(target, xml, sourceBean.getKey());
@@ -888,6 +899,8 @@ public class SourceViewModel extends ViewModel {
                         @Override
                         public void onError(Response<String> response) {
                             super.onError(response);
+                            // 详情接口失败计入源健康度（播放/详情才是真故障，比首页更能说明问题）
+                            SourceHealth.reportFail(sourceBean.getKey());
                             json(target, "", sourceBean.getKey());
                         }
                     });
@@ -1298,6 +1311,8 @@ public class SourceViewModel extends ViewModel {
                     @Override
                     public void onError(Response<String> response) {
                         super.onError(response);
+                        // 解析接口失败 = 这个源这一集废了，直接计入健康度
+                        SourceHealth.reportFail(sourceKey);
                         postTarget(target, requestSeq, realPlay, null);
                     }
                 });

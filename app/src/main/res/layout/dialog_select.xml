@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  选择弹窗（沉浸光感 · 数据源版）
+
+  改版原因（用户："请选择首页数据源 好像和现在的ui很不匹配"）：
+    1) 原来只有一行居中标题 + 一墙 Netflix 品牌色磁贴，全是高饱和红蓝绿，
+       跟日落大道的霞橙/晚霞粉/暮紫完全不在一个体系；
+    2) 磁贴只是"选"，没有"判断依据"——用户不知道该选哪个源。
+
+  现在的结构：
+    行1 标题（左） + 源数量（右，小字）
+    行2 工具条：[⟳ 源检测] [↕ 健康度排序] —— 右侧小字显示体检进度/结果
+    行3 磁贴墙（TvRecyclerView，列数由代码按源数量算）
+
+  工具条默认 GONE，只有数据源弹窗把它打开（SelectDialog#showSourceTools），
+  其他复用这张布局的选择弹窗（选集/线路/语言等）不受影响。
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,60 +26,126 @@
         android:layout_width="@dimen/vs_480"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="@drawable/bg_vault_dialog">
+        android:background="@drawable/bg_vault_dialog"
+        android:paddingBottom="@dimen/vs_20">
 
         <TextView
             android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_26"
+            android:layout_marginRight="@dimen/vs_26"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.02"
+            android:paddingTop="@dimen/vs_22"
+            android:paddingBottom="@dimen/vs_14"
+            android:singleLine="true"
+            android:text="请选择首页数据源"
+            android:textColor="@color/neon_text_primary"
+            android:textSize="@dimen/ts_24"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/tvSourceCount"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="请选择首页数据源" />
+
+        <!-- 右上角：源数量 / 体检摘要。原来这里是 NOYA 水印，占位不干活 -->
+        <TextView
+            android:id="@+id/tvSourceCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="@dimen/ts_40"
-            android:lineSpacingMultiplier="0"
-            android:padding="@dimen/vs_20"
+            android:layout_marginRight="@dimen/vs_26"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.08"
             android:singleLine="true"
-            android:text="11111111"
-            android:textColor="@color/dialog_text_primary"
-            android:textStyle="bold"
-            android:textSize="@dimen/ts_24"
+            android:textColor="@color/top_link_text_dim"
+            android:textSize="@dimen/ts_14"
+            app:layout_constraintBaseline_toBaselineOf="@+id/title"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="共 24 个源" />
+
+        <!-- 工具条：只有数据源弹窗会显示 -->
+        <LinearLayout
+            android:id="@+id/sourceTools"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_26"
+            android:layout_marginRight="@dimen/vs_26"
+            android:layout_marginBottom="@dimen/vs_16"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="11111111111111111111111" />
+            app:layout_constraintTop_toBottomOf="@+id/title">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="serif"
-            android:letterSpacing="0.3"
-            android:text="NOYA"
-            android:textColor="@color/neon_accent"
-            android:textSize="@dimen/ts_14"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="@dimen/vs_22"
-            android:layout_marginRight="@dimen/vs_22" />
+            <!-- 圆角胶囊：8mm vs_* 在电视上偏方，这里直接用 mm -->
+            <TextView
+                android:id="@+id/btnSourceCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="34mm"
+                android:background="@drawable/bg_chip_glass"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.12"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="源检测"
+                android:textColor="@color/neon_accent"
+                android:textSize="15mm" />
+
+            <TextView
+                android:id="@+id/btnSourceSort"
+                android:layout_width="wrap_content"
+                android:layout_height="34mm"
+                android:layout_marginLeft="12mm"
+                android:background="@drawable/bg_chip_glass"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.12"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="健康度排序"
+                android:textColor="@color/top_link_text"
+                android:textSize="15mm" />
+
+            <TextView
+                android:id="@+id/tvToolHint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14mm"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="right"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.04"
+                android:maxLines="2"
+                android:textColor="@color/top_link_text_dim"
+                android:textSize="13mm"
+                tools:text="点源检测给源打分" />
+        </LinearLayout>
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingLeft="@dimen/vs_30"
-            android:paddingRight="@dimen/vs_30"
+            android:paddingLeft="@dimen/vs_20"
+            android:paddingRight="@dimen/vs_20"
             app:layout_constrainedHeight="true"
             app:layout_constraintHeight_max="@dimen/vs_410"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title"
+            app:layout_constraintTop_toBottomOf="@+id/sourceTools"
             app:tv_layoutManager="V7LinearLayoutManager"
-            app:tv_selectedItemIsCentered="true"
             app:tv_horizontalSpacingWithMargins="@dimen/vs_10"
+            app:tv_selectedItemIsCentered="true"
             app:tv_verticalSpacingWithMargins="@dimen/vs_10" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/vs_30"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/list" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

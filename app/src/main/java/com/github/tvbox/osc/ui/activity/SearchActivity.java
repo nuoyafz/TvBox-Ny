@@ -178,6 +178,12 @@ public class SearchActivity extends BaseActivity {
         llHistoryWord = findViewById(R.id.llHistoryWord);
         etSearch = findViewById(R.id.etSearch);
         tvSearch = findViewById(R.id.tvSearch);
+        // 搜索主按钮：button_detail_play.xml 里写死的是日落霞橙，
+        // 换主题后这里是整页唯一一块橙色 —— 改成按当前主题现算（焦点提亮 + 白环）。
+        if (tvSearch != null) {
+            tvSearch.setBackground(
+                    com.github.tvbox.osc.util.ThemeManager.solidAccentButton(this, 6));
+        }
         tvSearchCheckboxBtn = findViewById(R.id.tvSearchCheckboxBtn);
         tvClear = findViewById(R.id.tvClear);
         mGridView = findViewById(R.id.mGridView);

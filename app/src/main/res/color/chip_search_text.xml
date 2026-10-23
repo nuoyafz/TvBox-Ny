@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 搜索胶囊文字（占位）：常态是亮底 → 深色字；焦点反白 → 强调色字 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/neon_accent" />
+    <item android:color="#141014" />
+</selector>

@@ -24,7 +24,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/shape_danmu_setting_bg"
+        android:background="@drawable/bg_glass_body"
         android:orientation="vertical"
         android:paddingLeft="@dimen/vs_30"
         android:paddingTop="@dimen/vs_24"

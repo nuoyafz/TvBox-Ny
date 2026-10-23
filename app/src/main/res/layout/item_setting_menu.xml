@@ -13,6 +13,7 @@
     android:paddingRight="10mm">
 
     <View
+        android:id="@+id/vFocusBar"
         android:layout_width="3mm"
         android:layout_height="22mm"
         android:layout_gravity="left|center_vertical"

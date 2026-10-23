@@ -120,20 +120,23 @@
         <item name="android:textSize">16mm</item>
     </style>
 
-    <!-- 顶栏行2 的快捷入口（直播/历史/收藏/推送/搜索/设置） -->
+    <!--
+      顶栏快捷入口（直播/历史/收藏/推送/遥控/搜索/设置）
+      配色改近白 + 字距 0.14：压在霞橙天空上，靠字距和字重拉层次，比堆灰度干净。
+    -->
     <style name="TopLink">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">34mm</item>
-        <item name="android:background">@drawable/bg_text_link</item>
+        <item name="android:background">@drawable/bg_top_link</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
         <item name="android:focusableInTouchMode">true</item>
         <item name="android:gravity">center</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:letterSpacing">0.08</item>
-        <item name="android:paddingLeft">10mm</item>
-        <item name="android:paddingRight">10mm</item>
-        <item name="android:textColor">@color/footer_link_text</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:paddingLeft">12mm</item>
+        <item name="android:paddingRight">12mm</item>
+        <item name="android:textColor">@color/top_link_text</item>
         <item name="android:textSize">15mm</item>
     </style>
 </resources>

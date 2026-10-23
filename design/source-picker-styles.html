@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>数据源弹窗 · 四套风格</title>
+<style>
+:root{
+  --a:#FF9A5A; --a2:#FF4E78; --bgA:#1C0C18; --bgB:#150A12;
+  --fast:#4ADE80; --mid:#F5C542; --slow:#FF8A4C; --dead:#FF4D4F;
+  --page:#07070A; --line:rgba(255,255,255,.10);
+  --ink:#F6F2EE; --ink2:rgba(246,242,238,.60); --ink3:rgba(246,242,238,.34);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--page);color:#EDE9E4;
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;padding:34px 26px 70px;
+}
+::selection{background:rgba(255,255,255,.18)}
+
+/* ---------- 页头 ---------- */
+.hd{max-width:1240px;margin:0 auto 30px}
+.hd h1{font-size:25px;font-weight:600;letter-spacing:.3px}
+.hd p{margin-top:9px;font-size:13.5px;line-height:1.75;color:rgba(237,233,228,.55);max-width:760px}
+.themes{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px;align-items:center}
+.themes .lbl{font-size:12px;color:rgba(237,233,228,.4);margin-right:3px}
+.tbtn{
+  display:flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;
+  border-radius:999px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.035);
+  color:rgba(237,233,228,.7);font-size:12.5px;cursor:pointer;transition:.18s;font-family:inherit;
+}
+.tbtn:hover{background:rgba(255,255,255,.075);color:#fff}
+.tbtn.on{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
+.tbtn i{width:13px;height:13px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.3) inset}
+
+/* ---------- 方案卡 ---------- */
+.case{max-width:1240px;margin:0 auto 46px}
+.case-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.num{
+  width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;
+  font-size:14px;font-weight:600;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.8);margin-top:1px;
+}
+.case-hd h2{font-size:16.5px;font-weight:600;letter-spacing:.2px}
+.case-hd p{margin-top:6px;font-size:12.5px;line-height:1.7;color:rgba(237,233,228,.5);max-width:860px}
+.case-hd p b{color:rgba(237,233,228,.85);font-weight:500}
+.verdict{
+  margin-left:auto;flex:none;font-size:11px;letter-spacing:.4px;padding:5px 11px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.55);height:fit-content;
+}
+.verdict.rec{color:#0d0d10;background:#EDE9E4;border-color:#EDE9E4;font-weight:600}
+
+/* ---------- 电视画布 ---------- */
+.screen{
+  position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:14px;
+  border:1px solid rgba(255,255,255,.09);background:#000;
+  box-shadow:0 24px 60px -28px rgba(0,0,0,.9);
+}
+.stage{
+  position:absolute;top:0;left:0;width:1280px;height:720px;
+  transform-origin:top left;overflow:hidden;
+  font-size:13px;color:#F6F2EE;
+}
+
+/* 壁纸：模拟"日落天空 + 海报墙"，用来验证弹窗透光后的观感 */
+.wall{position:absolute;inset:0;overflow:hidden;
+  background:
+    radial-gradient(70% 52% at 22% 0%, color-mix(in srgb, var(--a) 46%, transparent), transparent 70%),
+    radial-gradient(60% 44% at 82% 6%, color-mix(in srgb, var(--a2) 40%, transparent), transparent 72%),
+    radial-gradient(90% 60% at 50% 108%, color-mix(in srgb, var(--a2) 26%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--bgA), var(--bgB));
+}
+.wall .row{position:absolute;left:0;right:0;bottom:0;height:250px;display:flex;gap:14px;padding:0 22px;opacity:.9}
+.wall .p{flex:1;border-radius:10px;filter:blur(.4px)}
+.p1{background:linear-gradient(160deg,#b3402a,#5c1a12)}
+.p2{background:linear-gradient(160deg,#2f6f8f,#123040)}
+.p3{background:linear-gradient(160deg,#8a5a2b,#3a2410)}
+.p4{background:linear-gradient(160deg,#6a3a8a,#2a123f)}
+.p5{background:linear-gradient(160deg,#3f7a5a,#153528)}
+.p6{background:linear-gradient(160deg,#a8542e,#4a1e10)}
+.wall .big{position:absolute;right:14px;top:120px;width:150px;height:236px;border-radius:12px;
+  background:linear-gradient(160deg,#c9743a,#6b2312);opacity:.85;filter:blur(.5px)}
+.wall .hero{position:absolute;left:70px;top:150px;width:330px}
+.wall .hero .k{font-size:10px;letter-spacing:2.6px;color:rgba(255,255,255,.6)}
+.wall .hero .t{margin-top:10px;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);text-shadow:0 2px 12px rgba(0,0,0,.4)}
+
+/* 顶栏 */
+.top{position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;padding:0 26px;gap:16px;z-index:3}
+.top .logo{font-size:17px;font-weight:800;letter-spacing:2px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.top .tag{font-size:10px;padding:3px 8px;border-radius:999px;color:rgba(255,255,255,.75);
+  border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08)}
+.top .links{margin-left:auto;display:flex;align-items:center;gap:15px;font-size:12.5px;color:rgba(255,255,255,.82)}
+.top .links .on{padding:5px 13px;border-radius:999px;background:color-mix(in srgb,var(--a) 72%,#000);color:#0d0d10;font-weight:600}
+.top .date{font-size:11.5px;color:rgba(255,255,255,.5);margin-left:6px}
+.tabs{position:absolute;top:52px;left:0;right:0;height:36px;display:flex;align-items:center;gap:22px;
+  padding:0 26px;font-size:12.5px;color:rgba(255,255,255,.55);z-index:3;
+  border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.1)}
+.tabs .on{color:var(--a);font-weight:600;position:relative}
+.tabs .on::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:2px;background:var(--a);border-radius:2px}
+
+/* ================= 弹窗通用 ================= */
+.panel{
+  position:absolute;left:50%;transform:translateX(-50%);top:56px;width:900px;border-radius:20px;z-index:5;
+  padding:28px;
+}
+.p-head{display:flex;align-items:center;gap:10px}
+.p-title{font-size:20px;font-weight:600;letter-spacing:.4px;display:flex;align-items:center;gap:10px}
+.p-title .tick{width:3px;height:17px;border-radius:2px;background:var(--a);display:block;flex:none}
+.p-meta{margin-left:auto;font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:7px}
+.p-meta .sep{opacity:.45}
+.p-tools{display:flex;gap:9px;margin-left:14px}
+.tool{
+  height:29px;padding:0 14px;border-radius:999px;font-size:12px;display:flex;align-items:center;gap:6px;
+  border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.72);background:rgba(255,255,255,.05);
+}
+.tool i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7;display:block}
+.tool.on{color:var(--a);border-color:color-mix(in srgb,var(--a) 55%,transparent);
+  background:color-mix(in srgb,var(--a) 16%,transparent)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:19px}
+
+/* 源卡片 */
+.it{
+  position:relative;height:94px;border-radius:13px;padding:17px 16px 15px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);
+}
+.it .name{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden}
+.it .name .ico{font-size:16px;flex:none;line-height:1}
+.it .name .cap{font-size:13px;font-weight:400;color:var(--ink2)}
+.it .hm{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(246,242,238,.72)}
+.it .hm i{width:7px;height:7px;border-radius:50%;flex:none}
+.h-fast{background:var(--fast);box-shadow:0 0 8px color-mix(in srgb,var(--fast) 60%,transparent)}
+.h-mid{background:var(--mid)}
+.h-slow{background:var(--slow)}
+.it .hm b{font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ================= A 同源玻璃 ================= */
+.cA .panel{
+  background:
+    linear-gradient(168deg,
+      color-mix(in srgb, var(--a) 14%, color-mix(in srgb, var(--bgA) 93%, transparent)),
+      color-mix(in srgb, var(--bgA) 96%, transparent) 46%,
+      color-mix(in srgb, var(--bgB) 98%, transparent));
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 40px 110px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(0,0,0,.25),
+             inset 0 1px 0 rgba(255,255,255,.22);
+  backdrop-filter:blur(26px) saturate(1.25);
+}
+.cA .panel::before{
+  content:"";position:absolute;left:24px;right:24px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--a) 70%,transparent),transparent);
+}
+.cA .it{background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035));
+  border-color:rgba(255,255,255,.10)}
+.cA .it.sel{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--a) 30%, rgba(255,255,255,.10)),
+    color-mix(in srgb,var(--a) 14%, rgba(255,255,255,.04)));
+  border-color:color-mix(in srgb,var(--a) 78%,transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--a) 30%,transparent),
+             0 10px 26px -12px color-mix(in srgb,var(--a) 80%,transparent);
+}
+.cA .it.sel .name{color:#fff}
+
+/* ================= B 中性墨黑 ================= */
+.cB .panel{
+  background:rgba(11,11,14,.93);
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:0 40px 110px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.09);
+  backdrop-filter:blur(20px);
+}
+.cB .p-title .tick{background:rgba(255,255,255,.30)}
+.cB .it{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.075)}
+.cB .tool.on{color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.075)}
+.cB .tool.on i{background:var(--a);opacity:1}
+.cB .it.sel{
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.88);
+  box-shadow:0 0 0 4px rgba(255,255,255,.09),
+             0 12px 30px -14px rgba(0,0,0,.9);
+}
+/* 主题色只在选中卡右上角点一颗，代替"整框染绿" */
+.cB .it.sel::after{
+  content:"";position:absolute;top:15px;right:15px;width:6px;height:6px;border-radius:50%;
+  background:var(--a);box-shadow:0 0 9px color-mix(in srgb,var(--a) 85%,transparent);
+}
+.cB .it.sel .hm i{box-shadow:0 0 10px currentColor}
+.cB .p-meta{color:rgba(255,255,255,.28)}
+
+/* ================= C 亮瓷 ================= */
+.cC .panel{
+  background:linear-gradient(180deg,#FBFAF7,#F0EDE6);
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 40px 110px -34px rgba(0,0,0,.75), inset 0 1px 0 #fff;
+  color:#1B1A18;
+}
+.cC .p-title{color:#141311}
+.cC .p-title .tick{background:var(--a)}
+.cC .p-meta{color:rgba(20,19,17,.42)}
+.cC .tool{border-color:rgba(20,19,17,.14);color:rgba(20,19,17,.62);background:rgba(20,19,17,.035)}
+.cC .tool.on{color:#141311;border-color:color-mix(in srgb,var(--a) 60%,transparent);
+  background:color-mix(in srgb,var(--a) 26%,transparent)}
+.cC .it{background:#fff;border-color:rgba(20,19,17,.08);
+  box-shadow:0 2px 8px -4px rgba(20,19,17,.18)}
+.cC .it .name{color:#17150F}
+.cC .it .name .cap{color:rgba(20,19,17,.5)}
+.cC .it .hm{color:rgba(20,19,17,.5)}
+.cC .it.sel{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--a) 30%,#fff),
+    color-mix(in srgb,var(--a) 50%,#fff));
+  border-color:color-mix(in srgb,var(--a) 85%,transparent);
+  box-shadow:0 8px 22px -10px color-mix(in srgb,var(--a) 70%,transparent);
+}
+.cC .it.sel .name{color:#141311;font-weight:600}
+.cC .h-fast{background:#1FA968;box-shadow:none}
+.cC .h-mid{background:#C08A10}
+.cC .h-slow{background:#D5701F}
+.cC .it .hm b{color:rgba(20,19,17,.62)}
+
+/* ================= D 浮岛 ================= */
+.veil{position:absolute;inset:0;background:rgba(4,4,6,.30);backdrop-filter:blur(2px);z-index:4}
+.cD .veil{background:rgba(4,4,6,.54);backdrop-filter:blur(3px)}
+.cD .panel{background:none;border:none;box-shadow:none;backdrop-filter:none;padding:0}
+.cD .p-head{display:flex;align-items:center;gap:15px}
+.cD .p-title{
+  padding:12px 22px 12px 20px;border-radius:999px;
+  background:rgba(10,10,13,.66);border:1px solid rgba(255,255,255,.15);
+  backdrop-filter:blur(22px) saturate(1.2);box-shadow:0 18px 50px -20px rgba(0,0,0,.85);
+}
+.cD .p-tools{margin-left:0}
+.cD .tool{background:rgba(10,10,13,.66);border-color:rgba(255,255,255,.14);backdrop-filter:blur(18px)}
+.cD .p-meta{margin-left:auto;padding-right:4px}
+.cD .grid{margin-top:22px;gap:15px}
+.cD .it{
+  height:94px;border-radius:15px;background:rgba(12,12,16,.55);
+  border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(18px) saturate(1.15);
+  box-shadow:0 16px 40px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.10);
+}
+.cD .it.sel{
+  background:color-mix(in srgb,var(--a) 20%, rgba(12,12,16,.62));
+  border-color:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,.9),
+             0 0 34px -6px color-mix(in srgb,var(--a) 85%,transparent);
+}
+.cD .it.sel .name{color:#fff}
+
+/* 备注条 */
+.notes{display:flex;gap:10px;flex-wrap:wrap;margin-top:11px}
+.note{font-size:11.5px;color:rgba(237,233,228,.45);border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.025);padding:5px 11px;border-radius:7px}
+.note b{color:rgba(237,233,228,.78);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>数据源弹窗 · 四套风格</h1>
+  <p>同一份数据（49 源 / 已检测 / 按健康度排序），四条视觉路线。切换右上角主题色，可以直接看同一套弹窗在四套主题下的表现——这一步就是现在这版最大的问题所在。</p>
+  <div class="themes" id="themes">
+    <span class="lbl">当前主题</span>
+  </div>
+</div>
+
+<template id="tpl">
+  <div class="screen">
+    <div class="stage">
+      <div class="wall">
+        <div class="hero"><div class="k">CONTINUE</div><div class="t">欢迎光临</div></div>
+        <div class="big"></div>
+        <div class="row">
+          <div class="p p1"></div><div class="p p2"></div><div class="p p3"></div>
+          <div class="p p4"></div><div class="p p5"></div><div class="p p6"></div>
+        </div>
+      </div>
+
+      <div class="top">
+        <span class="logo">NOYA</span>
+        <span class="tag">热播</span><span class="tag">4K</span>
+        <div class="links">
+          <span>直播</span><span>历史</span><span>收藏</span><span>推送</span><span>遥控</span>
+          <span class="on">搜索</span><span>设置</span>
+          <span class="date">2026/10/23 周五 19:33</span>
+        </div>
+      </div>
+      <div class="tabs">
+        <span class="on">主页</span><span>电影</span><span>剧集</span><span>动漫</span><span>综艺</span>
+        <span>短剧</span><span>动作片</span><span>喜剧片</span><span>爱情片</span><span>科幻片</span>
+      </div>
+
+      <div class="veil"></div>
+
+      <div class="panel">
+        <div class="p-head">
+          <div class="p-title"><span class="tick"></span>请选择首页数据源</div>
+          <div class="p-tools">
+            <div class="tool"><i></i>源检测</div>
+            <div class="tool on"><i></i>按健康度排序</div>
+          </div>
+          <div class="p-meta"><span>共 49 个源</span><span class="sep">·</span><span>10-23 18:52</span></div>
+        </div>
+        <div class="grid" data-grid></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const THEMES = [
+  {id:'dusk', name:'日落大道', a:'#FF9A5A', a2:'#FF4E78', bgA:'#1C0C18', bgB:'#150A12'},
+  {id:'pine', name:'极光绿松', a:'#3FE0A8', a2:'#2BB6C9', bgA:'#06120F', bgB:'#04100D'},
+  {id:'lucky',name:'幸运紫蓝', a:'#9A7BFF', a2:'#4E9BFF', bgA:'#0B0A1C', bgB:'#080718'},
+  {id:'mist', name:'晨雾青', a:'#7ED8D2', a2:'#A8D8C0', bgA:'#0A1416', bgB:'#091315'},
+];
+
+const SOURCES = [
+  {ico:'📁', n:'我的云盘', c:'配置',      h:'fast', ht:'快',   ms:'20ms',    sel:false},
+  {ico:'☁️', n:'风云',     c:'多线',      h:'fast', ht:'快',   ms:'88ms',    sel:false},
+  {ico:'📺', n:'热播',     c:'多线',      h:'fast', ht:'快',   ms:'688ms',   sel:false},
+  {ico:'🫘', n:'豆豆',     c:'片单·修复中',h:'mid',  ht:'一般', ms:'852ms',   sel:false},
+  {ico:'🍉', n:'瓜子',     c:'不卡',      h:'mid',  ht:'一般', ms:'896ms',   sel:false},
+  {ico:'🌸', n:'茉莉',     c:'多线',      h:'mid',  ht:'一般', ms:'912ms',   sel:true },
+  {ico:'🍓', n:'糯米',     c:'秒播',      h:'mid',  ht:'一般', ms:'1060ms',  sel:false},
+  {ico:'🐟', n:'斗鱼',     c:'直播',      h:'mid',  ht:'一般', ms:'1100ms',  sel:false},
+  {ico:'🐯', n:'虎牙',     c:'直播',      h:'mid',  ht:'一般', ms:'1140ms',  sel:false},
+  {ico:'🎮', n:'玩偶哥哥', c:'4K',        h:'mid',  ht:'一般', ms:'1177ms',  sel:false},
+  {ico:'🎬', n:'荐影',     c:'预告片',    h:'slow', ht:'偏慢', ms:'1486ms',  sel:false},
+  {ico:'🎵', n:'易听',     c:'音乐',      h:'slow', ht:'偏慢', ms:'1382ms',  sel:false},
+];
+
+const CASES = [
+  {key:'cA', num:'A', title:'同源玻璃', badge:'推荐', desc:
+    '弹窗不自己定颜色：底色 = 当前主题的 bgA/bgB 玻璃化，描边/选中/工具条全部吃 accent。'+
+    '<b>换主题时弹窗跟着一起换</b>，四套主题都不会撞色，这是唯一能根治"绿松主题配紫红弹窗"的做法。'},
+  {key:'cB', num:'B', title:'中性墨黑', badge:'最稳', desc:
+    '底座退成无彩色的近黑（同 PS5 / Apple TV 的弹窗逻辑），主题色只出现在三个点点上：健康度点、选中卡的白环外发光、工具条开关。'+
+    '<b>一次设计四套主题通用</b>，背后海报再花也不会脏，代价是丢一点"氛围感"。'},
+  {key:'cC', num:'C', title:'亮瓷反转', badge:'反差', desc:
+    '弹窗整体翻成暖白瓷面，深色字。在一屏暗色海报里是唯一的亮块，<b>找源这件事一下就被推到眼前</b>；'+
+    '主题色只留在选中卡和开关上。风险：夜间客厅观看偏刺眼，且与"沉浸光感"的暗调不是一路。'},
+  {key:'cD', num:'D', title:'浮岛无底座', badge:'最沉浸', desc:
+    '删掉整块面板。标题缩成一条悬浮玻璃胶囊，卡片自己就是玻璃片，直接漂在压暗的壁纸上。'+
+    '<b>透光率最高、最像"光穿过玻璃"</b>；代价是背景必须压暗 50%+，否则白字读不清。'},
+];
+
+/* 主题 chips */
+const themesEl = document.getElementById('themes');
+let cur = 1; // 默认给绿松，正好复现当前撞色问题
+THEMES.forEach((t,i)=>{
+  const b = document.createElement('button');
+  b.className = 'tbtn' + (i===cur?' on':'');
+  b.innerHTML = `<i style="background:linear-gradient(135deg,${t.a},${t.a2})"></i>${t.name}`;
+  b.onclick = ()=>{ cur=i; applyTheme(); [...themesEl.querySelectorAll('.tbtn')].forEach((x,j)=>x.classList.toggle('on', j===i)); };
+  themesEl.appendChild(b);
+});
+function applyTheme(){
+  const t = THEMES[cur], r = document.documentElement.style;
+  r.setProperty('--a', t.a); r.setProperty('--a2', t.a2);
+  r.setProperty('--bgA', t.bgA); r.setProperty('--bgB', t.bgB);
+}
+
+/* 生成四个方案 */
+const tpl = document.getElementById('tpl');
+const gridHtml = SOURCES.map(s=>`
+  <div class="it${s.sel?' sel':''}">
+    <div class="name"><span class="ico">${s.ico}</span>${s.n}<span class="cap">· ${s.c}</span></div>
+    <div class="hm"><i class="h-${s.h}"></i>${s.ht} · <b>${s.ms}</b></div>
+  </div>`).join('');
+
+CASES.forEach(c=>{
+  const sec = document.createElement('section');
+  sec.className = 'case ' + c.key;
+  sec.innerHTML = `
+    <div class="case-hd">
+      <div class="num">${c.num}</div>
+      <div><h2>${c.title}</h2><p>${c.desc}</p></div>
+      <div class="verdict ${c.badge==='推荐'?'rec':''}">${c.badge}</div>
+    </div>`;
+  const node = tpl.content.cloneNode(true);
+  node.querySelector('[data-grid]').innerHTML = gridHtml;
+  sec.appendChild(node);
+  const notes = document.createElement('div');
+  notes.className='notes';
+  notes.innerHTML = c.key==='cA'
+    ? `<span class="note"><b>改动量</b> 1 张 xml + 1 个取色方法，底层逻辑不动</span>
+       <span class="note"><b>透光</b> 中（约 90%）</span>
+       <span class="note"><b>四主题一致性</b> 完全一致</span>`
+    : c.key==='cB'
+    ? `<span class="note"><b>改动量</b> 最小，只换一张底座</span>
+       <span class="note"><b>透光</b> 低（96%）</span>
+       <span class="note"><b>缺点</b> 和背景几乎脱钩，偏"工具弹窗"</span>`
+    : c.key==='cC'
+    ? `<span class="note"><b>改动量</b> 中，卡片/文字/健康色都要做亮底版本</span>
+       <span class="note"><b>透光</b> 极低（97%）</span>
+       <span class="note"><b>缺点</b> 夜间刺眼，和暗色首页不同语言</span>`
+    : `<span class="note"><b>改动量</b> 中，去掉底座后要靠卡片自身撑结构</span>
+       <span class="note"><b>透光</b> 高（卡片 55%）</span>
+       <span class="note"><b>缺点</b> 背景必须压暗，否则字发虚</span>`;
+  sec.appendChild(notes);
+  document.body.appendChild(sec);
+});
+
+/* 缩放适配 */
+function fit(){
+  document.querySelectorAll('.screen').forEach(s=>{
+    const k = s.clientWidth / 1280;
+    const st = s.querySelector('.stage');
+    st.style.transform = `scale(${k})`;
+    s.style.height = (720*k) + 'px';
+  });
+}
+window.addEventListener('resize', fit);
+applyTheme();
+fit();
+document.fonts && document.fonts.ready.then(fit);
+</script>
+</body>
+</html>

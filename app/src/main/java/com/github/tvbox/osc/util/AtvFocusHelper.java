@@ -20,6 +20,15 @@ public final class AtvFocusHelper {
     private static final long FOCUS_DURATION = 160L;
     private static final long UNFOCUS_DURATION = 120L;
 
+    /**
+     * 插值器复用。
+     * 原来每次焦点变化都 new 一个 OvershootInterpolator：快速上下连按时
+     * 每秒要新建几十个对象并起几十个动画，一起抢 Choreographer 的帧 —— 这就是"滑动不顺畅"。
+     */
+    private static final android.view.animation.OvershootInterpolator OVER =
+            new android.view.animation.OvershootInterpolator(1.4f);
+    private static final DecelerateInterpolator DEC = new DecelerateInterpolator();
+
     /** 焦点落点回调，用于记录位置，返回时还原 */
     public interface OnFocusListener {
         void onItemFocused(View itemView);
@@ -63,12 +72,17 @@ public final class AtvFocusHelper {
     public static void applyScale(View v, boolean hasFocus) {
         if (v == null) return;
         float target = hasFocus ? FOCUS_SCALE : 1.0f;
+        // 已经在目标值上就别再起动画：RecyclerView 复用卡片时，
+        // 同一个 view 会被反复 bind + requestFocus，这一刀能省掉大量空转动画。
+        if (Math.abs(v.getScaleX() - target) < 0.001f && Math.abs(v.getScaleY() - target) < 0.001f) {
+            return;
+        }
         v.animate().cancel();
         v.animate()
                 .scaleX(target)
                 .scaleY(target)
                 .setDuration(hasFocus ? FOCUS_DURATION : UNFOCUS_DURATION)
-                .setInterpolator(new DecelerateInterpolator())
+                .setInterpolator(hasFocus ? OVER : DEC)
                 .start();
     }
 }

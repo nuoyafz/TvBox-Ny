@@ -1,22 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Apple TV 主背景：纯黑基底 + 顶部极轻的冷灰渐变，
-  让海报卡片浮起来，而不是靠花哨壁纸。
+  沉浸光感 · 日落大道底图（静态版）
+  用途：给不挂 AuroraBackgroundView 的页面当 windowBackground（详情 / 设置 / 搜索 / 直播），
+  保证和首页是同一套光，不然翻页会像换了个 App。
+
+  结构对齐 AuroraBackgroundView：
+    ① 暗紫底 → ② 顶部霞橙渐到晚霞粉的"天空带" → ③ 底部暮紫地光
+  这里没有 Shader，只能用 linear + radial 近似，观感误差都在可接受范围内。
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <solid android:color="@color/atv_bg" />
-        </shape>
-    </item>
+    <!-- ① 底色 -->
     <item>
         <shape android:shape="rectangle">
             <gradient
+                android:type="linear"
                 android:angle="270"
-                android:startColor="#FF141418"
-                android:centerColor="#FF0A0A0C"
-                android:endColor="@color/atv_bg"
-                android:type="linear" />
+                android:startColor="@color/neon_bg_top"
+                android:endColor="@color/neon_bg" />
+        </shape>
+    </item>
+    <!-- ② 天空带：上霞橙 → 中晚霞粉 → 下透明 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#A6FF9A5A"
+                android:centerColor="#4DFF4E78"
+                android:endColor="#00FF4E78" />
+        </shape>
+    </item>
+    <!-- ③ 地光：底部暮紫 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial"
+                android:centerX="0.48" android:centerY="1.06"
+                android:gradientRadius="0.62"
+                android:startColor="@color/dusk_glow_deep" android:endColor="#008A4DFF" />
+        </shape>
+    </item>
+    <!-- ④ 右上侧光：晚霞粉，跟顶栏玻璃咬合 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial"
+                android:centerX="0.92" android:centerY="0.30"
+                android:gradientRadius="0.42"
+                android:startColor="@color/dusk_glow_mid" android:endColor="#00FF4E78" />
         </shape>
     </item>
 </layer-list>

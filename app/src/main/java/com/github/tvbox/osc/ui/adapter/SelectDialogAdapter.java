@@ -1,7 +1,6 @@
 package com.github.tvbox.osc.ui.adapter;
 
 import android.annotation.SuppressLint;
-import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +14,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.ThemeManager;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,23 +24,31 @@ import java.util.List;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 /**
- * Netflix 资料选择器风 · 选择弹窗通用 Adapter
- * 每个条目 = 一块品牌色大磁贴（色相按位置固定，靠色认源不用读字），
- * 名字大字居中，类型小注放磁贴下方；当前选中项 = 白色粗描边。
+ * 选择弹窗通用 Adapter（沉浸光感 · 玻璃卡版）
+ *
+ * 两版改版原因：
+ *   1. 最初是 Netflix 那套高饱和品牌色磁贴（红/蓝/绿/黄）；
+ *   2. 改过一版"日落色域八色循环"（砖橙/晚霞粉/暮紫…），但**颜色是按位置循环给的**，
+ *      不表达任何信息，整墙看过去还是八种颜色互相打架。
+ *
+ * 现在：磁贴统一玻璃卡（半透明白 + 1mm 受光边），颜色只留给底部 2mm 状态线，
+ * 唯一语义 = 健康度（快/一般/慢/失效）。选中靠主题强调色粗环 + 底色提亮，
+ * 不再整块换色 —— 这样弹窗和首页/顶栏是同一套材质语言。
  */
 public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.SelectViewHolder> {
 
-    /** 品牌色板：按条目位置循环分配 */
-    private static final int[] BRAND = {
-            0xFFE50914, // 红
-            0xFF1F6FEB, // 蓝
-            0xFF2EA043, // 绿
-            0xFF8E5CD9, // 紫
-            0xFFE58A3C, // 橙
-            0xFF17A398, // 青
-            0xFFD9A521, // 黄
-            0xFFD65DB1, // 粉
-    };
+    /* 健康度状态线配色：只表达"这个源能不能用、快不快"，不做品牌色 */
+    private static final int HEALTH_FAST = 0xFF4ADE80; // 快
+    private static final int HEALTH_MID = 0xFFF5C542;  // 一般
+    private static final int HEALTH_SLOW = 0xFFFF8A4C;  // 慢
+    private static final int HEALTH_DEAD = 0xFFFF4D4F;  // 失效
+    private static final int HEALTH_NONE = 0x33FFFFFF;  // 未测 / 无数据
+
+    /* 玻璃卡三档白：常态、选中 */
+    private static final int GLASS_TOP = 0x1FFFFFFF;
+    private static final int GLASS_BOTTOM = 0x0AFFFFFF;
+    private static final int GLASS_TOP_SEL = 0x38FFFFFF;
+    private static final int GLASS_BOTTOM_SEL = 0x1FFFFFFF;
 
     class SelectViewHolder extends RecyclerView.ViewHolder {
 
@@ -93,19 +101,14 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         return data.size();
     }
 
-    /** 品牌色加深，做磁贴的对角渐变底 */
-    private static int darken(int color, float factor) {
-        int r = (int) (((color >> 16) & 0xFF) * factor);
-        int g = (int) (((color >> 8) & 0xFF) * factor);
-        int b = (int) ((color & 0xFF) * factor);
-        return 0xFF000000 | (r << 16) | (g << 8) | b;
-    }
-
-    private static int lighten(int color, float factor) {
-        int r = Math.min(255, (int) (((color >> 16) & 0xFF) * factor));
-        int g = Math.min(255, (int) (((color >> 8) & 0xFF) * factor));
-        int b = Math.min(255, (int) ((color & 0xFF) * factor));
-        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    /** 卡下小注里的健康度 → 状态线颜色。认不出就先当"未测"。 */
+    private static int healthColor(String cap) {
+        if (cap == null || cap.isEmpty()) return HEALTH_NONE;
+        if (cap.contains("失效")) return HEALTH_DEAD;
+        if (cap.startsWith("快")) return HEALTH_FAST;
+        if (cap.startsWith("一般")) return HEALTH_MID;
+        if (cap.startsWith("慢")) return HEALTH_SLOW;
+        return HEALTH_NONE;
     }
 
     @Override
@@ -119,49 +122,64 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         String display = dialogInterface.getDisplay(value);
         if (display == null) display = "";
 
-        // "文采｜秒播" 竖线拆成 磁贴名 + 卡下小注
+        // 「源名｜健康度」拆成 磁贴名 + 卡下小注。
+        // 必须用 lastIndexOf：源名本身可能带 ｜（例："豆豆｜片单"），
+        // 用 indexOf 会把名字从中间劈开，磁贴显示成"豆豆｜片单 <..."。
         String nm = display;
         String cap = "";
-        int sp = display.indexOf('｜');
-        if (sp < 0) sp = display.indexOf('|');
+        int sp = display.lastIndexOf('｜');
+        if (sp < 0) sp = display.lastIndexOf('|');
         if (sp >= 0) {
-            nm = display.substring(0, sp).trim();
-            cap = display.substring(sp + 1).trim();
+            String tail = display.substring(sp + 1).trim();
+            // 只有尾巴确实是健康度才拆，否则（比如名字里自带竖线）整串当名字
+            if (tail.contains("·") || tail.contains("失效") || tail.startsWith("快")
+                    || tail.startsWith("一般") || tail.startsWith("慢")) {
+                nm = display.substring(0, sp).trim();
+                cap = tail;
+            }
         }
 
-        int brand = BRAND[position % BRAND.length];
         boolean sel = (position == select);
+        int accent = ThemeManager.accent();
 
         View root = holder.itemView;
         FrameLayout face = root.findViewById(R.id.signPanel);
         TextView tvName = root.findViewById(R.id.tvName);
         TextView tvCap = root.findViewById(R.id.tvSignCap);
+        View vDot = root.findViewById(R.id.vHealthDot);
 
         tvName.setText(nm);
         tvCap.setText(cap);
         tvCap.setVisibility(cap.length() == 0 ? View.INVISIBLE : View.VISIBLE);
 
-        // 磁贴底：品牌色对角渐变（Netflix 头像色块的立体感）
-        GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{lighten(brand, 1.12f), darken(brand, 0.45f)});
-        bg.setCornerRadius(AutoSizeUtils.mm2px(root.getContext(), 6));
+        // 玻璃底：垂直微渐变（上亮下暗），跟弹窗底座 bg_vault_dialog 同一套材质
+        GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                sel ? new int[]{GLASS_TOP_SEL, GLASS_BOTTOM_SEL}
+                        : new int[]{GLASS_TOP, GLASS_BOTTOM});
+        bg.setCornerRadius(AutoSizeUtils.mm2px(root.getContext(), 8));
         if (sel) {
-            // 选中 = 白色粗环（Netflix 的经典选中态）
-            bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 3), 0xFFFFFFFF);
+            bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 2.5f), accent);
         } else {
-            bg.setStroke(0, 0);
+            bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 1), 0x26FFFFFF);
         }
         face.setBackground(bg);
 
-        if (sel) {
-            tvName.setTextColor(0xFFFFFFFF);
-            tvName.setShadowLayer(AutoSizeUtils.mm2px(root.getContext(), 6), 0, 2, 0x66000000);
-            tvCap.setTextColor(0xFFFFFFFF);
-        } else {
-            tvName.setTextColor(0xF2FFFFFF);
-            tvName.setShadowLayer(0, 0, 0, 0);
-            tvCap.setTextColor(root.getContext().getResources().getColor(R.color.neon_text_secondary));
+        // 唯一带颜色的地方：卡下那颗 7mm 健康度圆点
+        if (vDot != null) {
+            if (cap.length() == 0) {
+                vDot.setVisibility(View.INVISIBLE);
+            } else {
+                vDot.setVisibility(View.VISIBLE);
+                GradientDrawable dot = new GradientDrawable();
+                dot.setShape(GradientDrawable.OVAL);
+                dot.setColor(healthColor(cap));
+                vDot.setBackground(dot);
+            }
         }
+
+        tvName.setTextColor(sel ? 0xFFFFFFFF : 0xF2FDF6F2);
+        tvName.setShadowLayer(0, 0, 0, 0);
+        tvCap.setTextColor(sel ? 0xCCFFFFFF : 0xA6FFFFFF);
 
         root.setOnClickListener(new View.OnClickListener() {
             @Override

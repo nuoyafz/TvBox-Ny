@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  顶栏「换源」—— 半透明烟玻璃胶囊（沉浸光感材质）
+
+  这是首帧的静态版，运行期会被 ThemeManager.glassChipSelector() 按当前主题覆盖
+  （玻璃的"墨色"要由当前主题的 bgB 现算，xml 里写不出来）。
+
+  为什么是深色玻璃而不是白玻璃：
+    在「极光绿松」这类亮壁纸上，白色玻璃会直接糊进背景 —— 实测胶囊底
+    rgb(134,192,172) vs 顶栏底 rgb(121,184,163)，差 13 个色阶，等于没画。
+    深色本体压得住，白字才有对比；60% 左右的不透明度让背后的极光仍然透得上来。
+
+    本体 · 深墨渐变（上淡下浓），60% 不透明
+    受光 · 顶部一道白衰减光，交代玻璃厚度
+    焦点 · 2mm 强调色描边 + 更厚的本体（整条顶栏里唯一"通电"的东西）
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="17mm" />
+            <gradient
+                android:angle="270"
+                android:startColor="#C61E1A22"
+                android:endColor="#9C1E1A22" />
+            <stroke android:width="2mm" android:color="@color/neon_accent" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="17mm" />
+            <gradient
+                android:angle="270"
+                android:startColor="#9E14121A"
+                android:endColor="#7414121A" />
+            <stroke android:width="1mm" android:color="#3DFFFFFF" />
+        </shape>
+    </item>
+</selector>

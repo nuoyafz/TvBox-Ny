@@ -64,10 +64,23 @@ public final class WallpaperHelper {
         return url + (url.contains("?") ? "&" : "?") + "t=" + System.currentTimeMillis();
     }
 
-    /** 默认轮换：从"适合做背景"的池子里依次取，供"换一张"无指定类别时使用 */
+    /** 默认轮换：按时段感知选池——早上动漫、白天风景、傍晚霞光感电脑壁纸、深夜 calming 二次元 */
     public static String nextUrl() {
-        String cat = CALM_POOL[Math.abs(cursor++) % CALM_POOL.length];
+        String cat = categoryByHour();
+        if (cat == null) cat = CALM_POOL[Math.abs(cursor++) % CALM_POOL.length];
         return endpointFor(cat);
+    }
+
+    /**
+     * 时段感知类别：夜里少刺激（二次元/动漫），傍晚配"日落大道"氛围用风景，
+     * 白天正常轮换。null = 跟随原轮换池。
+     */
+    public static String categoryByHour() {
+        int h = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
+        if (h >= 23 || h < 6) return "acg";            // 深夜：安静
+        if (h >= 17 && h < 23) return "landscape";     // 傍晚：霞光感
+        if (h >= 6 && h < 11) return "anime";          // 早上：元气
+        return null;                                    // 白天：正常轮换
     }
 
     /**

@@ -16,18 +16,41 @@
 
   颜色全部走 colors_neon.xml（暖墨黑 + 单一琥珀），这里不写死色值。
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 沉浸光感极光层：画在壁纸之上、内容之下，光斑会缓慢漂移（低配静态） -->
+    <com.github.tvbox.osc.ui.widget.AuroraBackgroundView
+        android:id="@+id/auroraBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+<LinearLayout
+    android:id="@+id/contentLayout"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_window_scrim"
-    android:orientation="vertical">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingTop="90mm">
+
+    <com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager
+        android:id="@+id/mViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/topLayout"
         android:layout_width="match_parent"
         android:layout_height="90mm"
+        android:background="@drawable/bg_glass_bar"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:orientation="vertical"
@@ -54,27 +77,46 @@
                 android:textSize="22mm"
                 android:textStyle="bold" />
 
-            <!-- 当前首页源名：可聚焦，确认键切源 -->
+            <!--
+              当前首页源名：只显示，不再当按钮用（用户反馈"不知道能换源"）。
+              真正的入口是右边那颗 「⟳ 换源」 chip，形状上就是个按钮。
+            -->
             <TextView
                 android:id="@+id/tvSource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="18mm"
-                android:background="@drawable/bg_text_link"
-                android:clickable="true"
                 android:ellipsize="end"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
                 android:includeFontPadding="false"
-                android:letterSpacing="0.08"
+                android:letterSpacing="0.1"
                 android:maxLines="1"
                 android:maxWidth="240mm"
-                android:paddingLeft="10mm"
-                android:paddingTop="5mm"
-                android:paddingRight="10mm"
-                android:paddingBottom="5mm"
-                android:textColor="@color/nav_item_text"
+                android:textColor="@color/top_link_text_dim"
                 android:textSize="16mm" />
+
+            <!--
+              换源按钮：这是"能换源"唯一无歧义的信号。
+              注意不要放 ⟳ / ⚡ 这类符号——电视端字体普遍缺字形，实测 ⟳ 直接不渲染，
+              按钮会变成一块没有字的空胶囊。
+            -->
+            <TextView
+                android:id="@+id/tvSwitchSource"
+                android:layout_width="wrap_content"
+                android:layout_height="34mm"
+                android:layout_marginLeft="14mm"
+                android:background="@drawable/bg_chip_switch_source"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.14"
+                android:paddingLeft="22mm"
+                android:paddingRight="22mm"
+                android:text="换源"
+                android:textColor="@color/top_chip_text"
+                android:textSize="15mm"
+                android:textStyle="bold" />
 
             <Space
                 android:layout_width="0dp"
@@ -107,10 +149,25 @@
                 style="@style/TopLink"
                 android:text="遥控" />
 
+            <!--
+              搜索：全站最高频入口。之前混在 7 个灰字链接里，用户反馈"太不起眼"。
+              现在做成常亮强调色胶囊（颜色由 ThemeManager.searchChipSelector 按主题生成），
+              平时就有底色、有包边，焦点态反白，一眼能看见。
+            -->
             <TextView
                 android:id="@+id/tvSearch"
                 style="@style/TopLink"
-                android:text="搜索" />
+                android:layout_height="36mm"
+                android:layout_marginLeft="10mm"
+                android:layout_marginRight="10mm"
+                android:background="@drawable/bg_chip_search"
+                android:letterSpacing="0.18"
+                android:paddingLeft="26mm"
+                android:paddingRight="26mm"
+                android:text="搜索"
+                android:textColor="@color/chip_search_text"
+                android:textSize="16mm"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvSetting"
@@ -133,7 +190,7 @@
                 android:includeFontPadding="false"
                 android:letterSpacing="0.12"
                 android:maxLines="1"
-                android:textColor="@color/neon_text_tertiary"
+                android:textColor="@color/top_link_text_dim"
                 android:textSize="14mm"
                 tools:text="2026/10/20  周二  11:32" />
 
@@ -150,21 +207,4 @@
             android:focusable="true" />
 
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/contentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical">
-
-        <com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager
-            android:id="@+id/mViewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>

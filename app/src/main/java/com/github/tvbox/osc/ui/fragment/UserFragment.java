@@ -161,6 +161,10 @@ public class UserFragment extends BaseLazyFragment {
         tvHeroTitle = findViewById(R.id.tvHeroTitle);
         tvHeroMeta = findViewById(R.id.tvHeroMeta);
         tvHeroPlay = findViewById(R.id.tvHeroPlay);
+        // 上键出口：主页「继续播放」→ 顶栏「换源」。
+        // 几何搜索从 y=436 往上，横向能重叠到的只有 NOYA 品牌名（x 84..202），
+        // 而遥控器用户按上键的意图基本都是"去顶栏换源 / 搜索"，所以直接钉到换源。
+        if (tvHeroPlay != null) tvHeroPlay.setNextFocusUpId(R.id.tvSwitchSource);
         tvRowLabel = findViewById(R.id.tvRowLabel);
         ivHeroBg = findViewById(R.id.ivHeroBg);
         ivHeroPoster = findViewById(R.id.ivHeroPoster);

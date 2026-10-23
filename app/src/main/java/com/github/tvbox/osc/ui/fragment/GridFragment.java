@@ -246,6 +246,9 @@ public class GridFragment extends BaseLazyFragment {
             mGridView.setVisibility(View.VISIBLE);
         }
         mGridView.setHasFixedSize(true);
+        // 多留 12 个已绑定的卡片：遥控快速连按时不再反复走 onBindViewHolder
+        // （海报解码是最贵的一步，这一行直接决定滑动是不是"一卡一卡"）
+        mGridView.setItemViewCacheSize(12);
         style=ImgUtil.initStyle();
         gridAdapter = new GridAdapter(isFolederMode(), style);
         this.page =1;
@@ -365,31 +368,7 @@ public class GridFragment extends BaseLazyFragment {
         });
         gridAdapter.setLoadMoreView(new LoadMoreView());
         setLoadSir2(mGridView);
-        initNavScrollHide();
         initPullRefresh();
-    }
-
-    /**
-     * 沉浸式导航滑隐（滚动驱动，与 HomeActivity 焦点驱动的 topBarAutoHide 共存）：
-     * 网格往下滚（dy>0，且已离开第一行）→ 顶栏收起；
-     * 往上滚（dy<0）或滚回顶部 → 顶栏放出。
-     * 焦点在首行内移动不产生"离开顶部"的滚动，不触发。
-     */
-    private void initNavScrollHide() {
-        mGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                if (dy == 0) return;
-                android.app.Activity act = getActivity();
-                if (!(act instanceof HomeActivity)) return;
-                boolean atTop = !rv.canScrollVertically(-1);
-                if (dy > 0 && !atTop) {
-                    ((HomeActivity) act).onGridScrollHide(true);
-                } else if (dy < 0 || atTop) {
-                    ((HomeActivity) act).onGridScrollHide(false);
-                }
-            }
-        });
     }
 
     private void initPullRefresh() {

@@ -2,11 +2,11 @@
 <!--
   导航项文字：顶栏分类 / 源名 / 搜索入口 / 设置页左栏分组。
 
-  常态从 tertiary(#6E665C) 提到 secondary(#A79D91)：
-  tertiary 在 #0B0A09 上对比度只有 3.5:1，18mm 的字远看几乎融进背景，
-  顶栏看着"若有若无"，用户会以为导航栏消失了。焦点仍为纯白。
+  当前主题（日落大道）顶栏底下是霞橙天空，原来常态用 #B3A3A8（暖灰粉），
+  压上去又脏又糊，和纯白的 NOYA 不是一个体系 —— 这就是"字体和颜色很不匹配"。
+  现在常态提到 85% 暖白，靠字距和字重做层次；焦点仍是纯白 + 下划线。
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_focused="true" android:color="@color/neon_text_primary" />
-    <item android:color="@color/neon_text_secondary" />
+    <item android:state_focused="true" android:color="#FFFFFFFF" />
+    <item android:color="#D9FDF6F2" />
 </selector>

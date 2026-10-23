@@ -37,6 +37,27 @@ public class App extends MultiDexApplication {
     public static String burl;
     private static String dashData;
 
+    /** 低配设备：核数<=4 或 总内存<=2GB。沉浸光感的流光动画在这类机器上自动关掉 */
+    private Boolean lowEnd;
+
+    public boolean isLowEndDevice() {
+        if (lowEnd == null) {
+            boolean low;
+            try {
+                android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
+                if (am != null) am.getMemoryInfo(mi);
+                int cores = Runtime.getRuntime().availableProcessors();
+                long totalMb = mi.totalMem / (1024 * 1024);
+                low = cores <= 4 || totalMb <= 2048;
+            } catch (Throwable t) {
+                low = false;
+            }
+            lowEnd = low;
+        }
+        return lowEnd;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

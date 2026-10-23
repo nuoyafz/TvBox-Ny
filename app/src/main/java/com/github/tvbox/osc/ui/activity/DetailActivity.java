@@ -203,6 +203,11 @@ public class DetailActivity extends BaseActivity {
         tvPlayUrl = findViewById(R.id.tvPlayUrl);
         tvDes = findViewById(R.id.tvDes);
         tvPlay = findViewById(R.id.tvPlay);
+        // 主按钮（立即播放）：底色跟随当前主题，不再写死日落霞橙
+        if (tvPlay != null) {
+            tvPlay.setBackground(
+                    com.github.tvbox.osc.util.ThemeManager.solidAccentButton(this, 6));
+        }
 //        tvSort = findViewById(R.id.tvSort);
         tvDesc = findViewById(R.id.tvDesc);
         tvSeriesSort = findViewById(R.id.mSeriesSortTv);

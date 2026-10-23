@@ -202,6 +202,54 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvHistoryMerge.setText(Hawk.get(HawkConfig.HISTORY_MERGE, false) ? "开启" : "关闭");
         tvSearchView.setText(getSearchView(Hawk.get(HawkConfig.SEARCH_VIEW, 0)));
         tvHomeApi.setText(ApiConfig.get().getHomeSourceBean().getName());
+        // 源体检：一键并发探活，结果写回健康度
+        final TextView tvCheckHint = findViewById(R.id.tvSourceCheckHint);
+        tvCheckHint.setText(com.github.tvbox.osc.util.SourceHealth.lastScanText());
+        findViewById(R.id.llSourceCheck).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                List<SourceBean> all = ApiConfig.get().getSwitchSourceBeanList();
+                tvCheckHint.setText("体检中…");
+                Toast.makeText(mContext, "开始体检 " + all.size() + " 个源（含蜘蛛源，约 1 分钟）", Toast.LENGTH_SHORT).show();
+                com.github.tvbox.osc.util.SourceHealth.checkAll(all, new com.github.tvbox.osc.util.SourceHealth.ScanCallback() {
+                    @Override
+                    public void onProgress(int done, int total) {
+                        tvCheckHint.setText(done + "/" + total);
+                    }
+
+                    @Override
+                    public void onDone(String summary) {
+                        com.github.tvbox.osc.util.SourceHealth.markScanned();
+                        tvCheckHint.setText(com.github.tvbox.osc.util.SourceHealth.lastScanText());
+                        Toast.makeText(mContext, "体检完成：" + summary, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+        // 智能排序开关（默认关，避免打乱用户习惯）
+        final TextView tvSmartSort = findViewById(R.id.tvSmartSort);
+        tvSmartSort.setText(Hawk.get("smart_source_sort", false) ? "开" : "关");
+        findViewById(R.id.llSmartSort).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                boolean on = !Hawk.get("smart_source_sort", false);
+                Hawk.put("smart_source_sort", on);
+                tvSmartSort.setText(on ? "开" : "关");
+                Toast.makeText(mContext, on ? "已开启：源列表按健康度排序" : "已关闭：保持原顺序", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // ---- 主题：四套沉浸光感配色，切完 recreate 一次全局生效 ----
+        final TextView tvThemeName = findViewById(R.id.tvThemeName);
+        tvThemeName.setText(com.github.tvbox.osc.util.ThemeManager.name());
+        findViewById(R.id.llTheme).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                showThemeDialog(tvThemeName);
+            }
+        });
         tvScale.setText(PlayerHelper.getScaleName(Hawk.get(HawkConfig.PLAY_SCALE, 0)));
         tvPlay.setText(PlayerHelper.getPlayerName(Hawk.get(HawkConfig.PLAY_TYPE, 2)));
         tvRender.setText(PlayerHelper.getRenderName(Hawk.get(HawkConfig.PLAY_RENDER, 0)));
@@ -274,6 +322,10 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 FastClickCheckUtil.check(v);
                 List<SourceBean> sites = ApiConfig.get().getSwitchSourceBeanList();
                 if (sites.size() > 0) {
+                    // 智能选源：跟随设置开关
+                    if (Hawk.get("smart_source_sort", false)) {
+                        com.github.tvbox.osc.util.SourceHealth.sortByHealth(sites);
+                    }
                     SelectDialog<SourceBean> dialog = new SelectDialog<>(mActivity);
                     dialog.setTip("请选择首页数据源");
                     // 霓虹片仓：3~4 列招牌墙
@@ -297,7 +349,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
                         @Override
                         public String getDisplay(SourceBean val) {
-                            return val.getName();
+                            String health = com.github.tvbox.osc.util.SourceHealth.label(val.getKey());
+                            return health.isEmpty() ? val.getName() : val.getName() + "｜" + health;
                         }
                     }, new DiffUtil.ItemCallback<SourceBean>() {
                         @Override
@@ -858,6 +911,47 @@ public class ModelSettingFragment extends BaseLazyFragment {
         findViewById(R.id.llClearCache).setOnClickListener((view -> onClickClearCache(view)));
         // 首次进入只显示当前分组（默认第一组）
         applyGroupVisibility();
+    }
+
+    /** 主题选择：四套配色，选中后 recreate 一次，全局（首页极光 + 顶栏 + 分类 tab）一起换 */
+    private void showThemeDialog(final TextView tvName) {
+        final List<String> items = new ArrayList<>();
+        for (int i = 0; i < com.github.tvbox.osc.util.ThemeManager.NAMES.length; i++) {
+            items.add(com.github.tvbox.osc.util.ThemeManager.NAMES[i]
+                    + "｜" + com.github.tvbox.osc.util.ThemeManager.sub(i));
+        }
+        final SelectDialog<String> dlg = new SelectDialog<>(mContext);
+        dlg.setTip("选择主题");
+        TvRecyclerView rv = dlg.findViewById(R.id.list);
+        if (rv != null) {
+            rv.setLayoutManager(new V7GridLayoutManager(mContext, 2));
+        }
+        dlg.setAdapter(new SelectDialogAdapter.SelectDialogInterface<String>() {
+            @Override
+            public void click(String value, int pos) {
+                dlg.dismiss();
+                if (pos == com.github.tvbox.osc.util.ThemeManager.get()) return;
+                com.github.tvbox.osc.util.ThemeManager.set(pos);
+                if (tvName != null) tvName.setText(com.github.tvbox.osc.util.ThemeManager.name());
+                if (getActivity() != null) getActivity().recreate();
+            }
+
+            @Override
+            public String getDisplay(String val) {
+                return val;
+            }
+        }, new DiffUtil.ItemCallback<String>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull String a, @NonNull String b) {
+                return a.equals(b);
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull String a, @NonNull String b) {
+                return a.equals(b);
+            }
+        }, items, com.github.tvbox.osc.util.ThemeManager.get());
+        dlg.show();
     }
 
     private void restartAppAfterConfigChanged() {

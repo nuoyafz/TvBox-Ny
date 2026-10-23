@@ -9,7 +9,7 @@
         android:layout_width="@dimen/vs_480"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="@drawable/shape_danmu_setting_bg">
+        android:background="@drawable/bg_glass_body">
 
         <TextView
             android:id="@+id/title"

@@ -252,6 +252,146 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- 源体检 + 智能排序：一键探活所有源，死源能提前发现 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/vs_60"
+                android:layout_marginBottom="@dimen/vs_10"
+                android:focusable="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/llSourceCheck"
+                    android:layout_width="@dimen/vs_0"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/vs_5"
+                    android:layout_marginRight="@dimen/vs_5"
+                    android:layout_weight="3.08"
+                    android:background="@drawable/shape_setting_model_focus"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/vs_20"
+                    android:paddingRight="@dimen/vs_20">
+
+                    <TextView
+                        android:duplicateParentState="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="源体检"
+                        android:textColor="@color/setting_row_text"
+                        android:textSize="@dimen/ts_24" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/tvSourceCheckHint"
+                        android:duplicateParentState="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:text="按 OK 开始"
+                        android:textColor="@color/setting_row_text"
+                        android:textSize="@dimen/ts_24" />
+
+                    <TextView
+                        android:duplicateParentState="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/vs_10"
+                        android:layout_marginLeft="@dimen/vs_10"
+                        android:text="›"
+                        android:textColor="@color/setting_row_text"
+                        android:textSize="@dimen/ts_30" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/llSmartSort"
+                    android:layout_width="@dimen/vs_0"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/vs_5"
+                    android:layout_marginLeft="@dimen/vs_5"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape_setting_model_focus"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/vs_20"
+                    android:paddingRight="@dimen/vs_20">
+
+                    <TextView
+                        android:duplicateParentState="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="智能排序"
+                        android:textColor="@color/setting_row_text"
+                        android:textSize="@dimen/ts_24" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/tvSmartSort"
+                        android:duplicateParentState="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="关"
+                        android:textColor="@color/setting_row_text"
+                        android:textSize="@dimen/ts_24" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 主题：四套沉浸光感配色 -->
+            <LinearLayout
+                android:id="@+id/llTheme"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/vs_60"
+                android:layout_marginBottom="@dimen/vs_10"
+                android:background="@drawable/shape_setting_model_focus"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/vs_20"
+                android:paddingRight="@dimen/vs_20">
+
+                <TextView
+                    android:duplicateParentState="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="主题"
+                    android:textColor="@color/setting_row_text"
+                    android:textSize="@dimen/ts_24" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvThemeName"
+                    android:duplicateParentState="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="日落大道"
+                    android:textColor="@color/setting_row_text"
+                    android:textSize="@dimen/ts_24" />
+
+                <TextView
+                    android:duplicateParentState="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/vs_10"
+                    android:layout_marginLeft="@dimen/vs_10"
+                    android:text="›"
+                    android:textColor="@color/setting_row_text"
+                    android:textSize="@dimen/ts_30" />
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/vs_60"

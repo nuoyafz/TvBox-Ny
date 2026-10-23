@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Netflix 资料选择器风：品牌色块大卡 + 卡下灰字小注，选中白粗环 -->
+<!--
+  选择弹窗的单个磁贴（沉浸光感 · 玻璃卡）
+
+  改版原因（用户："这个 ui 和现在全局 ui 不是很匹配"）：
+    上一版每个磁贴按位置循环分配一种高饱和品牌色（砖橙/晚霞粉/暮紫…），
+    整墙看过去是 8 种颜色在互相打架，跟"暖墨黑 + 单一强调色 + 玻璃"的
+    全局语言完全不是一个体系。而且颜色是**随机按位置**给的，不表达任何信息。
+
+  现在：
+    · 磁贴统一玻璃卡（半透明白 + 1mm 受光边 + 8mm 圆角），跟弹窗玻璃同源；
+    · 颜色只剩一个落点：卡下小注左边那颗 7mm 圆点 = 健康度
+      （快=绿 / 一般=琥珀 / 慢=橙 / 失效=红 / 未测=灰），由 SelectDialogAdapter 着色；
+    · 选中只靠主题强调色粗环 + 底色提亮，不再整块换色。
+
+  为什么不用"卡片底部一整条色带"：那条贯穿的横条在 4 列网格里读起来像进度条，
+  不像状态标记，还会把卡片切成两截。圆点小、语义清楚、不抢主体。
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/signRoot"
@@ -27,21 +43,34 @@
             android:paddingRight="@dimen/vs_8"
             android:singleLine="true"
             android:textColor="@color/neon_text_primary"
-            android:textSize="@dimen/ts_26"
+            android:textSize="22mm"
             android:textStyle="bold"
             tools:text="文采" />
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/tvSignCap"
+    <!-- 卡下小注：健康度圆点 + 文案（"快 · 120ms" / "源已失效"） -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/vs_8"
-        android:ellipsize="end"
+        android:layout_marginTop="@dimen/vs_7"
         android:gravity="center"
-        android:includeFontPadding="false"
-        android:singleLine="true"
-        android:textColor="@color/neon_text_secondary"
-        android:textSize="@dimen/ts_16"
-        tools:text="秒播" />
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/vHealthDot"
+            android:layout_width="7mm"
+            android:layout_height="7mm"
+            android:layout_marginRight="7mm" />
+
+        <TextView
+            android:id="@+id/tvSignCap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:textColor="@color/neon_text_secondary"
+            android:textSize="@dimen/ts_16"
+            tools:text="秒播" />
+    </LinearLayout>
 </LinearLayout>

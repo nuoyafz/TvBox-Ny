@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  换源按钮文字（首帧静态值；运行期由 ThemeManager.glassChipTextColors() 按主题覆盖）
+  常态：强调色 —— 玻璃本体是无彩色，只有字带主题色，四套主题都不会撞
+  焦点：纯白 —— 焦点态玻璃更亮，白字最干净
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FFFFFFFF" />
+    <item android:color="@color/neon_accent" />
+</selector>

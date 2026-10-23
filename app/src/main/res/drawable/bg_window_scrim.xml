@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  窗口遮罩：和 gradient_neon_bg 同样的暖墨黑渐变，但整层带透明度。
-  App 自己下载的壁纸画在 windowBackground 上，如果根布局铺一层不透明的
-  gradient_neon_bg，壁纸就被整块盖死了 —— 表现就是"换了壁纸没反应"。
-  这里只留 4%～15% 的通透度：壁纸作为一层很淡的底纹透出来，换图能明显看出变化，
-  但正文/标题的白字对比度基本不受影响（最亮处也压到 #2A2622 以内）。
+  窗口遮罩 v5（沉浸光感）
+  v4 的错：这层和 AuroraBackgroundView 画的是同一组光斑，两层叠加 → 光斑糊成一整片酒红，
+  看着像"换了个纯色底"，不像"光"。
+  现在只留一层极光（AuroraBackgroundView），这层退化成极轻的压暗，
+  保证白字可读，同时让光斑的边界留得住。
 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient
-        android:angle="270"
-        android:startColor="#D9191411"
-        android:centerColor="#E6110E0C"
-        android:endColor="#F50B0A09" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#0D000000"
+                android:centerColor="#1F000000"
+                android:endColor="#38000000" />
+        </shape>
+    </item>
+</layer-list>
