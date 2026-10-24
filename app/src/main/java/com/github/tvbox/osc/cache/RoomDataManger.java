@@ -15,9 +15,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import com.orhanobut.hawk.Hawk;
-
-import android.os.Handler;
-import android.os.Looper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,17 +26,6 @@ import java.util.Set;
  * @description:
  */
 public class RoomDataManger {
-    /** 异步读结果回调，onResult 保证回主线程 */
-    public interface Callback<T> {
-        void onResult(T result);
-    }
-
-    private static final Handler MAIN = new Handler(Looper.getMainLooper());
-
-    private static void post(Runnable r) {
-        MAIN.post(r);
-    }
-
     static ExclusionStrategy vodInfoStrategy = new ExclusionStrategy() {
         @Override
         public boolean shouldSkipField(FieldAttributes field) {
@@ -63,12 +49,6 @@ public class RoomDataManger {
     }
 
     public static void insertVodRecord(String sourceKey, VodInfo vodInfo) {
-        // 原来在主线程同步写（allowMainThreadQueries），现在丢后台：调用方从不读返回值，
-        // fire-and-forget 语义不变。Gson 序列化 + 可能的 removeSameName 全表扫描都在后台。
-        DbExecutors.execute(() -> insertVodRecordSync(sourceKey, vodInfo));
-    }
-
-    private static void insertVodRecordSync(String sourceKey, VodInfo vodInfo) {
         VodRecordDao dao = AppDataManager.get().getVodRecordDao();
         if (Hawk.get(HawkConfig.HISTORY_MERGE, false)) {
             removeSameNameVodRecords(dao, sourceKey, vodInfo);
@@ -101,20 +81,6 @@ public class RoomDataManger {
     }
 
     public static void deleteVodRecord(String sourceKey, VodInfo vodInfo) {
-        DbExecutors.execute(() -> deleteVodRecordSync(sourceKey, vodInfo));
-    }
-
-    /** 按 vodId 删（不需要完整 VodInfo 对象的场景，如首页"删除这条记录"） */
-    public static void deleteVodRecord(String sourceKey, String vodId) {
-        DbExecutors.execute(() -> {
-            VodRecord record = AppDataManager.get().getVodRecordDao().getVodRecord(sourceKey, vodId);
-            if (record != null) {
-                AppDataManager.get().getVodRecordDao().delete(record);
-            }
-        });
-    }
-
-    private static void deleteVodRecordSync(String sourceKey, VodInfo vodInfo) {
         VodRecord record = AppDataManager.get().getVodRecordDao().getVodRecord(sourceKey, vodInfo.id);
         if (record != null) {
             AppDataManager.get().getVodRecordDao().delete(record);
@@ -182,10 +148,6 @@ public class RoomDataManger {
     }
 
     public static void insertVodCollect(String sourceKey, VodInfo vodInfo) {
-        DbExecutors.execute(() -> insertVodCollectSync(sourceKey, vodInfo));
-    }
-
-    private static void insertVodCollectSync(String sourceKey, VodInfo vodInfo) {
         VodCollect record = AppDataManager.get().getVodCollectDao().getVodCollect(sourceKey, vodInfo.id);
         if (record != null) {
             return;
@@ -200,14 +162,10 @@ public class RoomDataManger {
     }
 
     public static void deleteVodCollect(int id) {
-        DbExecutors.execute(() -> AppDataManager.get().getVodCollectDao().delete(id));
+        AppDataManager.get().getVodCollectDao().delete(id);
     }
 
     public static void deleteVodCollect(String sourceKey, VodInfo vodInfo) {
-        DbExecutors.execute(() -> deleteVodCollectSync(sourceKey, vodInfo));
-    }
-
-    private static void deleteVodCollectSync(String sourceKey, VodInfo vodInfo) {
         VodCollect record = AppDataManager.get().getVodCollectDao().getVodCollect(sourceKey, vodInfo.id);
         if (record != null) {
             AppDataManager.get().getVodCollectDao().delete(record);
@@ -215,11 +173,11 @@ public class RoomDataManger {
     }
     
     public static void deleteVodCollectAll() {
-        DbExecutors.execute(() -> AppDataManager.get().getVodCollectDao().deleteAll());
+        AppDataManager.get().getVodCollectDao().deleteAll();
     }
 
     public static void deleteVodRecordAll() {
-        DbExecutors.execute(() -> AppDataManager.get().getVodRecordDao().deleteAll());
+        AppDataManager.get().getVodRecordDao().deleteAll();
     }
 
     public static boolean isVodCollect(String sourceKey, String vodId) {
@@ -229,38 +187,5 @@ public class RoomDataManger {
 
     public static List<VodCollect> getAllVodCollect() {
         return AppDataManager.get().getVodCollectDao().getAll();
-    }
-
-    // ===== 异步读版本：DB IO 走 DbExecutors，onResult 回主线程 =====
-    // 读操作本身仍是原来的同步实现（isVodCollect / getVodInfo / getAllVodCollect /
-    // getAllVodRecord），只是包了一层线程 + 主线程回调。异常时回调 null，与同步版
-    // 返回 null 的降级路径一致。
-
-    public static void getVodInfoAsync(String sourceKey, String vodId, Callback<VodInfo> cb) {
-        DbExecutors.execute(() -> {
-            final VodInfo r = getVodInfo(sourceKey, vodId);
-            post(() -> cb.onResult(r));
-        });
-    }
-
-    public static void isVodCollectAsync(String sourceKey, String vodId, Callback<Boolean> cb) {
-        DbExecutors.execute(() -> {
-            final boolean r = isVodCollect(sourceKey, vodId);
-            post(() -> cb.onResult(r));
-        });
-    }
-
-    public static void getAllVodCollectAsync(Callback<List<VodCollect>> cb) {
-        DbExecutors.execute(() -> {
-            final List<VodCollect> r = getAllVodCollect();
-            post(() -> cb.onResult(r));
-        });
-    }
-
-    public static void getAllVodRecordAsync(int limit, Callback<List<VodInfo>> cb) {
-        DbExecutors.execute(() -> {
-            final List<VodInfo> r = getAllVodRecord(limit);
-            post(() -> cb.onResult(r));
-        });
     }
 }

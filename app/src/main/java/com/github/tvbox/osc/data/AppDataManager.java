@@ -135,8 +135,7 @@ public class AppDataManager {
                             super.onOpen(db);
 //                        LOG.i("数据库打开成功");
                         }
-                    })// 原来开着 allowMainThreadQueries()，所有 DB 操作跑主线程；
-                    // 现已全部挪到 RoomDataManger/DbExecutors 后台执行，关掉以防回归
+                    }).allowMainThreadQueries()//可以在主线程操作
                     .build();
         return dbInstance;
     }

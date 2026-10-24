@@ -128,22 +128,19 @@ public class UserFragment extends BaseLazyFragment {
         int half = tvHotList.mHorizontalSpacingWithMargins / 2;
         tvHotList.setPadding(-half, 0, -half, 0);
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2) {
-            // 最近观看 20 条挪后台读：全表查询 + 逐条 Gson 反序列化，主线程几十毫秒
-            RoomDataManger.getAllVodRecordAsync(20, allVodRecord -> {
-                if (getContext() == null || allVodRecord == null) return;
-                List<Movie.Video> vodList = new ArrayList<>();
-                for (VodInfo vodInfo : allVodRecord) {
-                    Movie.Video vod = new Movie.Video();
-                    vod.id = vodInfo.id;
-                    vod.sourceKey = vodInfo.sourceKey;
-                    vod.name = vodInfo.name;
-                    vod.pic = vodInfo.pic;
-                    if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
-                        vod.note = "上次看到" + vodInfo.playNote;
-                    vodList.add(vod);
-                }
-                homeHotVodAdapter.setNewData(vodList);
-            });
+            List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(20);
+            List<Movie.Video> vodList = new ArrayList<>();
+            for (VodInfo vodInfo : allVodRecord) {
+                Movie.Video vod = new Movie.Video();
+                vod.id = vodInfo.id;
+                vod.sourceKey = vodInfo.sourceKey;
+                vod.name = vodInfo.name;
+                vod.pic = vodInfo.pic;
+                if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
+                    vod.note = "上次看到" + vodInfo.playNote;
+                vodList.add(vod);
+            }
+            homeHotVodAdapter.setNewData(vodList);
         }
         // 每次回到首页都刷新主视觉：刚看完一集回来，这里要立刻变成新的那一部
         loadHero();
@@ -268,8 +265,9 @@ public class UserFragment extends BaseLazyFragment {
 
                 if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2) && HawkConfig.hotVodDelete) {
                     homeHotVodAdapter.remove(position);
-                    // 按 vodId 直接删，省掉原来先 getVodInfo 再删的一次主线程 DB 读
-                    RoomDataManger.deleteVodRecord(vod.sourceKey, vod.id);
+                    VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
+                    assert vodInfo != null;
+                    RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
                     Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show();
                 } else if (vod.id != null && vod.id.startsWith("msearch:")) {
                     jumpSearch(vod);

@@ -29,6 +29,7 @@ import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.SourceHealth;
+import com.github.tvbox.osc.util.thunder.Thunder;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -1845,6 +1846,72 @@ public class SourceViewModel extends ViewModel {
         return data;
     }
 
+    public void checkThunder(AbsXml data, int index) {
+        boolean thunderParse = false;
+        if (data.movie != null && data.movie.videoList != null && data.movie.videoList.size() == 1) {
+            Movie.Video video = data.movie.videoList.get(0);
+            if (video != null && video.urlBean != null && video.urlBean.infoList != null) {
+                boolean hasThunder=false;
+                thunderLoop:
+                for (int idx=0;idx<video.urlBean.infoList.size();idx++) {
+                    Movie.Video.UrlBean.UrlInfo urlInfo = video.urlBean.infoList.get(idx);
+                    for (Movie.Video.UrlBean.UrlInfo.InfoBean infoBean : urlInfo.beanList) {
+                        if(Thunder.isSupportUrl(infoBean.url)){
+                            hasThunder=true;
+                            break thunderLoop;
+                        }
+                    }
+                }
+                if (hasThunder) {
+                    thunderParse = true;
+                    Thunder.parse(App.getInstance(), video.urlBean, new Thunder.ThunderCallback() {
+                        @Override
+                        public void status(int code, String info) {
+                            if (code >= 0) {
+                                LOG.i(info);
+                            } else {
+                                video.urlBean.infoList.get(0).beanList.get(0).name = info;
+                                detailResult.postValue(data);
+                            }
+                        }
+
+                        @Override
+                        public void list(Map<Integer, String> urlMap) {
+                            for (int key : urlMap.keySet()) {
+                                String playList=urlMap.get(key);
+                                video.urlBean.infoList.get(key).urls = playList;
+                                String[] str = playList.split("#");
+                                List<Movie.Video.UrlBean.UrlInfo.InfoBean> infoBeanList = new ArrayList<>();
+                                for (String s : str) {
+                                    if (s.contains("$")) {
+                                        String[] ss = s.split("\\$", 2);
+
+                                        if (ss.length > 0) {
+                                            if (ss.length >= 2) {
+                                                infoBeanList.add(new Movie.Video.UrlBean.UrlInfo.InfoBean(ss[0], ss[1]));
+                                            } else {
+                                                infoBeanList.add(new Movie.Video.UrlBean.UrlInfo.InfoBean((infoBeanList.size() + 1) + "", ss[0]));
+                                            }
+                                        }
+                                    }
+                                }
+                                video.urlBean.infoList.get(key).beanList = infoBeanList;
+                            }
+                            detailResult.postValue(data);
+                        }
+
+                        @Override
+                        public void play(String url) {
+
+                        }
+                    });
+                }
+            }
+        }
+        if (!thunderParse && index==0) {
+            detailResult.postValue(data);
+        }
+    }
 
     private AbsXml xml(MutableLiveData<AbsXml> result, String xml, String sourceKey) {
         return xml(result, xml, sourceKey, "");
@@ -1871,8 +1938,7 @@ public class SourceViewModel extends ViewModel {
             } else if (result != null) {
                 if (result == detailResult) {
                 	data = checkPush(data);
-                    // 磁力链路（checkThunder）已移除：无 Thunder 分支时等价于直接 post
-                    detailResult.postValue(data);
+                    checkThunder(data,0);
                 }else {
                     postSearchResult(result, data);
                 }
@@ -1928,8 +1994,7 @@ public class SourceViewModel extends ViewModel {
             } else if (result != null) {
                 if (result == detailResult) {
                 	data = checkPush(data);
-                    // 磁力链路（checkThunder）已移除：无 Thunder 分支时等价于直接 post
-                    detailResult.postValue(data);
+                    checkThunder(data,0);
                 }else {
                     postSearchResult(result, data);
                 }

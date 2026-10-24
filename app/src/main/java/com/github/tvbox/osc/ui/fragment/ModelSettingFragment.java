@@ -45,6 +45,7 @@ import com.github.tvbox.osc.ui.dialog.BackupDialog;
 import com.github.tvbox.osc.ui.dialog.DanmuApiDialog;
 import com.github.tvbox.osc.ui.dialog.SearchRemoteTvDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
+import com.github.tvbox.osc.ui.dialog.XWalkInitDialog;
 import com.github.tvbox.osc.util.DanmuHelper;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.FileUtils;
@@ -85,6 +86,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private static final int REQUEST_LOCAL_CONFIG = 1001;
     private TextView tvDebugOpen;
     private TextView tvMediaCodec;
+    private TextView tvParseWebView;
     private TextView tvPlay;
     private TextView tvRender;
     private TextView tvScale;
@@ -171,6 +173,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvShowPreviewText = findViewById(R.id.showPreviewText);
         tvShowPreviewText.setText(Hawk.get(HawkConfig.SHOW_PREVIEW, true) ? "开启" : "关闭");
         tvDebugOpen = findViewById(R.id.tvDebugOpen);
+        tvParseWebView = findViewById(R.id.tvParseWebView);
         tvMediaCodec = findViewById(R.id.tvMediaCodec);
         tvPlay = findViewById(R.id.tvPlay);
         tvRender = findViewById(R.id.tvRenderType);
@@ -189,6 +192,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvIjkCachePlay = findViewById(R.id.tvIjkCachePlay);
         tvMediaCodec.setText(Hawk.get(HawkConfig.IJK_CODEC, "硬解码"));
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "已打开" : "已关闭");
+        tvParseWebView.setText(Hawk.get(HawkConfig.PARSE_WEBVIEW, true) ? "系统自带" : "XWalkView");
         tvApi.setText(HistoryHelper.getApiDisplayName(Hawk.get(HawkConfig.API_URL, "")));
         refreshApiLineText();
 
@@ -258,6 +262,25 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 FastClickCheckUtil.check(v);
                 Hawk.put(HawkConfig.DEBUG_OPEN, !Hawk.get(HawkConfig.DEBUG_OPEN, false));
                 tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "已打开" : "已关闭");
+            }
+        });
+        findViewById(R.id.llParseWebVew).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                boolean useSystem = !Hawk.get(HawkConfig.PARSE_WEBVIEW, true);
+                Hawk.put(HawkConfig.PARSE_WEBVIEW, useSystem);
+                tvParseWebView.setText(Hawk.get(HawkConfig.PARSE_WEBVIEW, true) ? "系统自带" : "XWalkView");
+                if (!useSystem) {
+                    Toast.makeText(mContext, "注意: XWalkView只适用于部分低Android版本，Android5.0以上推荐使用系统自带", Toast.LENGTH_LONG).show();
+                    XWalkInitDialog dialog = new XWalkInitDialog(mContext);
+                    dialog.setOnListener(new XWalkInitDialog.OnListener() {
+                        @Override
+                        public void onchange() {
+                        }
+                    });
+                    dialog.show();
+                }
             }
         });
         findViewById(R.id.llBackup).setOnClickListener(new View.OnClickListener() {

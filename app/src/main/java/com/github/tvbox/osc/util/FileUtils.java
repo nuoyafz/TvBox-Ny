@@ -176,9 +176,16 @@ public class FileUtils {
 
     public static void cleanPlayerCache() {
         String ijkCachePath = getCachePath() + "/ijkcaches/";
+        String thunderCachePath = getCachePath() + "/thunder/";
         File ijkCacheDir = new File(ijkCachePath);
+        File thunderCacheDir = new File(thunderCachePath);
         try {
             if (ijkCacheDir.exists()) cleanDirectory(ijkCacheDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (thunderCacheDir.exists()) cleanDirectory(thunderCacheDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
