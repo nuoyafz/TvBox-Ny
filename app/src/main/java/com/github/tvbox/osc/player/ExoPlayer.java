@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Looper;
 import android.util.Pair;
 
+import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.AudioTrackMemory;
 import com.github.tvbox.osc.util.LOG;
 import com.google.android.exoplayer2.C;
@@ -44,15 +45,36 @@ public class ExoPlayer extends ExoMediaPlayer {
 
     public ExoPlayer(Context context) {
         super(context);
+        // 缓冲分档：原来四个参数全传 DefaultLoadControl.DEFAULT_*，javap 反编译 2.19.1 实证
+        // 就是 Google 默认值（min/max=50000ms、playback=2500ms、afterRebuffer=5000ms），
+        // 且没调 setTargetBufferBytes —— 走默认 calculateTargetBufferBytes 求和，
+        // DEFAULT_VIDEO_BUFFER_SIZE=125MB + AUDIO=12.5MB，2G 盒子缓冲 50s m3u8 轻松
+        // 100~300MB，直接 LMK 杀后台/OOM 预备役。按 isLowEndDevice() 分两档，字节上限
+        // 是硬顶（先到先停），时长上限是软顶。
+        boolean low = App.getInstance() != null && App.getInstance().isLowEndDevice();
+        final int minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs, targetBufferBytes;
+        if (low) {
+            minBufferMs = 15000;
+            maxBufferMs = 30000;
+            bufferForPlaybackMs = 1500;
+            bufferForPlaybackAfterRebufferMs = 3000;
+            targetBufferBytes = 12 * 1024 * 1024;
+        } else {
+            minBufferMs = 30000;
+            maxBufferMs = 50000;
+            bufferForPlaybackMs = 2000;
+            bufferForPlaybackAfterRebufferMs = 4000;
+            targetBufferBytes = 40 * 1024 * 1024;
+        }
         setLoadControl(new DefaultLoadControl.Builder()
-                .setBufferDurationsMs(
-                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
-                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
-                        DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-                        DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
+                .setBufferDurationsMs(minBufferMs, maxBufferMs, bufferForPlaybackMs, bufferForPlaybackAfterRebufferMs)
+                .setTargetBufferBytes(targetBufferBytes)
                 .build());
         setRenderersFactory(buildRenderersFactory(context));
-        LOG.i("echo-exo-low-memory-load-control");
+        LOG.i("echo-exo-load-control tier=" + (low ? "low" : "high")
+                + " min=" + minBufferMs + " max=" + maxBufferMs
+                + " playback=" + bufferForPlaybackMs + " afterRebuffer=" + bufferForPlaybackAfterRebufferMs
+                + " targetMB=" + (targetBufferBytes / (1024 * 1024)));
         memory = AudioTrackMemory.getInstance(context);
     }
 

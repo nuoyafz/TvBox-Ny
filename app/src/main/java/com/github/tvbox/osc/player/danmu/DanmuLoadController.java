@@ -38,6 +38,7 @@ public class DanmuLoadController {
     private int startedSeq = -1;
     private boolean pendingPrepare;
     private boolean temporarilyClosed;
+    private boolean paused;
     private LoadCallback loadCallback;
     private volatile int seekGeneration;
     private volatile long pendingSeekPosition = -1;
@@ -134,6 +135,36 @@ public class DanmuLoadController {
         startedSeq = -1;
         if (controller != null) controller.setHasDanmu(false);
         releaseView();
+    }
+
+    /**
+     * 退后台/页面不可见时暂停弹幕引擎。
+     *
+     * 原来全程只 setVisibility(GONE/VISIBLE)——DanmakuView 的绘制线程和计时器
+     * GONE 了照跑，退后台 CPU 空转。paused 标志同时拦住 startIfReady 的延迟启动
+     * （postDelayed 300/1000ms 两档），避免 resume 前又被 start 拉起来。
+     */
+    public void pause() {
+        paused = true;
+        if (danmuView != null && danmuView.isPrepared()) {
+            danmuView.pause();
+            LOG.i("echo-danmu lifecycle pause");
+        }
+    }
+
+    public void resume() {
+        paused = false;
+        if (danmuView != null && danmuView.isPrepared() && DanmuHelper.isOpen()) {
+            danmuView.resume();
+            LOG.i("echo-danmu lifecycle resume");
+            // paused 期间 prepare 完成或 postDelayed(300/1000ms) 延迟启动被 paused 拦住的，
+            // 这里补一次 start（startedSeq 守卫保证已启动的不会重跑）
+            startIfReady(loadSeq.get());
+        }
+    }
+
+    public boolean isPaused() {
+        return paused;
     }
 
     public void close() {
@@ -285,6 +316,7 @@ public class DanmuLoadController {
     private void startIfReady(int seq) {
         if (seq != loadSeq.get()
                 || seq == startedSeq
+                || paused
                 || videoView == null
                 || !videoView.isPlaying()
                 || danmuView == null

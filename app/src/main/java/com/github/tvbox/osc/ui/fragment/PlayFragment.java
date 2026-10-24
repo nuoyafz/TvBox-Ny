@@ -1538,6 +1538,9 @@ public class PlayFragment extends BaseLazyFragment {
         if (mVideoView != null && !exitingPreview && !hasAudioOnlyPlayback()) {
             mVideoView.pause();
         }
+        // 弹幕引擎退后台必须显式 pause：DanmuLoadController 原来只 setVisibility(GONE)，
+        // DanmakuView 的绘制线程和计时器 GONE 了照跑，退后台 CPU 空转
+        if (danmuLoadController != null) danmuLoadController.pause();
     }
 
     @Override
@@ -1547,6 +1550,7 @@ public class PlayFragment extends BaseLazyFragment {
         if (mVideoView != null) {
             mVideoView.resume();
         }
+        if (danmuLoadController != null) danmuLoadController.resume();
     }
 
     @Override
@@ -1555,10 +1559,12 @@ public class PlayFragment extends BaseLazyFragment {
             if (mVideoView != null) {
                 mVideoView.pause();
             }
+            if (danmuLoadController != null) danmuLoadController.pause();
         } else {
             if (mVideoView != null) {
                 mVideoView.resume();
             }
+            if (danmuLoadController != null) danmuLoadController.resume();
         }
         super.onHiddenChanged(hidden);
     }
@@ -2272,8 +2278,26 @@ public class PlayFragment extends BaseLazyFragment {
     }
 
     void cancelPlayTimeout() {
-        mHandler.removeMessages(MSG_RESOLVE_PLAY_URL_TIMEOUT);
-        mHandler.removeMessages(MSG_SWITCH_LINE_PLAY_TIMEOUT);
+        if (mHandler == null) return;
+        // 原来只 remove 101/102，漏了 MSG_PARSE_TIMEOUT(100)：它在 3 处 postDelayed 20s，
+        // 退出播放页后消息仍在队列，触发时 case 100 无判空直接 errorWithRetry("嗅探错误")
+        // —— 误弹错误 UI 到已销毁页面 + Fragment 泄漏 20s 窗口。三个一起清。
+        int removed = 0;
+        if (mHandler.hasMessages(MSG_PARSE_TIMEOUT)) {
+            mHandler.removeMessages(MSG_PARSE_TIMEOUT);
+            removed++;
+        }
+        if (mHandler.hasMessages(MSG_RESOLVE_PLAY_URL_TIMEOUT)) {
+            mHandler.removeMessages(MSG_RESOLVE_PLAY_URL_TIMEOUT);
+            removed++;
+        }
+        if (mHandler.hasMessages(MSG_SWITCH_LINE_PLAY_TIMEOUT)) {
+            mHandler.removeMessages(MSG_SWITCH_LINE_PLAY_TIMEOUT);
+            removed++;
+        }
+        if (removed > 0) {
+            LOG.i("echo-play-timeout-cancel removed=" + removed);
+        }
     }
 
     public void setAutoSwitchLineEnabled(boolean enabled) {

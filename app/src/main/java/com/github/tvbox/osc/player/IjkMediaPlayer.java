@@ -73,6 +73,14 @@ public class IjkMediaPlayer extends IjkPlayer {
         mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", -1);
         mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT,"safe",0);
 
+        // 起播探测加速（直播点播都吃这个参数）：ffmpeg 默认 analyzeduration=1s / probesize=5MB，
+        // 弱网源必须等探测窗口读满才肯起播，实测能卡 1~2s。调到 150ms / 4KB 后流信息一够即起播。
+        // 代价：封装诡异的源可能探测不到流信息 —— 那类源原本也要等超时，不算回退。
+        // 若后续出现"部分源起播即失败"的反馈，先把 analyzeduration 调回 500000 再观察。
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", 150000L);
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 4096L);
+        LOG.i("echo-ijk-probe analyzeduration=150000 probesize=4096");
+
         if(Hawk.get(HawkConfig.PLAYER_IS_LIVE, false)){
             LOG.i("echo-type-直播");
             mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", 300);
