@@ -109,6 +109,21 @@
                 android:text="电视剧"
                 android:textColor="@color/neon_text_secondary"
                 android:textSize="14mm" />
+
+            <TextView
+                android:id="@+id/btnPickAll"
+                android:layout_width="wrap_content"
+                android:layout_height="42mm"
+                android:layout_marginLeft="9mm"
+                android:background="@drawable/bg_random_filter"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="全部"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="14mm" />
         </LinearLayout>
     </HorizontalScrollView>
 
