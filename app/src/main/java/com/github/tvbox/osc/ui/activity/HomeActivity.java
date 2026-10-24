@@ -1036,6 +1036,21 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     };
 
     /** 顶栏行2 的六个快捷入口，从原首页底部一行搬上来 */
+    /** 随机看统一入口：顶栏按钮和首页欢迎卡都走这里。 */
+    public void triggerRandomPick() {
+        try {
+            if (currentSelected >= 0 && currentSelected < fragments.size()
+                    && fragments.get(currentSelected) instanceof UserFragment) {
+                ((UserFragment) fragments.get(currentSelected)).showRandomPick(sortAdapter.getData());
+            } else {
+                Toast.makeText(this, "请先回到首页再使用随机看", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Throwable error) {
+            LOG.e("Random pick entry failed: " + error);
+            Toast.makeText(this, "随机看暂时无法打开，请稍后重试", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     public void onClick(View v) {
         HawkConfig.hotVodDelete = false;
@@ -1050,17 +1065,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         } else if (id == R.id.tvPush) {
             jumpActivity(PushActivity.class);
         } else if (id == R.id.tvRandomPick) {
-            try {
-                if (currentSelected >= 0 && currentSelected < fragments.size()
-                        && fragments.get(currentSelected) instanceof UserFragment) {
-                    ((UserFragment) fragments.get(currentSelected)).showRandomPick(sortAdapter.getData());
-                } else {
-                    Toast.makeText(this, "请先回到首页再使用随机看", Toast.LENGTH_SHORT).show();
-                }
-            } catch (Throwable error) {
-                LOG.e("Random pick entry failed: " + error);
-                Toast.makeText(this, "随机看暂时无法打开，请稍后重试", Toast.LENGTH_SHORT).show();
-            }
+            triggerRandomPick();
         } else if (id == R.id.tvRemote) {
             // 复用推送页那套二维码界面，只是换成遥控页（page=remote 直接落在摇杆面板）
             Bundle bundle = new Bundle();

@@ -327,21 +327,17 @@ public class UserFragment extends BaseLazyFragment {
 
     /**
      * 主视觉 = 最近一条观看记录。
-     * 没有记录就把整块藏掉（不留空壳），片单自动上移。
+     * 没有记录进入「欢迎模式」：同样是完整主视觉，只是文案换成引导，
+     * 按钮变成随机看——首页不再出现下半屏空白。
      */
     private void loadHero() {
         if (tvHeroBlock == null || tvHeroTitle == null || tvHeroMeta == null) return;
         try {
             List<VodInfo> records = RoomDataManger.getAllVodRecord(1);
-            if (records == null || records.isEmpty()) {
-                tvHeroBlock.setVisibility(View.GONE);
-                if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
-                return;
-            }
-            final VodInfo vod = records.get(0);
-            if (vod == null || vod.id == null || vod.id.isEmpty()) {
-                tvHeroBlock.setVisibility(View.GONE);
-                if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
+            VodInfo vod = (records == null || records.isEmpty()) ? null : records.get(0);
+            if (vod != null && (vod.id == null || vod.id.isEmpty())) vod = null;
+            if (vod == null) {
+                showWelcomeHero();
                 return;
             }
             SourceBean bean = ApiConfig.get().getSource(vod.sourceKey);
@@ -354,6 +350,8 @@ public class UserFragment extends BaseLazyFragment {
                 meta.append("上次看到 ").append(vod.playNote);
             }
             tvHeroTitle.setText(vod.name == null ? "" : vod.name);
+            TextView kicker = findViewById(R.id.tvHeroKicker);
+            if (kicker != null) kicker.setText("今晚接着看　/　CONTINUE");
             tvHeroMeta.setText(meta.length() == 0 ? "继续上次的进度" : meta.toString());
             if (tvHeroDesc != null) {
                 String description = vod.des == null ? "" : vod.des.trim();
@@ -387,22 +385,47 @@ public class UserFragment extends BaseLazyFragment {
             if (heroPosterBox != null) heroPosterBox.setVisibility(View.VISIBLE);
 
             if (tvHeroPlay != null) {
+                tvHeroPlay.setText("▶　继续播放");
+                final VodInfo chosen = vod;
                 tvHeroPlay.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Bundle bundle = new Bundle();
-                        bundle.putString("id", vod.id);
-                        bundle.putString("sourceKey", vod.sourceKey);
-                        bundle.putString("title", vod.name);
-                        bundle.putString("picture", vod.pic);
+                        bundle.putString("id", chosen.id);
+                        bundle.putString("sourceKey", chosen.sourceKey);
+                        bundle.putString("title", chosen.name);
+                        bundle.putString("picture", chosen.pic);
                         jumpActivity(DetailActivity.class, bundle);
                     }
                 });
             }
             tvHeroBlock.setVisibility(View.VISIBLE);
         } catch (Throwable th) {
-            tvHeroBlock.setVisibility(View.GONE);
-            if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
+            showWelcomeHero();
+        }
+    }
+
+    /** 无观看记录时的引导主视觉：海报位收起，按钮变成随机看。 */
+    private void showWelcomeHero() {
+        tvHeroBlock.setVisibility(View.VISIBLE);
+        if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
+        TextView kicker = findViewById(R.id.tvHeroKicker);
+        if (kicker != null) kicker.setText("欢迎来到 NOYA　/　WELCOME");
+        tvHeroTitle.setText("今晚看点什么？");
+        tvHeroMeta.setText("看完第一部，它会带着进度出现在这里");
+        if (tvHeroDesc != null) {
+            tvHeroDesc.setText("顶部「随机看」或下方按钮，抽一部开看");
+            tvHeroDesc.setVisibility(View.VISIBLE);
+        }
+        if (tvHeroEp != null) tvHeroEp.setVisibility(View.GONE);
+        if (ivHeroPoster != null) ivHeroPoster.setImageDrawable(null);
+        if (tvHeroPlay != null) {
+            tvHeroPlay.setText("▶　随便看一部");
+            tvHeroPlay.setOnClickListener(v -> {
+                if (mActivity instanceof com.github.tvbox.osc.ui.activity.HomeActivity) {
+                    ((com.github.tvbox.osc.ui.activity.HomeActivity) mActivity).triggerRandomPick();
+                }
+            });
         }
     }
 

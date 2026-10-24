@@ -84,23 +84,23 @@
 
                 <TextView
                     android:id="@+id/tvHeroTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12mm"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:letterSpacing="0.02"
                     android:maxLines="2"
-                    android:maxWidth="690mm"
                     android:textColor="@color/neon_text_primary"
                     android:textSize="58mm"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvHeroMeta"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10mm"
+                    android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:letterSpacing="0.03"
                     android:maxLines="1"
