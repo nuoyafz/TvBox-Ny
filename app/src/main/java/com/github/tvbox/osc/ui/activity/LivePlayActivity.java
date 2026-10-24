@@ -64,6 +64,7 @@ import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.HistoryHelper;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.gson.JsonArray;
 import org.apache.commons.lang3.StringUtils;
@@ -1998,6 +1999,7 @@ public class LivePlayActivity extends BaseActivity {
         mRightEpgList.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
         epgListAdapter = new LiveEpgAdapter();
         mRightEpgList.setAdapter(epgListAdapter);
+        TvPerf.apply(mRightEpgList);
 
         mRightEpgList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -2196,6 +2198,7 @@ public class LivePlayActivity extends BaseActivity {
 //            calendar.add(Calendar.DAY_OF_MONTH, -1);
         }
         mEpgDateGridView.setAdapter(liveEpgDateAdapter);
+        TvPerf.apply(mEpgDateGridView);
         mEpgDateGridView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -2365,6 +2368,7 @@ public class LivePlayActivity extends BaseActivity {
 
         liveChannelGroupAdapter = new LiveChannelGroupAdapter();
         mChannelGroupView.setAdapter(liveChannelGroupAdapter);
+        TvPerf.apply(mChannelGroupView);
         mChannelGroupView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -2448,6 +2452,7 @@ public class LivePlayActivity extends BaseActivity {
 
         liveChannelItemAdapter = new LiveChannelItemAdapter();
         mLiveChannelView.setAdapter(liveChannelItemAdapter);
+        TvPerf.apply(mLiveChannelView);
         mLiveChannelView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -2503,6 +2508,7 @@ public class LivePlayActivity extends BaseActivity {
 
         liveSettingGroupAdapter = new LiveSettingGroupAdapter();
         mSettingGroupView.setAdapter(liveSettingGroupAdapter);
+        TvPerf.apply(mSettingGroupView);
         mSettingGroupView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -2587,6 +2593,7 @@ public class LivePlayActivity extends BaseActivity {
 
         liveSettingItemAdapter = new LiveSettingItemAdapter();
         mSettingItemView.setAdapter(liveSettingItemAdapter);
+        TvPerf.apply(mSettingItemView);
         mSettingItemView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {

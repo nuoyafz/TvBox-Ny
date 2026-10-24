@@ -63,6 +63,7 @@ import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.SourceHealth;
 import com.github.tvbox.osc.util.TasteProfile;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -228,6 +229,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
         this.mGridView.setSpacingWithMargins(0, 0);
         this.mGridView.setAdapter(this.sortAdapter);
+        TvPerf.apply(this.mGridView);
         // 顶栏行2 的六个快捷入口（原来压在首页最底部一行，被电视 overscan 裁掉过）
         findViewById(R.id.tvLive).setOnClickListener(this);
         findViewById(R.id.tvHistory).setOnClickListener(this);

@@ -57,6 +57,7 @@ import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.SearchHelper;
 import com.github.tvbox.osc.util.SubtitleHelper;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.lzy.okgo.OkGo;
 import com.orhanobut.hawk.Hawk;
@@ -235,11 +236,13 @@ public class DetailActivity extends BaseActivity {
 
         seriesAdapter = new SeriesAdapter(this.mGridViewLayoutMgr);
         mGridView.setAdapter(seriesAdapter);
+        TvPerf.apply(mGridView);
         mGridViewFlag = findViewById(R.id.mGridViewFlag);
         mGridViewFlag.setHasFixedSize(true);
         mGridViewFlag.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
         seriesFlagAdapter = new SeriesFlagAdapter();
         mGridViewFlag.setAdapter(seriesFlagAdapter);
+        TvPerf.apply(mGridViewFlag);
         mGridViewQuality = findViewById(R.id.mGridViewQuality);
         mGridViewQuality.setHasFixedSize(true);
         mGridViewQuality.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
@@ -253,6 +256,7 @@ public class DetailActivity extends BaseActivity {
             }
         };
         mGridViewQuality.setAdapter(qualityAdapter);
+        TvPerf.apply(mGridViewQuality);
         mGridViewQuality.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
@@ -304,6 +308,7 @@ public class DetailActivity extends BaseActivity {
             }
         };
         mSeriesGroupView.setAdapter(seriesGroupAdapter);
+        TvPerf.apply(mSeriesGroupView);
 
         llPlayerFragmentContainerBlock.setOnClickListener(v -> {
             enterFullPreview();

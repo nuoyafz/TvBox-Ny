@@ -36,14 +36,43 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class ImgUtil {
-    private static final Map<String, Drawable> drawableCache = new HashMap<>();
+    /**
+     * 兜底 Drawable 缓存。原来是裸 HashMap 无上限：不同尺寸的 fallback/placeholder
+     * 全驻留内存，切换源样式（rect 比例一变宽高就变）会持续累积 BitmapDrawable。
+     * 改成 access-order LRU + synchronized，上限 64 个。
+     */
+    private static final Map<String, Drawable> drawableCache =
+            Collections.synchronizedMap(new LinkedHashMap<String, Drawable>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Drawable> eldest) {
+                    return size() > 64;
+                }
+            });
+
+    /**
+     * Glide model 缓存。getUrl() 原来每次调用都 split×4 + new Gson().fromJson + 构造
+     * LazyHeaders/GlideUrl —— 带 @Headers=（Referer/UA）的源，一屏十几次主线程 JSON 解析。
+     * 海报 URL 各自不同，所以按完整原始 URL 做 key，上限 512。
+     */
+    private static final Map<String, Object> modelCache =
+            Collections.synchronizedMap(new LinkedHashMap<String, Object>(32, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Object> eldest) {
+                    return size() > 512;
+                }
+            });
+    /** 缓存命中/未命中计数，仅用于日志验收 */
+    private static volatile int modelHit = 0;
+    private static volatile int modelMiss = 0;
     public static int defaultWidth = 190;
     public static int defaultHeight = 250;
 
@@ -280,6 +309,9 @@ public class ImgUtil {
 
     public static void clearCache() {
         drawableCache.clear();
+        modelCache.clear();
+        modelHit = 0;
+        modelMiss = 0;
     }
 
     public static void clearMemoryCache() {
@@ -294,6 +326,12 @@ public class ImgUtil {
 
     private static Object getUrl(String url) {
         if (url.startsWith("data:")) return url;
+        // data: 之外的 URL 全部走缓存：GlideUrl 带 LazyHeaders，构造后完全稳定可复用
+        Object cached = modelCache.get(url);
+        if (cached != null) {
+            modelHit++;
+            return cached;
+        }
         String header = null;
         String referer = null;
         String ua = null;
@@ -326,7 +364,12 @@ public class ImgUtil {
         if (!TextUtils.isEmpty(ua)) putHeader(headers, "User-Agent", ua);
         if (!TextUtils.isEmpty(referer)) putHeader(headers, "Referer", referer);
         for (Map.Entry<String, String> entry : headers.entrySet()) builder.setHeader(entry.getKey(), entry.getValue());
-        return new GlideUrl(url, builder.build());
+        Object model = new GlideUrl(url, builder.build());
+        modelCache.put(url, model);
+        modelMiss++;
+        // 只在 miss 时打点：新 URL 才 miss，量可控；logcat 里 hit/miss 比例直接反映缓存生效程度
+        LOG.i("echo-img-model miss#" + modelMiss + " hit#" + modelHit + " cache=" + modelCache.size());
+        return model;
     }
 
     public static Object getImageModel(String url) {

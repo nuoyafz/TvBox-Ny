@@ -34,6 +34,7 @@ import com.github.tvbox.osc.ui.adapter.SearchWordAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.SearchHelper;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.lzy.okgo.OkGo;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -133,6 +134,7 @@ public class FastSearchActivity extends BaseActivity {
         mGridViewWord.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
         spListAdapter = new FastListAdapter();
         mGridViewWord.setAdapter(spListAdapter);
+        TvPerf.apply(mGridViewWord);
 
         spListAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -168,6 +170,7 @@ public class FastSearchActivity extends BaseActivity {
 
         searchAdapter = new FastSearchAdapter();
         mGridView.setAdapter(searchAdapter);
+        TvPerf.apply(mGridView);
         mGridView.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
@@ -199,6 +202,7 @@ public class FastSearchActivity extends BaseActivity {
         mGridViewFilter.setLayoutManager(new V7GridLayoutManager(this.mContext, 4));
         searchAdapterFilter = new FastSearchAdapter();
         mGridViewFilter.setAdapter(searchAdapterFilter);
+        TvPerf.apply(mGridViewFilter);
         mGridViewFilter.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {

@@ -1,14 +1,11 @@
 package com.github.tvbox.osc.util;
 
-import android.graphics.Bitmap;
-
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.bean.ProxyRule;
 import com.github.tvbox.osc.player.danmu.Parser;
-import com.github.tvbox.osc.picasso.MyOkhttpDownLoader;
 import com.github.tvbox.osc.util.net.OkProxySelector;
 import com.github.tvbox.osc.util.net.ProxyAuthenticator;
 import com.github.tvbox.osc.util.SSL.SSLSocketFactoryCompat;
@@ -20,7 +17,6 @@ import com.lzy.okgo.https.HttpsUtils;
 import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.lzy.okgo.model.HttpHeaders;
 import com.orhanobut.hawk.Hawk;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -351,7 +347,6 @@ public class OkGoHelper {
         noRedirectClient = builder.build();
 
         initExoOkHttpClient();
-        initPicasso(okHttpClient);
     }
 
     public static synchronized void reloadDns() {
@@ -397,16 +392,6 @@ public class OkGoHelper {
         initExoOkHttpClient();
         Parser.resetHttpClient();
         com.github.catvod.net.OkHttp.resetClient();
-    }
-
-    static void initPicasso(OkHttpClient client) {
-        client.dispatcher().setMaxRequestsPerHost(10);
-        MyOkhttpDownLoader downloader = new MyOkhttpDownLoader(client);
-        Picasso picasso = new Picasso.Builder(App.getInstance())
-                .downloader(downloader)
-                .defaultBitmapConfig(Bitmap.Config.RGB_565)
-                .build();
-        Picasso.setSingletonInstance(picasso);
     }
 
     private static synchronized void setOkHttpSsl(OkHttpClient.Builder builder) {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.util.AttributeSet;
@@ -24,6 +25,8 @@ public class AuroraBackgroundView extends View {
     private LinearGradient gBase, gSky, gGrid;
     private RadialGradient gSun, gPink, gGround;
     private int W, H;
+    /** 网格线合并成一条 Path 一次 drawPath，替代原来每根线一次 drawLine（1080p 下约 25 次） */
+    private final Path gridPath = new Path();
 
     /** Static light field keeps the home screen calm and avoids background animation noise. */
 
@@ -32,6 +35,9 @@ public class AuroraBackgroundView extends View {
 
     public AuroraBackgroundView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // 静态背景：5 个 shader + 网格线只画一次。走硬件层后 invalidate 只是重放显示列表，
+        // 不用再全量软绘（换主题时 setPalette 会重建 shader 再 invalidate）。
+        setLayerType(LAYER_TYPE_HARDWARE, null);
         cSkyTop = ThemeManager.skyTop();
         cSkyMid = ThemeManager.skyMid();
         cGround = ThemeManager.ground();
@@ -87,6 +93,18 @@ public class AuroraBackgroundView extends View {
         // ⑤ 地光
         gGround = new RadialGradient(W * 0.52f, H * 1.12f, longSide * 0.72f,
                 new int[]{cGround, cGround & 0x00FFFFFF}, null, Shader.TileMode.CLAMP);
+
+        // 网格线一次性构建：横竖各 ~16 根合成一条 Path，绘制时一次 drawPath 完成
+        gridPath.reset();
+        float gap = Math.max(48f, W / 16f);
+        for (float x = 0; x <= W; x += gap) {
+            gridPath.moveTo(x, 0);
+            gridPath.lineTo(x, H);
+        }
+        for (float y = 0; y <= H; y += gap) {
+            gridPath.moveTo(0, y);
+            gridPath.lineTo(W, y);
+        }
     }
 
     @Override
@@ -105,9 +123,7 @@ public class AuroraBackgroundView extends View {
         paint.setShader(gGrid);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(Math.max(1f, getResources().getDisplayMetrics().density * 0.35f));
-        float gap = Math.max(48f, W / 16f);
-        for (float x = 0; x <= W; x += gap) canvas.drawLine(x, 0, x, H, paint);
-        for (float y = 0; y <= H; y += gap) canvas.drawLine(0, y, W, y, paint);
+        canvas.drawPath(gridPath, paint);
         paint.setStyle(Paint.Style.FILL);
         paint.setShader(null);
     }

@@ -41,6 +41,7 @@ import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ImgUtil;
 import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -119,6 +120,7 @@ public class GridFragment extends BaseLazyFragment {
         TvRecyclerView gridView = view.findViewById(R.id.mGridView);
         if (gridView != null && gridView.getLayoutManager() == null) {
             gridView.setLayoutManager(new V7LinearLayoutManager(mContext, 1, false));
+            TvPerf.apply(gridView);
         }
     }
 

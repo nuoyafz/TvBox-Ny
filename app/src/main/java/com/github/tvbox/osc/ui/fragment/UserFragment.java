@@ -37,6 +37,7 @@ import com.github.tvbox.osc.ui.dialog.RandomPickDialog;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ImgUtil;
+import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.util.UA;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.gson.Gson;
@@ -310,6 +311,7 @@ public class UserFragment extends BaseLazyFragment {
 
         // 焦点反馈交给 selector_poster_card（白色 2mm 环），这里不再做缩放
         tvHotList.setAdapter(homeHotVodAdapter);
+        TvPerf.apply(tvHotList);
 
         initHomeHotVod(homeHotVodAdapter);
         loadHero();

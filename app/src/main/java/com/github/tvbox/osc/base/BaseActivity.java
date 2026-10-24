@@ -140,9 +140,13 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
                 com.github.tvbox.osc.util.ThemeManager.applyAccentFix(decor);
             }
         };
+        // 两次就够：decor.post 跑在首次 layout 后（此时静态视图已 attach，但 RecyclerView
+        // item 还没建，等于白扫一半）；700ms 那次兜住异步加载出来的 item。
+        // 原来还有第三次 2000ms —— 页面早已稳定，且之后 attach 的 item 由 ThemeManager 里
+        // hooksOnce 挂的 OnChildAttachStateChangeListener 兜住，纯属每个 Activity 多一次
+        // 全视图树遍历，已删。
         decor.post(fix);
         decor.postDelayed(fix, 700);
-        decor.postDelayed(fix, 2000);
     }
 
     /**
