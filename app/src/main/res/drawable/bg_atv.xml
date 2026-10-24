@@ -25,9 +25,9 @@
             <gradient
                 android:type="linear"
                 android:angle="270"
-                android:startColor="#A6FF9A5A"
-                android:centerColor="#4DFF4E78"
-                android:endColor="#00FF4E78" />
+                android:startColor="#22D7FF47"
+                android:centerColor="#109BE65B"
+                android:endColor="#00090D0F" />
         </shape>
     </item>
     <!-- ③ 地光：底部暮紫 -->
@@ -36,7 +36,7 @@
             <gradient android:type="radial"
                 android:centerX="0.48" android:centerY="1.06"
                 android:gradientRadius="0.62"
-                android:startColor="@color/dusk_glow_deep" android:endColor="#008A4DFF" />
+                android:startColor="@color/dusk_glow_deep" android:endColor="#00090D0F" />
         </shape>
     </item>
     <!-- ④ 右上侧光：晚霞粉，跟顶栏玻璃咬合 -->
@@ -45,7 +45,7 @@
             <gradient android:type="radial"
                 android:centerX="0.92" android:centerY="0.30"
                 android:gradientRadius="0.42"
-                android:startColor="@color/dusk_glow_mid" android:endColor="#00FF4E78" />
+                android:startColor="@color/dusk_glow_mid" android:endColor="#00090D0F" />
         </shape>
     </item>
 </layer-list>

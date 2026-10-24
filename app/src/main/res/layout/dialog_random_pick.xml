@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_vault_dialog"
+    android:orientation="vertical"
+    android:padding="30mm">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.2"
+                android:text="TONIGHT'S PICK"
+                android:textColor="@color/neon_accent"
+                android:textSize="12mm" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5mm"
+                android:text="今晚看什么"
+                android:textColor="@color/dialog_text_primary"
+                android:textSize="30mm"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvPickSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5mm"
+                android:text="从当前片单里，替你挑一部今晚想看的"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="15mm" />
+        </LinearLayout>
+
+        <com.github.tvbox.osc.ui.dialog.RandomWheelView
+            android:id="@+id/pickWheel"
+            android:layout_width="170mm"
+            android:layout_height="170mm"
+            android:layout_marginLeft="18mm" />
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="52mm"
+        android:layout_marginTop="14mm"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnPickRecommend"
+                android:layout_width="wrap_content"
+                android:layout_height="42mm"
+                android:background="@drawable/bg_random_filter"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="首页推荐"
+                android:textColor="@color/neon_accent"
+                android:textSize="14mm" />
+
+            <TextView
+                android:id="@+id/btnPickMovies"
+                android:layout_width="wrap_content"
+                android:layout_height="42mm"
+                android:layout_marginLeft="9mm"
+                android:background="@drawable/bg_random_filter"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="电影"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="14mm" />
+
+            <TextView
+                android:id="@+id/btnPickSeries"
+                android:layout_width="wrap_content"
+                android:layout_height="42mm"
+                android:layout_marginLeft="9mm"
+                android:background="@drawable/bg_random_filter"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingLeft="18mm"
+                android:paddingRight="18mm"
+                android:text="电视剧"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="14mm" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="118mm"
+        android:layout_marginTop="22mm"
+        android:background="@drawable/bg_glass_body"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="18mm"
+        android:paddingRight="18mm">
+
+        <ImageView
+            android:id="@+id/ivPickPoster"
+            android:layout_width="92mm"
+            android:layout_height="92mm"
+            android:background="@drawable/bg_darkroom"
+            android:scaleType="centerCrop" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="18mm"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvPickState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="READY WHEN YOU ARE"
+                android:textColor="@color/neon_accent"
+                android:textSize="11mm" />
+
+            <TextView
+                android:id="@+id/tvPickTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7mm"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="准备好，转一转"
+                android:textColor="@color/dialog_text_primary"
+                android:textSize="24mm"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvPickMeta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5mm"
+                android:text="按确认开始 · 抽中后进入影片详情"
+                android:textColor="@color/neon_text_secondary"
+                android:textSize="13mm" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="20mm"
+        android:gravity="right|center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnPickAgain"
+            android:layout_width="150mm"
+            android:layout_height="48mm"
+            android:background="@drawable/button_danmu_setting"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="转一转"
+            android:textColor="@color/dialog_text_primary"
+            android:textSize="16mm" />
+
+        <TextView
+            android:id="@+id/btnPickPlay"
+            android:layout_width="170mm"
+            android:layout_height="48mm"
+            android:layout_marginLeft="10mm"
+            android:background="@drawable/button_detail_play"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="打开影片"
+            android:textColor="@color/neon_bg"
+            android:textSize="16mm"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

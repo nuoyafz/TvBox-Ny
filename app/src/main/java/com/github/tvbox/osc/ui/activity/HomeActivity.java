@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -145,6 +146,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             refreshTopInfoTextSize();
         }
     };
+    private float touchDownX;
+    private float touchDownY;
 
     @Override
     protected int getLayoutResID() {
@@ -230,6 +233,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         findViewById(R.id.tvHistory).setOnClickListener(this);
         findViewById(R.id.tvFavorite).setOnClickListener(this);
         findViewById(R.id.tvPush).setOnClickListener(this);
+        findViewById(R.id.tvRandomPick).setOnClickListener(this);
         findViewById(R.id.tvRemote).setOnClickListener(this);
         findViewById(R.id.tvSearch).setOnClickListener(this);
         findViewById(R.id.tvSetting).setOnClickListener(this);
@@ -404,6 +408,12 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                         com.github.tvbox.osc.util.ThemeManager.glassChipTextColors());
             }
         }
+        View randomPick = findViewById(R.id.tvRandomPick);
+        if (randomPick != null) {
+            randomPick.setNextFocusLeftId(R.id.tvSwitchSource);
+            randomPick.setNextFocusRightId(R.id.tvLive);
+            if (chip != null) chip.setNextFocusRightId(R.id.tvRandomPick);
+        }
         int[] links = {R.id.tvLive, R.id.tvHistory, R.id.tvFavorite, R.id.tvPush,
                 R.id.tvRemote, R.id.tvSetting};
         android.content.res.ColorStateList csl =
@@ -420,6 +430,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 ((TextView) search).setTextColor(
                         com.github.tvbox.osc.util.ThemeManager.searchTextColors());
             }
+        }
+        if (randomPick instanceof TextView) {
+            ((TextView) randomPick).setTextColor(com.github.tvbox.osc.util.ThemeManager.accent());
         }
         if (tvName != null) tvName.setTextColor(0xF2FDF6F2);
         if (tvSource != null) tvSource.setTextColor(com.github.tvbox.osc.util.ThemeManager.accent());
@@ -520,6 +533,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 ? topLayout.getHeight()
                 : AutoSizeUtils.mm2px(this, TOPBAR_HEIGHT_MM);
         topBarHidden = hide;
+        UserFragment.setImmersiveMode(hide);
         LOG.i("NYTOP topBar=" + (hide ? "HIDE" : "SHOW"));
         topLayout.animate().cancel();
         topLayout.removeCallbacks(topBarSettleRunnable);
@@ -1033,6 +1047,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             jumpActivity(CollectActivity.class);
         } else if (id == R.id.tvPush) {
             jumpActivity(PushActivity.class);
+        } else if (id == R.id.tvRandomPick) {
+            try {
+                if (currentSelected >= 0 && currentSelected < fragments.size()
+                        && fragments.get(currentSelected) instanceof UserFragment) {
+                    ((UserFragment) fragments.get(currentSelected)).showRandomPick(sortAdapter.getData());
+                } else {
+                    Toast.makeText(this, "请先回到首页再使用随机看", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Throwable error) {
+                LOG.e("Random pick entry failed: " + error);
+                Toast.makeText(this, "随机看暂时无法打开，请稍后重试", Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.tvRemote) {
             // 复用推送页那套二维码界面，只是换成遥控页（page=remote 直接落在摇杆面板）
             Bundle bundle = new Bundle();
@@ -1050,9 +1076,31 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        // 顶栏显隐现在完全由滚动驱动（见 topBarScrollListener），
-        // 这里不再拦方向键、也不再抢焦点：以前吞掉 DPAD_UP 再 240ms 后
-        // 把焦点硬塞给分类 tab，就是"上滑两下直接回到导航栏"的直接原因。
+        // TV 首屏不是纵向滚动容器，DPAD 不会产生 RecyclerView 的 dy，
+        // 所以用焦点跨越顶栏边界来驱动沉浸模式。
+        if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+            View focusedBefore = getCurrentFocus();
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP && topBarHidden
+                    && focusedBefore != null && !isDescendantOf(focusedBefore, topLayout)) {
+                setTopBarHidden(false);
+                View categoryFocus = sortFocusView;
+                if (categoryFocus == null || !categoryFocus.isShown()) {
+                    categoryFocus = mGridView == null ? null : mGridView.getChildAt(0);
+                }
+                if (categoryFocus != null) categoryFocus.post(categoryFocus::requestFocus);
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+                    && focusedBefore != null && isDescendantOf(focusedBefore, topLayout)) {
+                View decor = getWindow() == null ? null : getWindow().getDecorView();
+                if (decor != null) decor.post(() -> {
+                    View focusedAfter = getCurrentFocus();
+                    if (focusedAfter != null && !isDescendantOf(focusedAfter, topLayout)) {
+                        setTopBarHidden(true);
+                    }
+                });
+            }
+        }
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 menuKeyDownTime = System.currentTimeMillis();
@@ -1066,6 +1114,35 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    private boolean isDescendantOf(View child, View parent) {
+        if (child == null || parent == null) return false;
+        View current = child;
+        while (current != null) {
+            if (current == parent) return true;
+            if (!(current.getParent() instanceof View)) return false;
+            current = (View) current.getParent();
+        }
+        return false;
+    }
+
+    /** Touch remotes and air mice use vertical swipes as page scrolling on TV. */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            touchDownX = event.getX();
+            touchDownY = event.getY();
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            float dx = event.getX() - touchDownX;
+            float scrollDown = touchDownY - event.getY();
+            float threshold = AutoSizeUtils.mm2px(this, 28);
+            if (Math.abs(scrollDown) > threshold && Math.abs(scrollDown) > Math.abs(dx) * 1.25f) {
+                // Finger moves up = page moves down, tuck the chrome away. Reverse restores it.
+                setTopBarHidden(scrollDown > 0);
+            }
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     /**
@@ -1114,7 +1191,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             ConstraintLayout cl_root = mSiteSwitchDialog.findViewById(R.id.cl_root);
             ViewGroup.LayoutParams clp = cl_root.getLayoutParams();
             clp.width = AutoSizeUtils.mm2px(mSiteSwitchDialog.getContext(), 360 + 130 * spanCount);
-            mSiteSwitchDialog.setTip("请选择首页数据源");
+            mSiteSwitchDialog.setTip("切换首页数据源");
             // 数据源弹窗才有的工具条：源检测 + 健康度排序
             mSiteSwitchDialog.showSourceTools(true,
                     new View.OnClickListener() {
@@ -1171,7 +1248,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             public String getDisplay(SourceBean val) {
                 // 「名字｜健康度」：SelectDialogAdapter 会把 ｜ 后面的拆成卡下小注
                 String health = SourceHealth.label(val.getKey());
-                return health.isEmpty() ? val.getName() : val.getName() + "｜" + health;
+                return val.getName() + "｜" + (health.isEmpty() ? "待检测" : health);
             }
         }, new DiffUtil.ItemCallback<SourceBean>() {
             @Override

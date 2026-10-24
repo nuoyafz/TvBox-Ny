@@ -57,12 +57,20 @@ public class SelectDialog<T> extends BaseDialog {
         View row = findViewById(R.id.sourceTools);
         if (row == null) return;
         row.setVisibility(show ? View.VISIBLE : View.GONE);
+        showSourceSummary(show, "选择后立即切换首页片源 · 当前使用的源已标记");
         if (show) {
             View check = findViewById(R.id.btnSourceCheck);
             View sort = findViewById(R.id.btnSourceSort);
             if (check != null) check.setOnClickListener(onCheck);
             if (sort != null) sort.setOnClickListener(onSort);
         }
+    }
+
+    public void showSourceSummary(boolean show, CharSequence summary) {
+        TextView subtitle = findViewById(R.id.tvSourceSubtitle);
+        if (subtitle == null) return;
+        subtitle.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (summary != null) subtitle.setText(summary);
     }
 
     /** 右上角小字：共 N 个源 */
@@ -103,9 +111,13 @@ public class SelectDialog<T> extends BaseDialog {
             @Override
             public void run() {
                 if (selectIdx >= 10) {
-                    tvRecyclerView.smoothScrollToPosition(selectIdx);
-                    tvRecyclerView.setSelectionWithSmooth(selectIdx);
+                    tvRecyclerView.scrollToPosition(selectIdx);
+                    tvRecyclerView.setSelectedPosition(selectIdx);
                 }
+                tvRecyclerView.post(() -> {
+                    RecyclerView.ViewHolder holder = tvRecyclerView.findViewHolderForAdapterPosition(selectIdx);
+                    if (holder != null) holder.itemView.requestFocus();
+                });
             }
         });
     }

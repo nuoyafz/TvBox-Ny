@@ -8,13 +8,14 @@
     <item android:state_focused="true">
         <shape>
             <corners android:radius="@dimen/atv_radius_pill" />
-            <solid android:color="@color/atv_control_bg_focus" />
+            <solid android:color="#45FFFFFF" />
+            <stroke android:width="1.5mm" android:color="#E6FFFFFF" />
         </shape>
     </item>
     <item>
         <shape>
             <corners android:radius="@dimen/atv_radius_pill" />
-            <solid android:color="@android:color/transparent" />
+            <solid android:color="#12FFFFFF" />
         </shape>
     </item>
 </selector>

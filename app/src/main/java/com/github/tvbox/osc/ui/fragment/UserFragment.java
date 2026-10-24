@@ -19,6 +19,7 @@ import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.Movie;
+import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
@@ -32,6 +33,7 @@ import com.github.tvbox.osc.ui.activity.PushActivity;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.adapter.HomeHotVodAdapter;
+import com.github.tvbox.osc.ui.dialog.RandomPickDialog;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ImgUtil;
@@ -59,9 +61,9 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * 首页第一屏 · 画报式
+ * 首页频道舞台
  *
- * 版面只保留三块：主视觉（正在看的那一部）→ 一条横向片单 → 一行文字入口。
+ * 首页以继续观看主视觉和横向推荐片单为核心。
  * 原来的 6 个大图标方块已经压成底部一行小字，不再抢主视觉的权重。
  */
 public class UserFragment extends BaseLazyFragment {
@@ -71,9 +73,10 @@ public class UserFragment extends BaseLazyFragment {
     private View tvHeroBlock;
     private TextView tvHeroTitle;
     private TextView tvHeroMeta;
+    private TextView tvHeroDesc;
     private TextView tvHeroPlay;
     private TextView tvRowLabel;
-    private ImageView ivHeroBg;
+    private TextView tvRowAll;
     private ImageView ivHeroPoster;
     private TextView tvHeroEp;
     private View heroPosterBox;
@@ -81,10 +84,28 @@ public class UserFragment extends BaseLazyFragment {
     public static HomeHotVodAdapter homeHotVodAdapter;
     private List<Movie.Video> homeSourceRec;
     public static TvRecyclerView tvHotList;
+    private static boolean immersiveMode;
     private SourceViewModel sourceViewModel;
 
     public static UserFragment newInstance() {
         return new UserFragment();
+    }
+
+    /** Expand the recommendation strip when the TV chrome is tucked away. */
+    public static void setImmersiveMode(boolean enabled) {
+        immersiveMode = enabled;
+        if (tvHotList != null) {
+            android.view.ViewGroup.LayoutParams params = tvHotList.getLayoutParams();
+            if (params != null) {
+                params.height = AutoSizeUtils.mm2px(tvHotList.getContext(), enabled ? 150 : 112);
+                tvHotList.setLayoutParams(params);
+            }
+        }
+        if (homeHotVodAdapter != null) homeHotVodAdapter.setImmersiveMode(enabled);
+    }
+
+    public static boolean isImmersiveMode() {
+        return immersiveMode;
     }
 
     public static UserFragment newInstance(List<Movie.Video> recVod) {
@@ -150,6 +171,37 @@ public class UserFragment extends BaseLazyFragment {
         mActivity.startActivity(newIntent);
     }
 
+    /** 从当前首页推荐中抽一部，结果可以直接打开详情播放。 */
+    public void showRandomPick(List<MovieSort.SortData> sourceCategories) {
+        if (!isAdded() || mContext == null) return;
+        List<Movie.Video> candidates = new ArrayList<>();
+        if (homeHotVodAdapter != null) {
+            for (Movie.Video item : homeHotVodAdapter.getData()) {
+                if (item != null && !TextUtils.isEmpty(item.id) && !TextUtils.isEmpty(item.sourceKey)
+                        && item.action == null && !item.id.startsWith("msearch:")) {
+                    candidates.add(item);
+                }
+            }
+        }
+        if (candidates.isEmpty() && (sourceCategories == null || sourceCategories.size() <= 1)) {
+            Toast.makeText(mContext, "当前没有可随机的影片分类", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            new RandomPickDialog(mContext, candidates, sourceCategories, vod -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", vod.id);
+                bundle.putString("sourceKey", vod.sourceKey);
+                bundle.putString("title", vod.name);
+                bundle.putString("picture", vod.pic);
+                jumpActivity(DetailActivity.class, bundle);
+            }).show();
+        } catch (Throwable error) {
+            com.github.tvbox.osc.util.LOG.e("Random pick dialog failed: " + error);
+            Toast.makeText(mContext, "随机看暂时无法打开，请稍后重试", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private ImgUtil.Style style;
 
     @Override
@@ -160,18 +212,29 @@ public class UserFragment extends BaseLazyFragment {
         tvHeroBlock = findViewById(R.id.tvHeroBlock);
         tvHeroTitle = findViewById(R.id.tvHeroTitle);
         tvHeroMeta = findViewById(R.id.tvHeroMeta);
+        tvHeroDesc = findViewById(R.id.tvHeroDesc);
         tvHeroPlay = findViewById(R.id.tvHeroPlay);
         // 上键出口：主页「继续播放」→ 顶栏「换源」。
         // 几何搜索从 y=436 往上，横向能重叠到的只有 NOYA 品牌名（x 84..202），
         // 而遥控器用户按上键的意图基本都是"去顶栏换源 / 搜索"，所以直接钉到换源。
-        if (tvHeroPlay != null) tvHeroPlay.setNextFocusUpId(R.id.tvSwitchSource);
+        if (tvHeroPlay != null) {
+            tvHeroPlay.setNextFocusUpId(R.id.tvSwitchSource);
+            tvHeroPlay.setNextFocusDownId(R.id.tvHotList);
+            tvHeroPlay.setBackground(com.github.tvbox.osc.util.ThemeManager.solidAccentButton(mContext, 6f));
+            tvHeroPlay.setTextColor(0xFF141414);
+        }
         tvRowLabel = findViewById(R.id.tvRowLabel);
-        ivHeroBg = findViewById(R.id.ivHeroBg);
+        tvRowAll = findViewById(R.id.tvRowAll);
+        if (tvRowAll != null) {
+            tvRowAll.setNextFocusDownId(R.id.tvHotList);
+            tvRowAll.setOnClickListener(v -> jumpActivity(HistoryActivity.class));
+        }
         ivHeroPoster = findViewById(R.id.ivHeroPoster);
         tvHeroEp = findViewById(R.id.tvHeroEp);
         heroPosterBox = findViewById(R.id.heroPosterBox);
 
         tvHotList = findViewById(R.id.tvHotList);
+        if (tvHotList != null) tvHotList.setNextFocusUpId(R.id.tvHeroPlay);
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1 && homeSourceRec != null) {
             style = ImgUtil.initStyle();
         }
@@ -182,7 +245,9 @@ public class UserFragment extends BaseLazyFragment {
             tvRate = homeSourceRec != null ? "站点推荐" : "豆瓣热播";
         }
         if (tvRowLabel != null) {
-            tvRowLabel.setText(tvRate.isEmpty() ? "接着看" : tvRate);
+            tvRowLabel.setText(Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2
+                    ? "接着看"
+                    : "接下来放什么");
         }
         homeHotVodAdapter = new HomeHotVodAdapter(style, tvRate);
         homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
@@ -267,14 +332,14 @@ public class UserFragment extends BaseLazyFragment {
         try {
             List<VodInfo> records = RoomDataManger.getAllVodRecord(1);
             if (records == null || records.isEmpty()) {
-                tvHeroBlock.setVisibility(View.INVISIBLE);
-            if (heroPosterBox != null) heroPosterBox.setVisibility(View.INVISIBLE);
+                tvHeroBlock.setVisibility(View.GONE);
+                if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
                 return;
             }
             final VodInfo vod = records.get(0);
             if (vod == null || vod.id == null || vod.id.isEmpty()) {
-                tvHeroBlock.setVisibility(View.INVISIBLE);
-            if (heroPosterBox != null) heroPosterBox.setVisibility(View.INVISIBLE);
+                tvHeroBlock.setVisibility(View.GONE);
+                if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
                 return;
             }
             SourceBean bean = ApiConfig.get().getSource(vod.sourceKey);
@@ -288,21 +353,26 @@ public class UserFragment extends BaseLazyFragment {
             }
             tvHeroTitle.setText(vod.name == null ? "" : vod.name);
             tvHeroMeta.setText(meta.length() == 0 ? "继续上次的进度" : meta.toString());
+            if (tvHeroDesc != null) {
+                String description = vod.des == null ? "" : vod.des.trim();
+                if (description.isEmpty()) {
+                    tvHeroDesc.setVisibility(View.GONE);
+                } else {
+                    tvHeroDesc.setText(description);
+                    tvHeroDesc.setVisibility(View.VISIBLE);
+                }
+            }
 
-            // 主视觉跨页：背景 + 实体海报 + 集数角标
+            // 主视觉只展示独立海报，不把剧照铺成全屏背景。
             String heroName = vod.name == null ? "" : vod.name;
             String heroPic = vod.pic == null ? "" : vod.pic.trim();
             if (!TextUtils.isEmpty(heroPic) && !ImgUtil.isBase64Image(heroPic)) {
-                int bgW = AutoSizeUtils.mm2px(mContext, 420);
-                int bgH = AutoSizeUtils.mm2px(mContext, 300);
-                int pw = AutoSizeUtils.mm2px(mContext, 200);
-                int ph = AutoSizeUtils.mm2px(mContext, 280);
+                int pw = AutoSizeUtils.mm2px(mContext, 245);
+                int ph = AutoSizeUtils.mm2px(mContext, 342);
                 int r = AutoSizeUtils.mm2px(mContext, 8);
                 ImgUtil.load(heroPic, ivHeroPoster, r, pw, ph, heroName);
-                ImgUtil.load(heroPic, ivHeroBg, r, bgW, bgH, heroName);
             } else {
                 ivHeroPoster.setImageDrawable(ImgUtil.createTextDrawable(heroName));
-                ivHeroBg.setImageDrawable(null);
             }
             if (tvHeroEp != null) {
                 if (vod.playNote != null && !vod.playNote.isEmpty()) {
@@ -329,8 +399,8 @@ public class UserFragment extends BaseLazyFragment {
             }
             tvHeroBlock.setVisibility(View.VISIBLE);
         } catch (Throwable th) {
-            tvHeroBlock.setVisibility(View.INVISIBLE);
-            if (heroPosterBox != null) heroPosterBox.setVisibility(View.INVISIBLE);
+            tvHeroBlock.setVisibility(View.GONE);
+            if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
         }
     }
 

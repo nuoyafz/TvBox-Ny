@@ -886,18 +886,6 @@ public class DetailActivity extends BaseActivity {
         mSeriesGroupView.setNextFocusDownId(down);
     }
 
-    /** Apple TV 详情页背景大图：海报铺底 + 渐变遮罩，加载失败不影响主流程 */
-    private void loadAtvBackdrop(String pic) {
-        try {
-            ImageView backdrop = findViewById(R.id.ivBackdrop);
-            if (backdrop == null || TextUtils.isEmpty(pic)) return;
-            backdrop.setVisibility(View.VISIBLE);
-            com.github.tvbox.osc.util.ImgUtil.load(pic, backdrop, 0, 0, 0, "", ImageView.ScaleType.CENTER_CROP);
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-    }
-
     private void setTextShow(TextView view, String tag, String info) {
         if (info == null || info.trim().isEmpty()) {
             view.setVisibility(View.GONE);
@@ -1014,7 +1002,6 @@ public class DetailActivity extends BaseActivity {
                     setTextShow(tvDes, "内容简介：", removeHtmlTag(mVideo.des));
                     if (!TextUtils.isEmpty(mVideo.pic)) {
                         com.github.tvbox.osc.util.ImgUtil.load(DefaultConfig.checkReplaceProxy(mVideo.pic), ivThumb, AutoSizeUtils.mm2px(mContext, 12), AutoSizeUtils.mm2px(mContext, 300), AutoSizeUtils.mm2px(mContext, 400), mVideo.name);
-                        loadAtvBackdrop(DefaultConfig.checkReplaceProxy(mVideo.pic));
                     } else {
                         ivThumb.setImageDrawable(com.github.tvbox.osc.util.ImgUtil.createTextDrawable(mVideo.name));
                     }

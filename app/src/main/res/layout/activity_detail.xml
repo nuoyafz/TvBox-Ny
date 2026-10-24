@@ -14,23 +14,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--
-      全屏背景大图（沉浸光感）：原来 alpha=0.5 是一张实照片盖满全屏，
-      底下的极光完全出不来。降到 0.16，只当"剧照氛围"用，底色交给极光。
-    -->
-    <ImageView
-        android:id="@+id/ivBackdrop"
+    <!-- 统一暗房底色，不将详情海报铺满全屏。 -->
+    <com.github.tvbox.osc.ui.widget.AuroraBackgroundView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.16"
-        android:scaleType="centerCrop"
-        android:visibility="invisible" />
-
-    <!-- 左侧压暗 + 底部渐隐（替代原来的上下黑渐变） -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/shape_detail_scrim" />
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/llLayout"

@@ -256,6 +256,7 @@ function doDelFile(yes) {
 }
 
 function showPanel(id) {
+    document.body.classList.toggle('remote-mode', id === 4);
     let tab = $('#tab' + id)[0];
     $(tab).attr('aria-selected', 'true').addClass('weui-bar__item_on');
     $(tab).siblings('.weui-bar__item_on').removeClass('weui-bar__item_on').attr('aria-selected', 'false');
@@ -296,7 +297,9 @@ var RC_KEY = {
 };
 var RC_KEY_NAME = {
     19: '上', 20: '下', 21: '左', 22: '右', 23: '确定',
-    4: '返回', 3: '主页', 82: '菜单', 85: '播放'
+    4: '返回', 3: '主页', 82: '菜单', 85: '播放',
+    24: '音量加', 25: '音量减', 87: '下一段', 88: '上一段',
+    166: '频道加', 167: '频道减'
 };
 var RC_HOLD_DELAY = 320; // 按住多久开始连发
 var RC_HOLD_GAP = 90;   // 连发间隔
@@ -506,7 +509,9 @@ function bindRcStick() {
 var voiceRec = null, voiceOn = false;
 
 function toggleVoice() {
-    var btn = document.getElementById('btn_voice');
+    var remotePanel = document.getElementById('panel4');
+    var isRemote = remotePanel && remotePanel.style.display !== 'none';
+    var btn = document.getElementById(isRemote ? 'rcVoice' : 'btn_voice');
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
         warnToast('当前浏览器不支持语音输入<br>请用 Chrome / Edge，或直接打字搜索');
@@ -525,7 +530,12 @@ function toggleVoice() {
     voiceRec.maxAlternatives = 1;
     voiceRec.onresult = function (ev) {
         var text = ev.results[0][0].transcript;
-        $('#search_key_word').val(text);
+        if (isRemote) {
+            doAction('search', { word: text });
+            rcStatus('电视搜索 · ' + text);
+        } else {
+            $('#search_key_word').val(text);
+        }
     };
     voiceRec.onerror = function (ev) {
         warnToast('语音识别失败：' + (ev.error || '未知错误'));
@@ -546,4 +556,84 @@ function toggleVoice() {
 $(function () {
     bindRcKeys();
     bindRcStick();
+    bindRcTouchPad();
+    var host = document.getElementById('rcHost');
+    if (host) host.textContent = window.location.host || '同一局域网连接';
+    var keyboard = document.getElementById('rcKeyboard');
+    if (keyboard) keyboard.addEventListener('click', function () {
+        showPanel(1);
+        window.setTimeout(function () {
+            var input = document.getElementById('search_key_word');
+            if (input) input.focus();
+        }, 80);
+    });
+    var haptic = document.getElementById('rcHaptic');
+    if (haptic) haptic.addEventListener('click', function () {
+        if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) {} }
+        haptic.classList.toggle('active');
+    });
 });
+
+/* Touch mode: swipe the large direction disc; the existing /action key channel
+   remains the only transport so phone control behaves exactly like the real remote. */
+function bindRcTouchPad() {
+    var pad = document.getElementById('rcPad');
+    var plane = document.getElementById('rcTouchPlane');
+    var thumb = document.getElementById('rcTouchThumb');
+    if (!pad || !plane || !thumb) return;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rc-mode]'), function (button) {
+        button.addEventListener('click', function () {
+            var touch = button.getAttribute('data-rc-mode') === 'touch';
+            pad.classList.toggle('is-touch', touch);
+            Array.prototype.forEach.call(document.querySelectorAll('[data-rc-mode]'), function (item) {
+                item.classList.toggle('active', item === button);
+            });
+            rcStatus(touch ? '滑动方向盘控制' : '按住方向键可连续移动');
+        });
+    });
+
+    var active = false, lastKey = 0, repeat = null, moved = false;
+    var centerX = 0, centerY = 0, radius = 1;
+    function stop() {
+        if (!active) return;
+        active = false;
+        if (repeat) { clearInterval(repeat); repeat = null; }
+        plane.classList.remove('is-on');
+        thumb.style.transform = 'translate(0,0)';
+        if (!moved) sendKey(RC_KEY.ok);
+        lastKey = 0;
+        rcStatus('滑动方向盘控制');
+    }
+    function move(e) {
+        if (!active) return;
+        var dx = e.clientX - centerX, dy = e.clientY - centerY;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var max = radius * .72;
+        if (dist > max) { dx = dx / dist * max; dy = dy / dist * max; dist = max; }
+        thumb.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        var key = 0;
+        if (dist > 15) key = Math.abs(dx) > Math.abs(dy)
+            ? (dx > 0 ? RC_KEY.right : RC_KEY.left)
+            : (dy > 0 ? RC_KEY.down : RC_KEY.up);
+        if (!key) { if (repeat) { clearInterval(repeat); repeat = null; } lastKey = 0; return; }
+        moved = true;
+        if (key !== lastKey) {
+            if (repeat) clearInterval(repeat);
+            lastKey = key;
+            sendKey(key);
+            repeat = setInterval(function () { sendKey(key); }, 175);
+        }
+    }
+    plane.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        active = true; moved = false;
+        var rect = plane.getBoundingClientRect();
+        centerX = rect.left + rect.width / 2; centerY = rect.top + rect.height / 2; radius = rect.width / 2;
+        try { plane.setPointerCapture(e.pointerId); } catch (err) {}
+        plane.classList.add('is-on');
+        move(e);
+    });
+    plane.addEventListener('pointermove', move);
+    plane.addEventListener('pointerup', stop);
+    plane.addEventListener('pointercancel', stop);
+}

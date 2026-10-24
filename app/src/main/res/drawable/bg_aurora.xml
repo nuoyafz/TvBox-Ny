@@ -11,7 +11,7 @@
             <gradient android:type="radial"
                 android:centerX="0.14" android:centerY="0.06"
                 android:gradientRadius="0.55"
-                android:startColor="@color/dusk_glow_main" android:endColor="#00FF9A5A" />
+                android:startColor="@color/dusk_glow_main" android:endColor="#00090D0F" />
         </shape>
     </item>
     <item>
@@ -19,7 +19,7 @@
             <gradient android:type="radial"
                 android:centerX="0.88" android:centerY="0.16"
                 android:gradientRadius="0.48"
-                android:startColor="@color/dusk_glow_mid" android:endColor="#00FF4E78" />
+                android:startColor="@color/dusk_glow_mid" android:endColor="#00090D0F" />
         </shape>
     </item>
     <item>
@@ -27,7 +27,7 @@
             <gradient android:type="radial"
                 android:centerX="0.50" android:centerY="1.08"
                 android:gradientRadius="0.62"
-                android:startColor="@color/dusk_glow_deep" android:endColor="#008A4DFF" />
+                android:startColor="@color/dusk_glow_deep" android:endColor="#00090D0F" />
         </shape>
     </item>
 </layer-list>

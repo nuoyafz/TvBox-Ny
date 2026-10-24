@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.util.ThemeManager;
 
 import org.jetbrains.annotations.NotNull;
@@ -38,10 +40,10 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
 public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.SelectViewHolder> {
 
     /* 健康度状态线配色：只表达"这个源能不能用、快不快"，不做品牌色 */
-    private static final int HEALTH_FAST = 0xFF4ADE80; // 快
-    private static final int HEALTH_MID = 0xFFF5C542;  // 一般
-    private static final int HEALTH_SLOW = 0xFFFF8A4C;  // 慢
-    private static final int HEALTH_DEAD = 0xFFFF4D4F;  // 失效
+    private static final int HEALTH_FAST = 0xFF8DB99A; // 快
+    private static final int HEALTH_MID = 0xFFD6B97F;  // 一般
+    private static final int HEALTH_SLOW = 0xFFD49A78; // 慢
+    private static final int HEALTH_DEAD = 0xFFD27F7F;  // 失效
     private static final int HEALTH_NONE = 0x33FFFFFF;  // 未测 / 无数据
 
     /* 玻璃卡三档白：常态、选中 */
@@ -133,7 +135,7 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
             String tail = display.substring(sp + 1).trim();
             // 只有尾巴确实是健康度才拆，否则（比如名字里自带竖线）整串当名字
             if (tail.contains("·") || tail.contains("失效") || tail.startsWith("快")
-                    || tail.startsWith("一般") || tail.startsWith("慢")) {
+                    || tail.startsWith("一般") || tail.startsWith("慢") || tail.equals("待检测")) {
                 nm = display.substring(0, sp).trim();
                 cap = tail;
             }
@@ -146,23 +148,35 @@ public class SelectDialogAdapter<T> extends ListAdapter<T, SelectDialogAdapter.S
         FrameLayout face = root.findViewById(R.id.signPanel);
         TextView tvName = root.findViewById(R.id.tvName);
         TextView tvCap = root.findViewById(R.id.tvSignCap);
+        TextView tvCurrent = root.findViewById(R.id.tvCurrentBadge);
         View vDot = root.findViewById(R.id.vHealthDot);
 
         tvName.setText(nm);
+        boolean sourceCard = value instanceof SourceBean;
+        tvName.setGravity(sourceCard ? Gravity.CENTER_VERTICAL | Gravity.START : Gravity.CENTER);
+        int nameInset = sourceCard ? AutoSizeUtils.mm2px(root.getContext(), 14) : AutoSizeUtils.mm2px(root.getContext(), 8);
+        tvName.setPadding(nameInset, 0, nameInset, 0);
         tvCap.setText(cap);
         tvCap.setVisibility(cap.length() == 0 ? View.INVISIBLE : View.VISIBLE);
+        if (tvCurrent != null) {
+            tvCurrent.setVisibility(sel ? View.VISIBLE : View.GONE);
+            tvCurrent.setTextColor(accent);
+            GradientDrawable badge = new GradientDrawable();
+            badge.setColor((accent & 0x00FFFFFF) | 0x26000000);
+            badge.setCornerRadius(AutoSizeUtils.mm2px(root.getContext(), 8));
+            badge.setStroke(AutoSizeUtils.mm2px(root.getContext(), 1), (accent & 0x00FFFFFF) | 0x77000000);
+            tvCurrent.setBackground(badge);
+        }
 
         // 玻璃底：垂直微渐变（上亮下暗），跟弹窗底座 bg_vault_dialog 同一套材质
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 sel ? new int[]{GLASS_TOP_SEL, GLASS_BOTTOM_SEL}
                         : new int[]{GLASS_TOP, GLASS_BOTTOM});
         bg.setCornerRadius(AutoSizeUtils.mm2px(root.getContext(), 8));
-        if (sel) {
-            bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 2.5f), accent);
-        } else {
-            bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 1), 0x26FFFFFF);
-        }
+        bg.setStroke(AutoSizeUtils.mm2px(root.getContext(), 1), sel ? 0x4DFFFFFF : 0x26FFFFFF);
+        if (sel) bg.setColor((accent & 0x00FFFFFF) | 0x24000000);
         face.setBackground(bg);
+        com.github.tvbox.osc.util.AtvFocusHelper.bind(root);
 
         // 唯一带颜色的地方：卡下那颗 7mm 健康度圆点
         if (vDot != null) {

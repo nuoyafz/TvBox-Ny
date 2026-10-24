@@ -259,6 +259,134 @@
 			color: #DFA35C;
 			border-color: #DFA35C;
 		}
+
+		/* NOYA remote redesign: compact OLED controller, tuned for one-hand phone use. */
+		#panel4 { padding: 0 !important; background: #111412; overflow-x: hidden; }
+		#panel4 .rc {
+			--rc-ink: #eef0e9; --rc-dim: #8f9990; --rc-line: rgba(236,240,231,.11);
+			width: 100%; max-width: 480px; min-height: 100%; height: auto; margin: 0 auto;
+			padding: max(12px, env(safe-area-inset-top)) 22px max(18px, env(safe-area-inset-bottom));
+			justify-content: flex-start; gap: 0; text-align: left; color: var(--rc-ink);
+			background: radial-gradient(ellipse at 50% -12%,#354139 0,transparent 42%),linear-gradient(180deg,#161b17,#0e110f 72%);
+			border: 0; overflow: hidden;
+		}
+		#panel4 .rc__head { height: 46px; flex: 0 0 46px; }
+		#panel4 .rc__title { color:#e8ebe3; font:700 13px system-ui,sans-serif; letter-spacing:.23em; }
+		#panel4 .rc__speed { margin-left:10px; color:#aeb8ae; font-size:10px; letter-spacing:.02em; }
+		.rc__head-actions { display:flex; gap:7px; }
+		.rc__icon { width:34px;height:34px;border:1px solid var(--rc-line);border-radius:50%;background:#ffffff08;color:#d5ddd4;display:grid;place-items:center;font-size:14px; }
+		.rc__device { display:flex;align-items:center;gap:11px;margin-top:7px;padding:11px 13px;border:1px solid var(--rc-line);border-radius:15px;background:linear-gradient(135deg,#ffffff0c,#ffffff04); }
+		.rc__tv-icon { width:38px;height:38px;border:1px solid #d4e2d52c;border-radius:12px;background:linear-gradient(145deg,#35473b,#202b24);display:grid;place-items:center;color:#dce8da;font-size:17px; }
+		.rc__device-copy { min-width:0;flex:1; }
+		.rc__device-name { font-size:13px;font-weight:600; }
+		.rc__device-host { margin-top:3px;font:10px system-ui,sans-serif;color:var(--rc-dim); }
+		.rc__online { display:flex;align-items:center;gap:6px;color:#c5d7c8;font-size:9px;white-space:nowrap; }
+		.rc__online:before { content:'';width:6px;height:6px;border-radius:50%;background:#96c4a0;box-shadow:0 0 9px #96c4a0; }
+		.rc__heading { display:flex;align-items:end;justify-content:space-between;margin:21px 1px 0; }
+		.rc__overline { color:#89938a;font:9px system-ui,sans-serif;letter-spacing:.18em; }
+		.rc__main-title { margin-top:3px;color:#eef0e9;font-size:23px;font-weight:600;letter-spacing:-.04em; }
+		.rc__modes { display:flex;padding:3px;border:1px solid var(--rc-line);border-radius:30px;background:#ffffff08; }
+		.rc__mode { height:29px;padding:0 12px;border:0;border-radius:22px;background:transparent;color:#9ba39b;font-size:10px; }
+		.rc__mode.active { background:#d4dfd3;color:#202720;font-weight:600; }
+		#panel4 .rc__grid {
+			position:relative;width:min(76vw,310px);height:min(76vw,310px);margin:14px auto 0;padding:11%;gap:4px;
+			border:1px solid rgba(224,237,221,.17);
+			background:radial-gradient(circle at 50% 30%,#2b342e,#1a201c 64%,#141815);
+			box-shadow:0 22px 65px #050706a8,inset 0 1px 0 #ffffff17,inset 0 -25px 40px #080a08a6;
+		}
+		#panel4 .rc__grid:before { content:'';position:absolute;inset:5%;border:1px solid #ffffff08;border-radius:50%;pointer-events:none; }
+		#panel4 .rc__key { position:relative;z-index:1;color:#c3cbc1;font-size:24px;border-radius:20px;transition:background .12s,color .12s,transform .12s; }
+		#panel4 .rc__key:active,#panel4 .rc__key.is-on { background:#c5d5c51a;color:#f3f6ef;box-shadow:none; }
+		#panel4 .rc__key--ok { width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,#d9e3d5,#9eafa0);color:#1a211c;font-size:12px;box-shadow:0 4px 20px #bcd2bd35,inset 0 1px 0 #fff9; }
+		#panel4 .rc__key--ok:active,#panel4 .rc__key--ok.is-on { background:#edf4e8;color:#161c17; }
+		.rc__touch-plane { display:none;position:absolute;z-index:4;inset:9%;border-radius:50%;touch-action:none; }
+		.rc__thumb { position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;border:1px solid #e3ecdf55;background:radial-gradient(circle at 35% 28%,#e5ecdf,#9eafa0 74%);box-shadow:0 6px 22px #05070699;opacity:0;transform:translate(0,0);pointer-events:none;transition:opacity .18s; }
+		#panel4 .rc__grid.is-touch .rc__key { opacity:.16;pointer-events:none; }
+		#panel4 .rc__grid.is-touch .rc__touch-plane { display:block; }
+		#panel4 .rc__grid.is-touch .rc__thumb { opacity:1; }
+		#panel4 .rc__mid { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-top:15px; }
+		#panel4 .rc__mid .rc__key { height:58px;border:1px solid var(--rc-line);border-radius:14px;background:linear-gradient(145deg,#ffffff0d,#ffffff04);font-size:16px;color:#d5ded3;box-shadow:none; }
+		#panel4 .rc__mid .rc__key span { font-size:9px;letter-spacing:.04em;color:#a0aaa0; }
+		#panel4 .rc__mid .rc__key:active,#panel4 .rc__mid .rc__key.is-on { background:#c3d4c21b;border-color:#c3d4c24f;color:#eff5eb; }
+		.rc__mid .rc__key--back { border:1px solid var(--rc-line)!important;border-radius:14px!important;background:linear-gradient(145deg,#ffffff0d,#ffffff04)!important; }
+		.rc__voice { height:58px;border:1px solid var(--rc-line);border-radius:14px;background:linear-gradient(145deg,#ffffff0d,#ffffff04);color:#d5ded3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:15px; }
+		.rc__voice span { color:#a0aaa0;font-size:9px; }
+		.rc__voice.is-rec { color:#e4c0a5;border-color:#e4c0a5;box-shadow:0 0 0 4px #e4c0a51c; }
+		.rc__row { display:grid;grid-template-columns:1fr auto 1fr;gap:9px;width:100%;margin-top:10px; }
+		.rc__utility { min-height:58px;padding:6px 9px;border:1px solid var(--rc-line);border-radius:14px;background:#ffffff06;display:flex;align-items:center;justify-content:space-around; }
+		.rc__utility-label { color:#929c93;font-size:9px;writing-mode:vertical-rl; }
+		#panel4 .rc__row .rc__key { width:32px;height:36px;border:0;border-radius:10px;background:#ffffff08;color:#dce2d8;font-size:16px;box-shadow:none; }
+		.rc__utility-center { display:flex;flex-direction:column;align-items:center;gap:1px;color:#d9e0d7;font-size:13px; }
+		.rc__utility-center small { color:#9ba49b;font-size:8px; }
+		.rc__keyboard { width:55px;border:1px solid var(--rc-line);border-radius:14px;background:#ffffff08;color:#d5ded3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:16px; }
+		.rc__keyboard span { color:#a4ada4;font-size:8px; }
+		.rc__transport { display:flex;justify-content:center;gap:9px;margin:10px 0 13px; }
+		.rc__transport .rc__key { height:37px;min-width:53px;width:auto;padding:0 10px;border:1px solid var(--rc-line);border-radius:12px;background:#ffffff06;color:#b9c1b8;font-size:12px; }
+		.rc__transport .rc__key--play { min-width:118px;background:#d3dfd1;color:#1c241e;border-color:#d3dfd1;font-size:10px;font-weight:700; }
+		#panel4 .rc__transport .rc__key:active,#panel4 .rc__transport .rc__key.is-on { background:#e5eee2;color:#182019; }
+		body.remote-mode .weui-tabbar { background:rgba(18,22,19,.94);border-top:1px solid rgba(236,240,231,.09);backdrop-filter:blur(18px); }
+		body.remote-mode .weui-tabbar:before { display:none; }
+		@media(max-height:760px) {
+			#panel4 .rc { padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+			#panel4 .rc__head { height:36px;flex-basis:36px; }
+			#panel4 .rc__device { padding:7px 10px;margin-top:3px; }
+			#panel4 .rc__tv-icon { width:32px;height:32px; }
+			.rc__heading { margin-top:10px; }
+			#panel4 .rc__grid { width:min(64vw,235px);height:min(64vw,235px);margin-top:7px; }
+			#panel4 .rc__mid { margin-top:8px; }
+			#panel4 .rc__mid .rc__key,.rc__voice { height:48px; }
+			.rc__utility { min-height:48px; }
+			.rc__transport { margin:7px 0 8px; }
+		}
+		/* Mobile browser viewport: keep the complete remote visible above the tab bar. */
+		#panel4 { min-height:0; overflow:hidden !important; }
+		#panel4 .rc {
+			width:100%;height:100%;min-height:0;max-height:100%;
+			padding:6px 18px max(7px,env(safe-area-inset-bottom));
+			justify-content:space-between;gap:4px;overflow:hidden;
+		}
+		#panel4 .rc__head { height:32px;flex-basis:32px;min-height:32px; }
+		#panel4 .rc__device { flex:0 0 auto;margin-top:0;padding:6px 10px;border-radius:13px; }
+		#panel4 .rc__tv-icon { width:30px;height:30px;border-radius:9px; }
+		#panel4 .rc__heading { flex:0 0 auto;margin:3px 1px 0; }
+		#panel4 .rc__main-title { font-size:21px; }
+		#panel4 .rc__grid { width:min(62vw,250px,31dvh);height:auto;aspect-ratio:1;flex:0 0 auto;margin:2px auto;padding:9%; }
+		#panel4 .rc__key--ok { width:58px;height:58px; }
+		#panel4 .rc__mid { grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:2px; }
+		#panel4 .rc__mid>* { width:100%;min-width:0;box-sizing:border-box; }
+		#panel4 .rc__mid .rc__key,#panel4 .rc__voice { height:48px;padding-left:2px;padding-right:2px;border-radius:12px; }
+		#panel4 .rc__mid .rc__key { flex-direction:column;gap:1px; }
+		#panel4 .rc__voice { gap:2px;font-size:14px; }
+		#panel4 .rc__row { grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);gap:7px;margin-top:2px; }
+		#panel4 .rc__utility { min-width:0;min-height:46px;padding:4px 5px;border-radius:12px; }
+		#panel4 .rc__row .rc__key { width:28px;height:32px; }
+		#panel4 .rc__keyboard { width:52px;min-height:46px;border-radius:12px; }
+		#panel4 .rc__transport { flex:0 0 auto;margin:2px 0 0;gap:7px; }
+		#panel4 .rc__transport .rc__key { height:36px;min-width:46px;padding:0 8px; }
+		#panel4 .rc__transport .rc__key--play { min-width:0;width:min(42vw,170px); }
+		@media(max-height:700px) {
+			#panel4 .rc { padding-top:3px;padding-bottom:4px;gap:2px; }
+			#panel4 .rc__head { height:27px;flex-basis:27px;min-height:27px; }
+			#panel4 .rc__icon { width:28px;height:28px; }
+			#panel4 .rc__device { padding:4px 8px; }
+			#panel4 .rc__tv-icon { width:26px;height:26px; }
+			#panel4 .rc__main-title { font-size:18px; }
+			#panel4 .rc__mode { height:25px;padding:0 9px; }
+			#panel4 .rc__grid { width:min(56vw,210px,28dvh); }
+			#panel4 .rc__key--ok { width:50px;height:50px; }
+			#panel4 .rc__mid .rc__key,#panel4 .rc__voice { height:42px;font-size:13px; }
+			#panel4 .rc__utility { min-height:40px; }
+			#panel4 .rc__row .rc__key { height:28px; }
+			#panel4 .rc__keyboard { min-height:40px; }
+			#panel4 .rc__transport .rc__key { height:32px; }
+		}
+		@media(max-width:360px) {
+			#panel4 .rc { padding-left:12px;padding-right:12px; }
+			#panel4 .rc__mid { gap:5px; }
+			#panel4 .rc__row { grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);gap:5px; }
+			#panel4 .rc__keyboard { width:46px; }
+			#panel4 .rc__utility-label { display:none; }
+		}
 	</style>
 </head>
 
@@ -376,36 +504,40 @@
 								<div id="panel4" role="tabpanel" aria-labelledby="t4_title" class="weui-tab__panel" style="display: none;">
 					<div class="rc">
 						<div class="rc__head">
-							<span class="rc__title">NOYA</span>
-							<span class="rc__speed" id="rcSpeed">拖动摇杆 · 点中心 = OK</span>
+							<span class="rc__title">NOYA <span style="font-weight:400;letter-spacing:.08em;color:#849087">REMOTE</span></span>
+							<span class="rc__speed" id="rcSpeed">按住方向键可连续移动</span>
+							<div class="rc__head-actions"><button type="button" class="rc__icon" id="rcHaptic" aria-label="震动反馈">⌁</button></div>
 						</div>
-
-						<div class="rc__grid">
-							<div></div>
-							<div class="rc__key" data-key="19">▲</div>
-							<div></div>
-							<div class="rc__key" data-key="21">◀</div>
-							<div class="rc__key rc__key--ok" data-key="23">OK</div>
-							<div class="rc__key" data-key="22">▶</div>
-							<div></div>
-							<div class="rc__key" data-key="20">▼</div>
-							<div></div>
+						<div class="rc__device">
+							<div class="rc__tv-icon">▣</div>
+							<div class="rc__device-copy"><div class="rc__device-name">TVBox 电视</div><div class="rc__device-host" id="rcHost">同一局域网连接</div></div>
+							<div class="rc__online">已连接</div>
 						</div>
-
+						<div class="rc__heading">
+							<div><div class="rc__overline">REMOTE CONTROL</div><div class="rc__main-title">遥控器</div></div>
+							<div class="rc__modes"><button type="button" class="rc__mode active" data-rc-mode="keys">按键</button><button type="button" class="rc__mode" data-rc-mode="touch">触控</button></div>
+						</div>
+						<div class="rc__grid" id="rcPad">
+							<button type="button" class="rc__key" style="grid-column:2;grid-row:1" data-key="19" aria-label="上">⌃</button>
+							<button type="button" class="rc__key" style="grid-column:1;grid-row:2" data-key="21" aria-label="左">‹</button>
+							<button type="button" class="rc__key rc__key--ok" style="grid-column:2;grid-row:2" data-key="23">确定</button>
+							<button type="button" class="rc__key" style="grid-column:3;grid-row:2" data-key="22" aria-label="右">›</button>
+							<button type="button" class="rc__key" style="grid-column:2;grid-row:3" data-key="20" aria-label="下">⌄</button>
+							<div class="rc__touch-plane" id="rcTouchPlane"><div class="rc__thumb" id="rcTouchThumb"></div></div>
+						</div>
 						<div class="rc__mid">
-							<div class="rc__col">
-								<div class="rc__stick" id="rcStick">
-									<div class="rc__ball" id="rcBall"></div>
-								</div>
-								<div class="rc__label">摇杆</div>
-							</div>
-							<div class="rc__key rc__key--back" data-key="4">⏎<span>返回</span></div>
+							<button type="button" class="rc__key rc__key--back" data-key="4">↶<span>返回</span></button>
+							<button type="button" class="rc__key" data-key="3">⌂<span>主页</span></button>
+							<button type="button" class="rc__key" data-key="82">☷<span>菜单</span></button>
+							<button type="button" class="rc__voice" id="rcVoice" onclick="toggleVoice();return false;">♩<span>语音搜片</span></button>
 						</div>
-
 						<div class="rc__row">
-							<div class="rc__key" data-key="3">主页</div>
-							<div class="rc__key" data-key="82">菜单</div>
-							<div class="rc__key" data-key="85">播放</div>
+							<div class="rc__utility"><span class="rc__utility-label">音量</span><button type="button" class="rc__key" data-key="25">−</button><div class="rc__utility-center">◖<small>音量</small></div><button type="button" class="rc__key" data-key="24">＋</button></div>
+							<button type="button" class="rc__keyboard" id="rcKeyboard">⌨<span>键盘</span></button>
+							<div class="rc__utility"><span class="rc__utility-label">频道</span><button type="button" class="rc__key" data-key="167">−</button><div class="rc__utility-center">▤<small>频道</small></div><button type="button" class="rc__key" data-key="166">＋</button></div>
+						</div>
+						<div class="rc__transport">
+							<button type="button" class="rc__key" data-key="88">|◀</button><button type="button" class="rc__key rc__key--play" data-key="85">▶　播放 / 暂停</button><button type="button" class="rc__key" data-key="87">▶|</button>
 						</div>
 					</div>
 				</div>

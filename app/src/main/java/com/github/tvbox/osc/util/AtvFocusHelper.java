@@ -25,8 +25,6 @@ public final class AtvFocusHelper {
      * 原来每次焦点变化都 new 一个 OvershootInterpolator：快速上下连按时
      * 每秒要新建几十个对象并起几十个动画，一起抢 Choreographer 的帧 —— 这就是"滑动不顺畅"。
      */
-    private static final android.view.animation.OvershootInterpolator OVER =
-            new android.view.animation.OvershootInterpolator(1.4f);
     private static final DecelerateInterpolator DEC = new DecelerateInterpolator();
 
     /** 焦点落点回调，用于记录位置，返回时还原 */
@@ -82,7 +80,7 @@ public final class AtvFocusHelper {
                 .scaleX(target)
                 .scaleY(target)
                 .setDuration(hasFocus ? FOCUS_DURATION : UNFOCUS_DURATION)
-                .setInterpolator(hasFocus ? OVER : DEC)
+                .setInterpolator(DEC)
                 .start();
     }
 }

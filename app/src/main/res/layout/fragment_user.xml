@@ -1,38 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  首页第一屏 · 杂志跨页（v4）
-
-  版面三块：
-  1) 主视觉跨页：最近观看片的模糊暗化背景 + 左栏大标题/元信息/描边按钮 + 右侧实体海报(白描边 + 琥珀集数角标)
-  2) 一条横向片单「接着看」
-  3) 一行极小的文字入口（6 大图标已上移顶栏，这里不抢戏）
-
-  中段留白是刻意的。
--->
+<!-- 首页频道舞台：继续观看主视觉 + 横向宽银幕推荐条。 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <!--
-      主视觉背景（取最近观看片的海报）
-      沉浸光感前提：这层必须"退到后面去"。原来是 alpha=0.5 盖满全屏，
-      把下层极光整个压死，所以改了配色也看不出来。现在降到 0.20，
-      只留一点影像暗示，真正的底色交给 AuroraBackgroundView 的极光光斑。
-    -->
-    <ImageView
-        android:id="@+id/ivHeroBg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.07"
-        android:scaleType="centerCrop" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/gradient_spot_scrim" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-92mm"
+        android:layout_marginEnd="-18mm"
+        android:layout_marginRight="-18mm"
+        android:alpha="0.045"
+        android:fontFamily="sans-serif-black"
+        android:includeFontPadding="false"
+        android:text="01"
+        android:textColor="@color/neon_text_primary"
+        android:textSize="430mm"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -40,7 +29,7 @@
         android:layout_gravity="top|right"
         android:layout_marginTop="-30mm"
         android:layout_marginRight="-16mm"
-        android:alpha="0.05"
+        android:alpha="0.025"
         android:includeFontPadding="false"
         android:letterSpacing="0.02"
         android:singleLine="true"
@@ -55,8 +44,8 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         android:orientation="vertical"
-        android:paddingLeft="56mm"
-        android:paddingRight="56mm">
+        android:paddingLeft="62mm"
+        android:paddingRight="62mm">
 
         <!--
           主视觉吃掉所有弹性空间（weight=1），片单区固定高度。
@@ -65,37 +54,31 @@
             android:id="@+id/tvHeroBlock"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="8mm"
+            android:layout_marginTop="0mm"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <!--
-              左：刊头 / 大标题 / 元信息 / 琥珀线 / 按钮
-              沉浸光感：这一栏改成一块浮在日落底图上的毛玻璃板。
-              没有实体面板，光感和材质在首页就没有"落点"——顶栏一条太窄，
-              眼睛会读成"只是背景变了个色"。这里是整屏最大的一块玻璃。
-            -->
+            <!-- 左侧主标题与继续播放操作 -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="24mm"
+                android:layout_marginRight="16mm"
                 android:layout_weight="1"
-                android:background="@drawable/bg_glass_body"
                 android:orientation="vertical"
-                android:paddingLeft="30mm"
-                android:paddingTop="26mm"
-                android:paddingRight="30mm"
-                android:paddingBottom="26mm">
+                android:paddingLeft="8mm"
+                android:paddingTop="12mm"
+                android:paddingRight="8mm"
+                android:paddingBottom="12mm">
 
                 <TextView
                     android:id="@+id/tvHeroKicker"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:includeFontPadding="false"
-                    android:letterSpacing="0.26"
-                    android:text="CONTINUE"
+                    android:letterSpacing="0.18"
+                    android:text="今晚接着看　/　CONTINUE"
                     android:textColor="@color/neon_accent"
                     android:textSize="13mm" />
 
@@ -103,67 +86,81 @@
                     android:id="@+id/tvHeroTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14mm"
+                    android:layout_marginTop="12mm"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:letterSpacing="0.02"
-                    android:maxLines="1"
-                    android:maxWidth="760mm"
+                    android:maxLines="2"
+                    android:maxWidth="690mm"
                     android:textColor="@color/neon_text_primary"
-                    android:textSize="46mm"
+                    android:textSize="58mm"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvHeroMeta"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12mm"
+                    android:layout_marginTop="10mm"
                     android:includeFontPadding="false"
-                    android:letterSpacing="0.08"
+                    android:letterSpacing="0.03"
                     android:maxLines="1"
                     android:textColor="@color/neon_text_secondary"
                     android:textSize="16mm" />
 
+                <TextView
+                    android:id="@+id/tvHeroDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12mm"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:lineSpacingExtra="3mm"
+                    android:maxLines="2"
+                    android:textColor="@color/neon_text_secondary"
+                    android:textSize="14mm"
+                    android:visibility="gone" />
+
                 <View
-                    android:layout_width="64mm"
-                    android:layout_height="2mm"
-                    android:layout_marginTop="14mm"
+                    android:layout_width="44mm"
+                    android:layout_height="3mm"
+                    android:layout_marginTop="15mm"
                     android:background="@color/neon_accent" />
 
                 <TextView
                     android:id="@+id/tvHeroPlay"
                     android:layout_width="wrap_content"
-                    android:layout_height="40mm"
-                    android:layout_marginTop="18mm"
-                    android:background="@drawable/shape_cta_outline"
+                    android:layout_height="46mm"
+                    android:layout_marginTop="16mm"
+                    android:background="@drawable/button_detail_play"
                     android:clickable="true"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:gravity="center"
                     android:includeFontPadding="false"
-                    android:letterSpacing="0.14"
-                    android:paddingLeft="28mm"
-                    android:paddingRight="28mm"
-                    android:text="继续播放  ▸"
-                    android:textColor="@color/neon_accent"
+                    android:letterSpacing="0.04"
+                    android:paddingLeft="24mm"
+                    android:paddingRight="24mm"
+                    android:text="▶　继续播放"
+                    android:textColor="@color/neon_bg"
                     android:textSize="16mm" />
 
             </LinearLayout>
 
-            <!-- 右：实体海报 + 白描边 + 琥珀集数角标 -->
+            <!-- 右侧实体海报与播放集数 -->
             <FrameLayout
                 android:id="@+id/heroPosterBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="40mm"
-                android:layout_marginLeft="40mm"
-                android:background="@color/neon_text_primary"
-                android:padding="4mm">
+                android:layout_marginStart="38mm"
+                android:layout_marginLeft="38mm"
+                android:background="@color/neon_accent"
+                android:padding="3mm"
+                android:rotation="2">
 
                 <ImageView
                     android:id="@+id/ivHeroPoster"
-                    android:layout_width="200mm"
-                    android:layout_height="280mm"
+                    android:layout_width="245mm"
+                    android:layout_height="342mm"
                     android:scaleType="fitXY" />
 
                 <TextView
@@ -189,25 +186,26 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="42mm"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <View
-                android:layout_width="22mm"
-                android:layout_height="1.5mm"
+                android:layout_width="24mm"
+                android:layout_height="2mm"
                 android:background="@color/neon_accent" />
 
             <TextView
                 android:id="@+id/tvRowLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="14mm"
+                android:layout_marginLeft="12mm"
                 android:includeFontPadding="false"
                 android:letterSpacing="0.1"
-                android:text="接着看"
+                android:text="接下来放什么"
                 android:textColor="@color/neon_text_primary"
-                android:textSize="18mm" />
+                android:textSize="19mm"
+                android:textStyle="bold" />
 
             <Space
                 android:layout_width="0dp"
@@ -215,14 +213,16 @@
                 android:layout_weight="1" />
 
             <TextView
+                android:id="@+id/tvRowAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
+                android:background="@drawable/bg_text_link"
+                android:clickable="true"
+                android:focusable="true"
                 android:includeFontPadding="false"
                 android:letterSpacing="0.12"
-                android:text="全部 ›"
-                android:textColor="@color/neon_text_tertiary"
+                android:text="全部历史　→"
+                android:textColor="@color/neon_accent"
                 android:textSize="14mm" />
 
         </LinearLayout>
@@ -230,17 +230,17 @@
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/tvHotList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14mm"
+            android:layout_height="112mm"
+            android:layout_marginTop="5mm"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:visibility="gone"
-            app:tv_horizontalSpacingWithMargins="24mm"
+            app:tv_horizontalSpacingWithMargins="10mm"
             app:tv_selectedItemIsCentered="false" />
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="20mm" />
+            android:layout_height="9mm" />
 
     </LinearLayout>
 

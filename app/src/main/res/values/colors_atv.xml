@@ -34,8 +34,8 @@
     <color name="atv_focus_fill">#26FFFFFF</color>
 
     <!-- 强调色：日落大道 · 霞橙，用于进度/选中指示 -->
-    <color name="atv_accent">#FFFF9A5A</color>
-    <color name="atv_accent_dim">#66FF9A5A</color>
+    <color name="atv_accent">#FFD7FF47</color>
+    <color name="atv_accent_dim">#66D7FF47</color>
 
     <!-- 遮罩：海报底部渐变，替代原来的硬色块 -->
     <color name="atv_scrim_top">#00000000</color>

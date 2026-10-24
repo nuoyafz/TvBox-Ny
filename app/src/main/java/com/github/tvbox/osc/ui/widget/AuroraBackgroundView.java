@@ -11,44 +11,27 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.ThemeManager;
 
 /**
- * 沉浸光感 · 极光底图（主题可切）。
+ * 暗房底图：石墨黑基底、极轻主题光晕和细网格，不使用图片壁纸。
  *
- * 五层，全部用 Shader 直接画，尺寸变化时才重建，之后每帧都是 GPU 缓存合成：
- *
- *   ① 底色      深夜色（保证白字对比）
- *   ② 天空带    顶部主色 → 中段次色 → 透明，形成"地平线"
- *   ③ 太阳点    左上偏白暖光，给材质一点通透感（华为那种"光从屏幕里透出来"）
- *   ④ 侧光      右上次色，跟顶栏玻璃互相咬合
- *   ⑤ 地光      底部深色，托住海报排
- *
- * 性能：onDraw 只有 1 次 drawRect + 3 次 drawCircle，比贴一张 PNG 底图还便宜；
- * 流光动画只跑 8fps（慢漂移不需要 60fps），低配设备直接静态。
+ * 背景仅用 Canvas 和 Shader 绘制，网格边缘渐隐；没有海报背景或持续动画。
  */
 public class AuroraBackgroundView extends View {
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private LinearGradient gBase, gSky;
+    private LinearGradient gBase, gSky, gGrid;
     private RadialGradient gSun, gPink, gGround;
     private int W, H;
 
-    /** 流光相位：0~1，随时间缓慢移动光斑圆心（低配传 false 关掉） */
-    private final boolean flow;
-    private long startMs;
-
-    /** 天空带占屏高的比例 */
-    private static final float SKY_RATIO = 0.66f;
+    /** Static light field keeps the home screen calm and avoids background animation noise. */
 
     /** 主题色（由 ThemeManager 注入） */
     private int cSkyTop, cSkyMid, cGround, cSun, cBgA, cBgB;
 
     public AuroraBackgroundView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.flow = !App.getInstance().isLowEndDevice();
-        startMs = System.currentTimeMillis();
         cSkyTop = ThemeManager.skyTop();
         cSkyMid = ThemeManager.skyMid();
         cGround = ThemeManager.ground();
@@ -66,7 +49,7 @@ public class AuroraBackgroundView extends View {
         this.cBgA = bgA;
         this.cBgB = bgB;
         if (W > 0 && H > 0) {
-            buildShaders(0f);
+            buildShaders();
             invalidate();
         }
     }
@@ -76,32 +59,33 @@ public class AuroraBackgroundView extends View {
         super.onSizeChanged(w, h, ow, oh);
         W = w;
         H = h;
-        buildShaders(0f);
+        buildShaders();
     }
 
-    private void buildShaders(float phase) {
+    private void buildShaders() {
         if (W <= 0 || H <= 0) return;
-        float drift = phase * W * 0.045f;
         float longSide = Math.max(W, H);
 
         // ① 底色
         gBase = new LinearGradient(0, 0, 0, H, new int[]{cBgA, cBgB}, null, Shader.TileMode.CLAMP);
 
         // ② 天空带：主色 → 次色 → 透明，只占上半屏
-        gSky = new LinearGradient(0, 0, 0, H * SKY_RATIO,
-                new int[]{cSkyTop, cSkyMid, cSkyMid & 0x00FFFFFF},
-                new float[]{0f, 0.46f, 1f}, Shader.TileMode.CLAMP);
+        gSky = new LinearGradient(0, 0, 0, H * 0.70f,
+                new int[]{cSkyTop, cSkyMid & 0x00FFFFFF}, null, Shader.TileMode.CLAMP);
+        gGrid = new LinearGradient(0, 0, 0, H,
+                new int[]{0x000D1714, 0x0AFFFFFF, 0x0AFFFFFF, 0x000D1714},
+                new float[]{0f, 0.18f, 0.84f, 1f}, Shader.TileMode.CLAMP);
 
         // ③ 太阳点
-        gSun = new RadialGradient(W * 0.15f + drift, H * 0.07f, longSide * 0.26f,
+        gSun = new RadialGradient(W * 0.78f, H * 0.12f, longSide * 0.42f,
                 new int[]{cSun, cSun & 0x00FFFFFF}, null, Shader.TileMode.CLAMP);
 
         // ④ 侧光
-        gPink = new RadialGradient(W * 0.92f - drift, H * 0.30f, longSide * 0.40f,
+        gPink = new RadialGradient(W * 0.10f, H * 0.78f, longSide * 0.45f,
                 new int[]{cSkyMid, cSkyMid & 0x00FFFFFF}, null, Shader.TileMode.CLAMP);
 
         // ⑤ 地光
-        gGround = new RadialGradient(W * 0.48f, H * 1.06f, longSide * 0.60f,
+        gGround = new RadialGradient(W * 0.52f, H * 1.12f, longSide * 0.72f,
                 new int[]{cGround, cGround & 0x00FFFFFF}, null, Shader.TileMode.CLAMP);
     }
 
@@ -113,28 +97,23 @@ public class AuroraBackgroundView extends View {
         paint.setShader(gSky);
         canvas.drawRect(0, 0, W, H, paint);
         paint.setShader(gSun);
-        canvas.drawCircle(W * 0.15f, H * 0.07f, Math.max(W, H) * 0.26f, paint);
+        canvas.drawCircle(W * 0.78f, H * 0.12f, Math.max(W, H) * 0.42f, paint);
         paint.setShader(gPink);
-        canvas.drawCircle(W * 0.92f, H * 0.30f, Math.max(W, H) * 0.40f, paint);
+        canvas.drawCircle(W * 0.10f, H * 0.78f, Math.max(W, H) * 0.45f, paint);
         paint.setShader(gGround);
-        canvas.drawCircle(W * 0.48f, H * 1.06f, Math.max(W, H) * 0.60f, paint);
+        canvas.drawCircle(W * 0.52f, H * 1.12f, Math.max(W, H) * 0.72f, paint);
+        paint.setShader(gGrid);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(Math.max(1f, getResources().getDisplayMetrics().density * 0.35f));
+        float gap = Math.max(48f, W / 16f);
+        for (float x = 0; x <= W; x += gap) canvas.drawLine(x, 0, x, H, paint);
+        for (float y = 0; y <= H; y += gap) canvas.drawLine(0, y, W, y, paint);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setShader(null);
     }
 
-    /** 流光：光斑圆心缓慢漂移；低配设备不跑动画，静态光斑 */
+    /** Retained for API compatibility; this visual system intentionally has no ambient motion. */
     public void startFlow() {
-        if (!flow) return;
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isAttachedToWindow()) return;
-                float t = (System.currentTimeMillis() - startMs) % 14000f / 14000f;
-                float phase = 0.5f - 0.5f * (float) Math.cos(t * Math.PI * 2);
-                buildShaders(phase);
-                invalidate();
-                // 8fps：慢漂移看不出来帧率，但 shader 重建次数少了 7 倍，滚动时更稳
-                postDelayed(this, 125);
-            }
-        }, 125);
     }
 
     @Override

@@ -9,15 +9,15 @@
     <item android:state_focused="true">
         <shape android:shape="rectangle">
             <corners android:radius="8mm" />
-            <solid android:color="#1FFAF6F0" />
-            <stroke android:width="2mm" android:color="#EBFAF6F0" />
+            <solid android:color="#42FFFFFF" />
+            <stroke android:width="2mm" android:color="#FFFFFFFF" />
         </shape>
     </item>
 
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="8mm" />
-            <solid android:color="#0DFAF6F0" />
+            <solid android:color="#20FFFFFF" />
             <stroke android:width="1mm" android:color="@color/neon_glass_border" />
         </shape>
     </item>

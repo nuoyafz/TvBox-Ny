@@ -33,25 +33,25 @@ public class ThemeManager {
     /** 主题存储键 */
     public static final String KEY = "ny_theme";
 
-    public static final int DUSK = 0;   // 日落大道：霞橙 / 晚霞粉 / 暮紫
-    public static final int PINE = 1;   // 极光绿松：松石绿 / 湖青 / 深林
-    public static final int LUCKY = 2;  // 幸运紫蓝：薰紫 / 电光蓝 / 午夜蓝
-    public static final int MIST = 3;   // 晨雾青：雾青 / 薄荷白 / 深海青
+    public static final int DUSK = 0;   // 暗房：荧光青柠
+    public static final int PINE = 1;   // 暗房：冰川青
+    public static final int LUCKY = 2;  // 暗房：夜幕紫
+    public static final int MIST = 3;   // 暗房：月雾银
 
-    public static final String[] NAMES = {"日落大道", "极光绿松", "幸运紫蓝", "晨雾青"};
+    public static final String[] NAMES = {"暗房青柠", "暗房冰川", "暗房夜紫", "暗房月雾"};
     private static final String[] SUBS = {
-            "霞橙 · 晚霞粉 · 暮紫",
-            "松石绿 · 湖青 · 深林",
-            "薰紫 · 电光蓝 · 午夜蓝",
-            "雾青 · 薄荷白 · 深海青",
+            "荧光青柠 · 石墨黑",
+            "冰川青 · 石墨黑",
+            "夜幕紫 · 石墨黑",
+            "月雾银 · 石墨黑",
     };
 
     // 每套 8 个色：accent, accent2, skyTop, skyMid, ground, sun, bgA, bgB
     private static final int[][] P = {
-            {0xFFFF9A5A, 0xFFFF4E78, 0xA6FF9A5A, 0x5CFF4E78, 0x6B8A4DFF, 0x4DFFD2A8, 0xFF1C0C18, 0xFF150A12},
-            {0xFF3FE0A8, 0xFF2BB6C9, 0xA63FE0A8, 0x5C2BB6C9, 0x6B0E5F52, 0x4DE8FFF4, 0xFF06120F, 0xFF04100D},
-            {0xFF9A7BFF, 0xFF4E9BFF, 0xA69A7BFF, 0x5C4E9BFF, 0x6B2A2B8A, 0x4DE6E0FF, 0xFF0B0A1C, 0xFF080718},
-            {0xFF7ED8D2, 0xFFA8D8C0, 0xA67ED8D2, 0x5CA8D8C0, 0x6B3A6B78, 0x4DF2FFFF, 0xFF0A1416, 0xFF091315},
+            {0xFFB8C5B8, 0xFF8F9F96, 0x14B8C5B8, 0x0A8F9F96, 0x100F1412, 0x10EEF2EA, 0xFF0A0D0F, 0xFF080B0D},
+            {0xFFA8BDC0, 0xFF879FA2, 0x14A8BDC0, 0x0A879FA2, 0x100E1415, 0x10EAF3F2, 0xFF0A0D0F, 0xFF080B0D},
+            {0xFFB8B4C8, 0xFF9691A9, 0x14B8B4C8, 0x0A9691A9, 0x10121117, 0x10F0EDF5, 0xFF0A0D0F, 0xFF080B0D},
+            {0xFFC4C9C4, 0xFFAAB0AA, 0x14C4C9C4, 0x0AAAB0AA, 0x10121513, 0x10F4F5F1, 0xFF0A0D0F, 0xFF080B0D},
     };
 
     public static int get() {
@@ -181,11 +181,11 @@ public class ThemeManager {
      *    非焦点态的文字更惨：rgb(118,195,169) 对 rgb(130,190,170)，几乎完全看不见。
      *    白玻璃只适合暗壁纸，四套主题里有两套是亮的，不能这么干。
      *
-     * ② 深色烟玻璃（现在这版）：本体用「bgB 压暗 55% 再掺 10% 强调色」，
-     *    以 60% 左右的不透明度铺开。亮壁纸上压得住，暗壁纸上也不显脏，
+     * ② 深色烟玻璃：本体用「bgB 压暗 55% 再掺 10% 强调色」，
+     *    常态透明度约 20%~30%，清楚透出顶栏底色，
      *    同时因为只有 60% 不透明，背后的极光还能透上来 —— 这才是玻璃。
      *
-     * 受光与焦点：顶部一道白/主题色衰减光交代厚度；焦点态本体加厚到 78%、
+     * 受光与焦点：顶部一道白/主题色衰减光交代厚度；焦点态本体加厚到约 45%、
      * 换成 2mm 强调色描边 + 强调色顶光 —— 整条顶栏里唯一"通电"的东西。
      * 本体是深色无彩，强调色只出现在描边和光晕上，四套主题都不会撞色。
      */
@@ -197,11 +197,11 @@ public class ThemeManager {
         GradientDrawable body = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
                 focused
-                        ? new int[]{withAlpha(ink, 0xC6), withAlpha(ink, 0x9C)}
-                        : new int[]{withAlpha(ink, 0x9E), withAlpha(ink, 0x74)});
+                        ? new int[]{withAlpha(ink, 0x78), withAlpha(ink, 0x58)}
+                        : new int[]{withAlpha(ink, 0x48), withAlpha(ink, 0x30)});
         body.setCornerRadius(mm(ctx, cornerMm));
         if (focused) {
-            body.setStroke(mm(ctx, 2), withAlpha(a, 0xF2));
+            body.setStroke(mm(ctx, 2), withAlpha(a, 0xD8));
         } else {
             body.setStroke(mm(ctx, 1), 0x3DFFFFFF);
         }
@@ -248,9 +248,9 @@ public class ThemeManager {
             d.setColor(0xF2FDF6F2);
             d.setStroke(mm(ctx, 1.4f), accent);
         } else {
-            // 65% 不透明：既要压住背后的海报/天空，又不能糊成一块死色
-            d.setColor((accent & 0x00FFFFFF) | 0xA6000000);
-            d.setStroke(mm(ctx, 1.4f), 0x66FFFFFF);
+            // 未聚焦时保留玻璃透感，主题色只作为细边提示；聚焦后再明确提亮。
+            d.setColor((accent & 0x00FFFFFF) | 0x4A000000);
+            d.setStroke(mm(ctx, 1.2f), (accent & 0x00FFFFFF) | 0x88000000);
         }
         return d;
     }
@@ -269,7 +269,7 @@ public class ThemeManager {
                         new int[]{android.R.attr.state_focused},
                         new int[]{}
                 },
-                new int[]{accent(), 0xFF141014});
+                new int[]{accent(), 0xF2FDF6F2});
     }
 
     public static void tintTab(TextView title, ImageView filter, ImageView filterColor) {
@@ -335,13 +335,13 @@ public class ThemeManager {
 
         GradientDrawable body = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{top, bgA(), bgB()});
+                new int[]{withAlpha(top, 0xA2), withAlpha(bgA(), 0x8F), withAlpha(bgB(), 0x82)});
         body.setCornerRadius(mm(ctx, 10));
-        body.setStroke(mm(ctx, 1), 0x33FFFFFF);
+        body.setStroke(mm(ctx, 1), 0x55FFFFFF);
 
         GradientDrawable sheen = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{withAlpha(a, 0x2E), withAlpha(a, 0x0A), withAlpha(a, 0x00)});
+                new int[]{0x20FFFFFF, withAlpha(a, 0x08), withAlpha(a, 0x00)});
         sheen.setCornerRadius(mm(ctx, 10));
 
         return new LayerDrawable(new Drawable[]{body, sheen});
@@ -352,9 +352,9 @@ public class ThemeManager {
         int a = accent();
         GradientDrawable d = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{blend(bgA(), a, 0.10f), bgA()});
+                new int[]{withAlpha(blend(bgA(), a, 0.08f), 0xB8), withAlpha(bgA(), 0xA6)});
         d.setCornerRadius(mm(ctx, cornerMm));
-        d.setStroke(mm(ctx, 1), 0x26FFFFFF);
+        d.setStroke(mm(ctx, 1), 0x4DFFFFFF);
         return d;
     }
 
@@ -422,23 +422,29 @@ public class ThemeManager {
         return sd;
     }
 
-    /**
-     * 主行动按钮（详情页「立即播放」/ 搜索页「搜索」）。
-     * 原来是 button_detail_play.xml 里写死 neon_accent 的实心块，
-     * 换主题后是"绿松界面里一块橙按钮"，这里按主题现算：焦点提亮 + 白环。
-     */
+    /** 主题色磨砂主按钮：半透强调色底、受光高光与醒目的遥控焦点描边。 */
     public static android.graphics.drawable.StateListDrawable solidAccentButton(Context ctx, float cornerMm) {
         android.graphics.drawable.StateListDrawable sd =
                 new android.graphics.drawable.StateListDrawable();
         GradientDrawable focused = new GradientDrawable();
         focused.setCornerRadius(mm(ctx, cornerMm));
-        focused.setColor(blend(accent(), 0xFFFFFFFF, 0.22f));
-        focused.setStroke(mm(ctx, 2), 0xEBFAF6F0);
+        focused.setColor(withAlpha(blend(accent(), 0xFFFFFFFF, 0.24f), 0xF0));
+        focused.setStroke(mm(ctx, 2), 0xFFFFFFFF);
         GradientDrawable normal = new GradientDrawable();
         normal.setCornerRadius(mm(ctx, cornerMm));
-        normal.setColor(accent());
-        sd.addState(new int[]{android.R.attr.state_focused}, focused);
-        sd.addState(new int[]{}, normal);
+        normal.setColor(withAlpha(accent(), 0xD8));
+        normal.setStroke(mm(ctx, 1), 0x66FFFFFF);
+        GradientDrawable sheenFocused = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0x66FFFFFF, 0x1AFFFFFF, 0x00FFFFFF});
+        sheenFocused.setCornerRadius(mm(ctx, cornerMm));
+        GradientDrawable sheenNormal = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0x50FFFFFF, 0x12FFFFFF, 0x00FFFFFF});
+        sheenNormal.setCornerRadius(mm(ctx, cornerMm));
+        sd.addState(new int[]{android.R.attr.state_focused},
+                new LayerDrawable(new Drawable[]{focused, sheenFocused}));
+        sd.addState(new int[]{}, new LayerDrawable(new Drawable[]{normal, sheenNormal}));
         return sd;
     }
 

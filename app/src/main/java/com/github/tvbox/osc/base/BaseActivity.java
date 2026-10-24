@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -28,7 +26,6 @@ import com.kingja.loadsir.core.LoadService;
 import com.kingja.loadsir.core.LoadSir;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -85,14 +82,14 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
                 new android.graphics.drawable.GradientDrawable(
                         android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
                         new int[]{com.github.tvbox.osc.util.ThemeManager.withA(
-                                com.github.tvbox.osc.util.ThemeManager.accent(), 0x3D),
+                                com.github.tvbox.osc.util.ThemeManager.accent(), 0x0E),
                                 com.github.tvbox.osc.util.ThemeManager.withA(
                                         com.github.tvbox.osc.util.ThemeManager.accent(), 0x00)});
         android.graphics.drawable.GradientDrawable ground =
                 new android.graphics.drawable.GradientDrawable(
                         android.graphics.drawable.GradientDrawable.Orientation.BOTTOM_TOP,
                         new int[]{com.github.tvbox.osc.util.ThemeManager.withA(
-                                com.github.tvbox.osc.util.ThemeManager.ground(), 0x5C),
+                                com.github.tvbox.osc.util.ThemeManager.ground(), 0x10),
                                 com.github.tvbox.osc.util.ThemeManager.withA(
                                         com.github.tvbox.osc.util.ThemeManager.ground(), 0x00)});
         return new android.graphics.drawable.LayerDrawable(
@@ -399,52 +396,8 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         return !(screenRatio >= 1.9f);
     }
 
-    protected static BitmapDrawable globalWp = null;
-
     public void changeWallpaper(boolean force) {
-        if (!force && globalWp != null) {
-            // 已经解过就直接复用，别每次 onResume 都再解一遍 1080×720，白吃几十毫秒
-            getWindow().setBackgroundDrawable(globalWp);
-            return;
-        }
-        try {
-            File wp = new File(getFilesDir().getAbsolutePath() + "/wp");
-            if (wp.exists()) {
-                BitmapFactory.Options opts = new BitmapFactory.Options();
-                opts.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(wp.getAbsolutePath(), opts);
-                // 从Options中获取图片的分辨率
-                int imageHeight = opts.outHeight;
-                int imageWidth = opts.outWidth;
-                int picHeight = 720;
-                int picWidth = 1080;
-                int scaleX = imageWidth / picWidth;
-                int scaleY = imageHeight / picHeight;
-                int scale = 1;
-                if (scaleX > scaleY && scaleY >= 1) {
-                    scale = scaleX;
-                }
-                if (scaleX < scaleY && scaleX >= 1) {
-                    scale = scaleY;
-                }
-                opts.inJustDecodeBounds = false;
-                // 采样率
-                opts.inSampleSize = scale;
-                // 磁盘上可能躺着半张图（下载中断/图源返回 HTML），解不出来就当作没壁纸，
-                // 否则 BitmapDrawable(null) 会把窗口刷成纯黑
-                android.graphics.Bitmap bmp = BitmapFactory.decodeFile(wp.getAbsolutePath(), opts);
-                globalWp = bmp == null ? null : new BitmapDrawable(bmp);
-            } else {
-                globalWp = null;
-            }
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            globalWp = null;
-        }
-        if (globalWp != null)
-            getWindow().setBackgroundDrawable(globalWp);
-        else
-            // 没有自定义壁纸 → 用当前主题底，而不是写死的日落 bg_atv
-            getWindow().setBackgroundDrawable(themeBackdrop());
+        // Keep one image-free darkroom surface across activities; posters belong in content cards.
+        getWindow().setBackgroundDrawable(themeBackdrop());
     }
 }

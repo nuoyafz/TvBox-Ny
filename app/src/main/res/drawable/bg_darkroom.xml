@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Darkroom global surface: charcoal with restrained light pools, no image wallpaper. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle"><solid android:color="#090D0F" /></shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.82" android:centerY="0.30" android:gradientRadius="760mm" android:startColor="#15B8C5B8" android:endColor="#00090D0F" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.18" android:centerY="0.92" android:gradientRadius="680mm" android:startColor="#120F1715" android:endColor="#00090D0F" />
+        </shape>
+    </item>
+</layer-list>

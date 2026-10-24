@@ -1,31 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   沉浸光感 · 弹窗底座（原"放映厅底座"）
-  原来是 #F211100E（95% 不透明近黑），弹窗底下的极光一点都透不出来，
-  这是"改了配色还是老样子"的另一条漏网之鱼——所有 SelectDialog 都走这一张图。
-
-  现在：87% 透光暗紫 + 1mm 受光边 + 顶部暖光，底下的日落光还能隐约透进弹窗里。
-  为什么从 70% 加到 87%：70% 时弹窗背后如果是亮海报（首页片单就是这样），
-  标题和卡片白字全都发虚，读不清；87% 既保住"透光"的观感，又让字能落地。
+  统一烟玻璃：中低不透明度、细描边与柔和顶光。
+  窗口 dim 和 Android 12+ backdrop blur 一起保证文字可读，同时让背景保留层次。
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="10mm" />
-            <solid android:color="#DE1C0C18" />
-            <stroke android:width="1mm" android:color="@color/neon_glass_border" />
+            <solid android:color="#98101417" />
+            <stroke android:width="1mm" android:color="#36FFFFFF" />
         </shape>
     </item>
-    <!-- 顶部受光：玻璃上沿那道暖白 -->
+    <!-- 顶部受光：玻璃上沿的冷白反光 -->
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="10mm" />
             <gradient
                 android:angle="270"
                 android:type="linear"
-                android:startColor="#3DFFD9C2"
-                android:centerColor="#0DFFA35C"
-                android:endColor="#00FFA35C" />
+                android:startColor="#20FFFFFF"
+                android:centerColor="#07DFFFFF"
+                android:endColor="#00FFFFFF" />
         </shape>
     </item>
 </layer-list>

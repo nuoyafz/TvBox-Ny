@@ -303,7 +303,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                openWallpaperCategory();
+                Toast.makeText(mContext, "全局使用统一暗房背景，海报只在片单中展示", Toast.LENGTH_SHORT).show();
             }
         });
         findViewById(R.id.llWpRecovery).setOnClickListener(new View.OnClickListener() {
@@ -314,6 +314,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 if (wp.exists())
                     wp.delete();
                 ((BaseActivity) requireActivity()).changeWallpaper(true);
+                Toast.makeText(mContext, "已清除旧壁纸，恢复暗房背景", Toast.LENGTH_SHORT).show();
             }
         });
         findViewById(R.id.llHomeApi).setOnClickListener(new View.OnClickListener() {
@@ -327,7 +328,9 @@ public class ModelSettingFragment extends BaseLazyFragment {
                         com.github.tvbox.osc.util.SourceHealth.sortByHealth(sites);
                     }
                     SelectDialog<SourceBean> dialog = new SelectDialog<>(mActivity);
-                    dialog.setTip("请选择首页数据源");
+                    dialog.setTip("切换首页数据源");
+                    dialog.showSourceSummary(true, "选中后立即设为首页片源 · 当前使用的源已标记");
+                    dialog.setSourceCountText("共 " + sites.size() + " 个源");
                     // 霓虹片仓：3~4 列招牌墙
                     TvRecyclerView tvRecyclerView = dialog.findViewById(R.id.list);
                     int spanCount = sites.size() > 12 ? 4 : 3;
@@ -350,7 +353,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                         @Override
                         public String getDisplay(SourceBean val) {
                             String health = com.github.tvbox.osc.util.SourceHealth.label(val.getKey());
-                            return health.isEmpty() ? val.getName() : val.getName() + "｜" + health;
+                            return val.getName() + "｜" + (health.isEmpty() ? "待检测" : health);
                         }
                     }, new DiffUtil.ItemCallback<SourceBean>() {
                         @Override

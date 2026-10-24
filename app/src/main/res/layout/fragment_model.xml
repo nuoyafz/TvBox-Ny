@@ -1459,7 +1459,7 @@
             android:duplicateParentState="true"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="换张壁纸"
+                            android:text="暗房背景"
                             android:textColor="@color/setting_row_text"
                             android:textSize="@dimen/ts_24" />
 
@@ -1497,7 +1497,7 @@
             android:duplicateParentState="true"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="重置壁纸"
+                            android:text="清除旧壁纸"
                             android:textColor="@color/setting_row_text"
                             android:textSize="@dimen/ts_24" />
 

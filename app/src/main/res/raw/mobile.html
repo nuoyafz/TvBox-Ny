@@ -46,6 +46,10 @@
     display:inline-block;margin-top:6px;padding:9px 18px;border-radius:6px;
     border:1px solid rgba(250,246,240,.22);color:var(--text);font-size:13px;text-decoration:none;
   }
+  #startPlay{
+    display:none;margin-top:4px;padding:11px 24px;border:0;border-radius:999px;
+    background:var(--accent);color:#17120c;font-size:14px;font-weight:600;
+  }
   footer{
     flex:0 0 auto;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)) 16px;
     font-size:11px;color:var(--dim);letter-spacing:.06em;
@@ -69,6 +73,7 @@
   <div id="state">
     <div class="spinner" id="spin"></div>
     <p id="msg">正在从电视取流…</p>
+    <button id="startPlay" type="button">点击开始播放</button>
   </div>
 </div>
 
@@ -119,18 +124,53 @@
    */
   url = url.replace(/https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/gi, location.protocol + '//' + location.host);
 
-  var isHls = /\.m3u8(\?|$)/i.test(url) || /[?&]do=m3u8/i.test(url) || /\.m3u8/i.test(url);
+  // TVBox 的代理清单常见格式是 /proxy?go=live&type=m3u8，不能漏判成普通视频。
+  var isHls = /\.m3u8(\?|$)/i.test(url) || /[?&](?:do|type)=m3u8(?:&|$)/i.test(url) || /\.m3u8/i.test(url);
+  var playStarted = false;
+  var streamTimer = setTimeout(function () {
+    if (!playStarted && !stateEl.classList.contains('hide')) {
+      fail('等待电视视频流超时。确认电视 App 仍在播放、手机和电视处于同一 Wi‑Fi；若仍失败，请在电视切换片源后重新扫码。');
+    }
+  }, 25000);
 
   function fail(text) {
+    clearTimeout(streamTimer);
     spinEl.style.display = 'none';
+    document.getElementById('startPlay').style.display = 'none';
     msgEl.className = 'err';
     msgEl.innerHTML = text;
     stateEl.classList.remove('hide');
   }
 
   function ready() {
+    clearTimeout(streamTimer);
+    playStarted = true;
     stateEl.classList.add('hide');
   }
+
+  function offerPlay(message) {
+    spinEl.style.display = 'none';
+    msgEl.className = '';
+    msgEl.textContent = message || '视频流已连接，点击开始播放';
+    document.getElementById('startPlay').style.display = 'inline-block';
+    stateEl.classList.remove('hide');
+  }
+
+  function tryPlay() {
+    video.muted = true;
+    var result = video.play();
+    if (result && result.catch) result.catch(function () {
+      offerPlay('视频流已连接，点击开始播放');
+    });
+  }
+
+  document.getElementById('startPlay').addEventListener('click', function () {
+    video.muted = false;
+    var result = video.play();
+    if (result && result.catch) result.catch(function () {
+      fail('手机浏览器拒绝播放。请点视频上的播放键重试，或换 Chrome / Safari 打开二维码。');
+    });
+  });
 
   video.addEventListener('playing', ready);
   video.addEventListener('error', function () {
@@ -143,6 +183,7 @@
     if (video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('application/x-mpegURL')) {
       /* iOS Safari 原生吃 HLS，最省事也最省电 */
       video.src = url;
+      video.addEventListener('loadedmetadata', function () { tryPlay(); }, { once: true });
     } else if (window.Hls && window.Hls.isSupported()) {
       var hls = new window.Hls({
         maxBufferLength: 30,
@@ -164,6 +205,7 @@
           fail('播放器出错：' + (data.details || '未知错误'));
         }
       });
+      hls.on(window.Hls.Events.MANIFEST_PARSED, function () { tryPlay(); });
       hls.loadSource(url);
       hls.attachMedia(video);
     } else {
@@ -171,12 +213,8 @@
     }
   } else {
     video.src = url;
+    video.addEventListener('loadedmetadata', function () { tryPlay(); }, { once: true });
   }
-
-  /* 自动起播：多数浏览器允许静音自动播放，被拦截时用户点一下播放键即可 */
-  video.muted = true;
-  var p = video.play();
-  if (p && p.catch) p.catch(function () { /* 等用户手动点 */ });
   video.addEventListener('volumechange', function () {
     if (!video.muted) ready();
   });

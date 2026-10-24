@@ -2,7 +2,6 @@ package com.github.tvbox.osc.ui.adapter;
 
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,23 +22,40 @@ import java.util.ArrayList;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
-    private int defaultWidth;
-    private final ImgUtil.Style style;
     private String tvRateValue;
+    private boolean immersiveMode;
 
     public HomeHotVodAdapter(ImgUtil.Style style, String tvRate) {
         super(R.layout.item_user_hot_vod, new ArrayList<>());
-        if (style != null) {
-            this.defaultWidth = ImgUtil.getStyleDefaultWidth(style);
-        }
-        this.style = style;
         this.tvRateValue = tvRate;
+    }
+
+    public void setImmersiveMode(boolean enabled) {
+        if (immersiveMode == enabled) return;
+        immersiveMode = enabled;
+        notifyDataSetChanged();
     }
 
     @Override
     protected void convert(BaseViewHolder helper, Movie.Video item) {
         FrameLayout tvDel = helper.getView(R.id.delFrameLayout);
         tvDel.setVisibility(HawkConfig.hotVodDelete ? View.VISIBLE : View.GONE);
+
+        FrameLayout card = helper.getView(R.id.mItemFrame);
+        FrameLayout.LayoutParams cardParams = (FrameLayout.LayoutParams) card.getLayoutParams();
+        int cardWidth = AutoSizeUtils.mm2px(mContext, immersiveMode ? 224 : 188);
+        int cardHeight = AutoSizeUtils.mm2px(mContext, immersiveMode ? 132 : 100);
+        if (cardParams.width != cardWidth || cardParams.height != cardHeight) {
+            cardParams.width = cardWidth;
+            cardParams.height = cardHeight;
+            card.setLayoutParams(cardParams);
+        }
+        View root = helper.itemView;
+        android.view.ViewGroup.LayoutParams rootParams = root.getLayoutParams();
+        if (rootParams != null && rootParams.height != cardHeight) {
+            rootParams.height = cardHeight;
+            root.setLayoutParams(rootParams);
+        }
 
         TextView tvRate = helper.getView(R.id.tvRate);
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2) {
@@ -58,37 +74,17 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
         helper.setText(R.id.tvName, item.name);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
 
-        // 画报规格：卡片 210×290（与 item_user_hot_vod.xml 保持一致），圆角 8mm
-        int newWidth = 210;
-        int newHeight = 290;
-        if (style != null) {
-            newWidth = defaultWidth;
-            newHeight = (int) (newWidth / style.ratio);
-        }
-
+        // 首页频道条使用宽银幕卡片；尺寸需与 item_user_hot_vod.xml 同步。
         String pic = item.pic == null ? "" : item.pic.trim();
         if (!TextUtils.isEmpty(pic)) {
             if (ImgUtil.isBase64Image(pic)) {
                 ivThumb.setImageBitmap(ImgUtil.decodeBase64ToBitmap(pic));
             } else {
-                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 8), AutoSizeUtils.mm2px(mContext, newWidth), AutoSizeUtils.mm2px(mContext, newHeight), item.name);
+                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 8), AutoSizeUtils.mm2px(mContext, 188), AutoSizeUtils.mm2px(mContext, 100), item.name);
             }
         } else {
             ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
         }
-        applyStyleToImage(ivThumb);
         AtvFocusHelper.bind(helper.itemView);
-    }
-
-    private void applyStyleToImage(final ImageView ivThumb) {
-        if (style != null) {
-            ViewGroup container = (ViewGroup) ivThumb.getParent();
-            int width = defaultWidth;
-            int height = (int) (width / style.ratio);
-            ViewGroup.LayoutParams containerParams = container.getLayoutParams();
-            containerParams.height = AutoSizeUtils.mm2px(mContext, height);
-            containerParams.width = AutoSizeUtils.mm2px(mContext, width);
-            container.setLayoutParams(containerParams);
-        }
     }
 }

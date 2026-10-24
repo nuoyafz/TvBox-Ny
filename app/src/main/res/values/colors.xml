@@ -42,13 +42,13 @@
 
     <!-- Unified dialog palette. Change these to update dialog surfaces globally. -->
     <!-- Apple TV 化：深色磨砂面板 + 纯白焦点描边，去掉青色/蓝色强调 -->
-    <color name="dialog_panel_bg">#F21C1C1E</color>
-    <color name="dialog_panel_stroke">#26FFFFFF</color>
-    <color name="dialog_control_bg">#1FFFFFFF</color>
-    <color name="dialog_control_bg_focused">#3DFFFFFF</color>
-    <color name="dialog_control_stroke">#1AFFFFFF</color>
+    <color name="dialog_panel_bg">#DE111A1D</color>
+    <color name="dialog_panel_stroke">#4DFFFFFF</color>
+    <color name="dialog_control_bg">#24FFFFFF</color>
+    <color name="dialog_control_bg_focused">#BFFFFFFF</color>
+    <color name="dialog_control_stroke">#38FFFFFF</color>
     <color name="dialog_control_stroke_focused">#FFFFFFFF</color>
-    <color name="dialog_input_bg">#14FFFFFF</color>
+    <color name="dialog_input_bg">#1FFFFFFF</color>
     <color name="dialog_text_primary">#FFFFFFFF</color>
     <color name="dialog_text_hint">#80FFFFFF</color>
 

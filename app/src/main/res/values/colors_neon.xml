@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--
-      日落大道色板（Sunset Boulevard × 沉浸光感）
-      规则：暗酒红黑打底，霞橙为唯一主强调，晚霞粉承接、暮紫压底。
-      玻璃面板一律半透白 + 受光边，颜色靠底下的极光光斑透出来。
-    -->
-    <color name="neon_bg">#150A12</color>
-    <color name="neon_bg_top">#1E0E1C</color>
-    <color name="neon_rail_bg">#170B14</color>
-    <color name="neon_surface">#1D1020</color>
-    <color name="neon_surface_hi">#251428</color>
+    <!-- Darkroom palette: quiet graphite surfaces, restrained lime light. -->
+    <color name="neon_bg">#090D0F</color>
+    <color name="neon_bg_top">#0D1315</color>
+    <color name="neon_rail_bg">#090D0F</color>
+    <color name="neon_surface">#11191B</color>
+    <color name="neon_surface_hi">#192326</color>
 
-    <color name="neon_accent">#FF9A5A</color>
-    <color name="neon_accent2">#FF4E78</color>
-    <color name="neon_pink">#FF4E78</color>
+    <color name="neon_accent">#B8C5B8</color>
+    <color name="neon_accent2">#8F9F96</color>
+    <color name="neon_pink">#8F9F96</color>
 
-    <color name="neon_text_primary">#FDF6F2</color>
-    <color name="neon_text_secondary">#B3A3A8</color>
-    <color name="neon_text_tertiary">#7A6B72</color>
+    <color name="neon_text_primary">#F1F3EF</color>
+    <color name="neon_text_secondary">#ABB4AF</color>
+    <color name="neon_text_tertiary">#7F8984</color>
 
     <!--
       顶栏文字（用户反馈"导航栏字体和颜色很不匹配"）
@@ -36,12 +32,12 @@
       玻璃白度是"看得见毛玻璃"的唯一开关：上一版 glass_thin 只有 5% 白，
       在暗底上等同于全透明，所以顶栏看起来还是老样子。现在 12/15/20% 三档。
     -->
-    <color name="dusk_glow_main">#B3FF9A5A</color>
-    <color name="dusk_glow_mid">#99FF4E78</color>
-    <color name="dusk_glow_deep">#7A8A4DFF</color>
-    <color name="glass_thin">#1FFFFFFF</color>
-    <color name="glass_body">#26FFFFFF</color>
-    <color name="glass_thick">#33FFFFFF</color>
-    <color name="glass_lit_edge">#8CFFFFFF</color>
-    <color name="glass_top_light">#66FFFFFF</color>
+    <color name="dusk_glow_main">#14B8C5B8</color>
+    <color name="dusk_glow_mid">#0A8F9F96</color>
+    <color name="dusk_glow_deep">#100F1412</color>
+    <color name="glass_thin">#5C111719</color>
+    <color name="glass_body">#88141B1D</color>
+    <color name="glass_thick">#A6141B1D</color>
+    <color name="glass_lit_edge">#55FFFFFF</color>
+    <color name="glass_top_light">#20FFFFFF</color>
 </resources>

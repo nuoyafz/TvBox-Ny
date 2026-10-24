@@ -37,7 +37,11 @@ public class BaseDialog extends Dialog {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         super.show();
         hideSysBar();
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        if (getWindow() != null) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            getWindow().setDimAmount(0.46f);
+            enableBackgroundBlur(getWindow());
+        }
     }
 
     private boolean isContextInvalid() {
@@ -60,6 +64,20 @@ public class BaseDialog extends Dialog {
             uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        }
+    }
+
+    /** Android 12+ supplies real backdrop blur; older TV boxes keep the translucent glass fallback. */
+    private void enableBackgroundBlur(android.view.Window window) {
+        if (Build.VERSION.SDK_INT < 31) return;
+        try {
+            window.addFlags(0x00000004); // FLAG_BLUR_BEHIND
+            Object attributes = window.getAttributes();
+            attributes.getClass().getMethod("setBlurBehindRadius", int.class).invoke(attributes, 28);
+            window.setAttributes((WindowManager.LayoutParams) attributes);
+            window.getClass().getMethod("setBackgroundBlurRadius", int.class).invoke(window, 18);
+        } catch (Throwable ignored) {
+            // Translucent panel + dim remain as the fallback when system blur is unavailable.
         }
     }
 }

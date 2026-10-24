@@ -64,6 +64,21 @@
             app:layout_constraintRight_toRightOf="parent"
             tools:text="共 24 个源" />
 
+        <TextView
+            android:id="@+id/tvSourceSubtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_26"
+            android:layout_marginRight="@dimen/vs_26"
+            android:includeFontPadding="false"
+            android:text="选中即切换 · 当前使用的源会标记出来"
+            android:textColor="@color/top_link_text_dim"
+            android:textSize="@dimen/ts_14"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title" />
+
         <!-- 工具条：只有数据源弹窗会显示 -->
         <LinearLayout
             android:id="@+id/sourceTools"
@@ -77,7 +92,7 @@
             android:visibility="gone"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title">
+            app:layout_constraintTop_toBottomOf="@+id/tvSourceSubtitle">
 
             <!-- 圆角胶囊：8mm vs_* 在电视上偏方，这里直接用 mm -->
             <TextView
