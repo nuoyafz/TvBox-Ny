@@ -67,7 +67,6 @@ import com.github.tvbox.osc.util.HistoryHelper;
 import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.gson.JsonArray;
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.JsonObject;
 import com.lzy.okgo.OkGo;
@@ -1113,7 +1112,7 @@ public class LivePlayActivity extends BaseActivity {
         if (channel_Name == null || channel_Name.getChannelName() == null || !channel_Name.getChannelName().equals(channelName)) {
             return;
         }
-        if (StringUtils.isEmpty(logoUrl)) {
+        if (TextUtils.isEmpty(logoUrl)) {
             imgLiveIcon.setImageDrawable(null);
             liveIconNullBg.setVisibility(View.VISIBLE);
             liveIconNullText.setVisibility(View.VISIBLE);

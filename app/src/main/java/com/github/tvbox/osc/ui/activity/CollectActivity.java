@@ -155,12 +155,15 @@ public class CollectActivity extends BaseActivity {
     }
 
     private void initData() {
-        List<VodCollect> allVodRecord = RoomDataManger.getAllVodCollect();
-        List<VodCollect> vodInfoList = new ArrayList<>();
-        for (VodCollect vodInfo : allVodRecord) {
-            vodInfoList.add(vodInfo);
-        }
-        collectAdapter.setNewData(vodInfoList);
+        // 收藏全表查询挪后台：原来主线程 getAll + 逐条 Gson 反序列化，记录多了打开就卡
+        RoomDataManger.getAllVodCollectAsync(allVodRecord -> {
+            if (isFinishing() || isDestroyed()) return;
+            List<VodCollect> vodInfoList = new ArrayList<>();
+            if (allVodRecord != null) {
+                vodInfoList.addAll(allVodRecord);
+            }
+            collectAdapter.setNewData(vodInfoList);
+        });
     }
 
 

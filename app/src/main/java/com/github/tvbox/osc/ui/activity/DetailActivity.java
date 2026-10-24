@@ -103,6 +103,8 @@ public class DetailActivity extends BaseActivity {
     private static final long DETAIL_FALLBACK_DETAIL_TIMEOUT_MS = 4000L;
     /** 换源并发探针并发度：一次同时探测 N 个候选源，先到先得，省去串行等超时 */
     private static final int DETAIL_FALLBACK_CONCURRENCY = 3;
+    /** 续播记录预读缓存：loadDetail 时 getVodInfoAsync 后台读，详情数据渲染时取用 */
+    private volatile VodInfo vodInfoRecordCache;
     private LinearLayout llLayout;
     private FragmentContainerView llPlayerFragmentContainer;
     private View llPlayerFragmentContainerBlock;
@@ -1017,8 +1019,10 @@ public class DetailActivity extends BaseActivity {
                         tvPlay.setVisibility(View.VISIBLE);
                         mEmptyPlayList.setVisibility(View.GONE);
 
-                        VodInfo vodInfoRecord = RoomDataManger.getVodInfo(sourceKey, vodId);
-                        // 读取历史记录
+                        // 读取历史记录：用 loadDetail 时预读的缓存（getVodInfoAsync），
+                        // DB 通常比详情网络快得多，这里基本已命中；极少数未命中时按
+                        // "无记录"处理（下次打开即正常续播），不阻塞主线程
+                        VodInfo vodInfoRecord = vodInfoRecordCache;
                         if (vodInfoRecord != null) {
                             vodInfo.playIndex = Math.max(vodInfoRecord.playIndex, 0);
                             vodInfo.playFlag = vodInfoRecord.playFlag;
@@ -1175,12 +1179,17 @@ public class DetailActivity extends BaseActivity {
             llLayout.postDelayed(detailFallbackDetailTimeout, DETAIL_FALLBACK_DETAIL_TIMEOUT_MS);
         }
         sourceViewModel.getDetail(sourceKey, vodId, fallback && detailFallbackActive);
-        boolean isVodCollect = RoomDataManger.isVodCollect(sourceKey, vodId);
-        if (isVodCollect) {
-            tvCollect.setText("取消收藏");
-        } else {
-            tvCollect.setText("加入收藏");
-        }
+        // DB 读挪后台（AppDataManager 已关 allowMainThreadQueries）。同时预读续播记录，
+        // 详情数据回来时大概率已命中缓存，见 vodInfoRecordCache
+        RoomDataManger.getVodInfoAsync(sourceKey, vodId, info -> vodInfoRecordCache = info);
+        RoomDataManger.isVodCollectAsync(sourceKey, vodId, collect -> {
+            if (isFinishing() || isDestroyed()) return;
+            if (collect) {
+                tvCollect.setText("取消收藏");
+            } else {
+                tvCollect.setText("加入收藏");
+            }
+        });
     }
 
     private void handleEmptyDetail(AbsXml data) {

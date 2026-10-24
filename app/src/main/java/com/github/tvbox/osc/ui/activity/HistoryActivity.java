@@ -169,13 +169,18 @@ public class HistoryActivity extends BaseActivity {
     }
 
     private void initData() {
-        List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(100);
-        List<VodInfo> vodInfoList = new ArrayList<>();
-        for (VodInfo vodInfo : allVodRecord) {
-            if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())vodInfo.note = "上次看到" + vodInfo.playNote;
-            vodInfoList.add(vodInfo);
-        }
-        historyAdapter.setNewData(vodInfoList);
+        // 历史全表查询 + 逐条 Gson 反序列化挪后台：100 条记录主线程要几十毫秒
+        RoomDataManger.getAllVodRecordAsync(100, allVodRecord -> {
+            if (isFinishing() || isDestroyed()) return;
+            List<VodInfo> vodInfoList = new ArrayList<>();
+            if (allVodRecord != null) {
+                for (VodInfo vodInfo : allVodRecord) {
+                    if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty()) vodInfo.note = "上次看到" + vodInfo.playNote;
+                    vodInfoList.add(vodInfo);
+                }
+            }
+            historyAdapter.setNewData(vodInfoList);
+        });
     }
 
 

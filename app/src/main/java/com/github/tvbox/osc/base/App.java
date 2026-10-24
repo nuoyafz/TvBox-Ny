@@ -18,7 +18,6 @@ import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
-import com.p2p.P2PClass;
 import com.whl.quickjs.android.QuickJSLoader;
 import com.github.catvod.crawler.JsLoader;
 
@@ -33,8 +32,6 @@ import me.jessyan.autosize.unit.Subunits;
 public class App extends MultiDexApplication {
     private static App instance;
 
-    private static P2PClass p;
-    public static String burl;
     private static String dashData;
 
     /** 低配设备：核数<=4 或 总内存<=2GB。沉浸光感的流光动画在这类机器上自动关掉 */
@@ -80,7 +77,7 @@ public class App extends MultiDexApplication {
                 .setSupportSubunits(Subunits.MM);
         PlayerHelper.init();
         QuickJSLoader.init();
-        // 递归删除 ijk / thunder 缓存目录是纯磁盘 IO，原来放在 onCreate 主线程上，
+        // 递归删除 ijk 缓存目录是纯磁盘 IO，原来放在 onCreate 主线程上，
         // 缓存越大冷启动越慢（几百个 ts 分片就是几百次 stat+unlink）。挪到后台线程，
         // 播放开始前基本已经删完，不影响起播。
         new Thread(new Runnable() {
@@ -132,18 +129,6 @@ public class App extends MultiDexApplication {
     }
     public VodInfo getVodInfo(){
         return this.vodInfo;
-    }
-
-    public static P2PClass getp2p() {
-        try {
-            if (p == null) {
-                p = new P2PClass(FileUtils.getExternalCachePath());
-            }
-            return p;
-        } catch (Exception e) {
-            LOG.e(e.toString());
-            return null;
-        }
     }
 
     public Activity getCurrentActivity() {
