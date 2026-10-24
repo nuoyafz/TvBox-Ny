@@ -347,9 +347,9 @@ public class UserFragment extends BaseLazyFragment {
             }
             if (vod.playNote != null && !vod.playNote.isEmpty()) {
                 if (meta.length() > 0) meta.append("   ·   ");
-                meta.append("上次看到 ").append(vod.playNote);
+                meta.append("上次看到 ").append(shortEpisode(vod.playNote));
             }
-            tvHeroTitle.setText(vod.name == null ? "" : vod.name);
+            tvHeroTitle.setText(cleanTitle(vod.name));
             TextView kicker = findViewById(R.id.tvHeroKicker);
             if (kicker != null) kicker.setText("今晚接着看　/　CONTINUE");
             tvHeroMeta.setText(meta.length() == 0 ? "继续上次的进度" : meta.toString());
@@ -375,11 +375,12 @@ public class UserFragment extends BaseLazyFragment {
                 ivHeroPoster.setImageDrawable(ImgUtil.createTextDrawable(heroName));
             }
             if (tvHeroEp != null) {
-                if (vod.playNote != null && !vod.playNote.isEmpty()) {
-                    tvHeroEp.setText(vod.playNote);
-                    tvHeroEp.setVisibility(View.VISIBLE);
-                } else {
+                String ep = shortEpisode(vod.playNote);
+                if (ep.isEmpty()) {
                     tvHeroEp.setVisibility(View.GONE);
+                } else {
+                    tvHeroEp.setText(ep);
+                    tvHeroEp.setVisibility(View.VISIBLE);
                 }
             }
             if (heroPosterBox != null) heroPosterBox.setVisibility(View.VISIBLE);
@@ -405,8 +406,40 @@ public class UserFragment extends BaseLazyFragment {
         }
     }
 
-    /** 无观看记录时的引导主视觉：海报位收起，按钮变成随机看。 */
-    private void showWelcomeHero() {
+    /**
+     * 主视觉标题净化：接口常把整条发布名（含清晰度/编码/组名）直接当片名。
+     * 去掉 [..] 组标记、砍掉 .mkv/.mp4 之后的尾巴，再限长，避免撑爆版式。
+     */
+    private String cleanTitle(String raw) {
+        if (raw == null) return "";
+        String name = raw.trim();
+        name = name.replaceAll("\\[[^\\]]*\\]", " ");
+        name = name.replaceAll("\\([0-9]{4}\\)\\s*tmdbid=\\d+\\)?", " ");
+        int cut = name.toLowerCase().indexOf(".mkv");
+        if (cut < 0) cut = name.toLowerCase().indexOf(".mp4");
+        if (cut < 0) cut = name.toLowerCase().indexOf(".avi");
+        if (cut > 0) name = name.substring(0, cut);
+        name = name.replaceAll("\\s+", " ").trim();
+        if (name.isEmpty()) name = raw.trim();
+        if (name.length() > 26) name = name.substring(0, 26) + "…";
+        return name;
+    }
+
+    /** 集数标签只留「S01E01」「第12集」这类短标记，其余情况截断，绝不让整条文件名上屏。 */
+    private String shortEpisode(String note) {
+        if (note == null || note.trim().isEmpty()) return "";
+        String s = note.trim();
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?i)S\\d{1,3}\\s*E\\d{1,4}").matcher(s);
+        if (m.find()) return m.group().toUpperCase().replace(" ", "");
+        m = java.util.regex.Pattern.compile("第\\s*\\d{1,4}\\s*[集话期]").matcher(s);
+        if (m.find()) return m.group().replace(" ", "");
+        m = java.util.regex.Pattern.compile("(?i)E\\d{1,4}").matcher(s);
+        if (m.find()) return m.group().toUpperCase();
+        return s.length() > 12 ? "看到 " + s.substring(s.length() - 10) : s;
+    }
+
+    /** 无观看记录时的引导主视觉：海报位收起，按钮变成随机看。 */    private void showWelcomeHero() {
         tvHeroBlock.setVisibility(View.VISIBLE);
         if (heroPosterBox != null) heroPosterBox.setVisibility(View.GONE);
         TextView kicker = findViewById(R.id.tvHeroKicker);

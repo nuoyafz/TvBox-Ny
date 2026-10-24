@@ -146,14 +146,15 @@
 
             </LinearLayout>
 
-            <!-- 右侧实体海报与播放集数 -->
+            <!-- 右侧实体海报与播放集数。尺寸写死，防标签文字把框撑开 -->
             <FrameLayout
                 android:id="@+id/heroPosterBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="251mm"
+                android:layout_height="348mm"
                 android:layout_marginStart="38mm"
                 android:layout_marginLeft="38mm"
                 android:background="@color/neon_accent"
+                android:clipChildren="false"
                 android:padding="3mm"
                 android:rotation="2">
 
@@ -172,11 +173,15 @@
                     android:layout_marginEnd="8mm"
                     android:layout_marginRight="8mm"
                     android:background="@color/neon_accent"
+                    android:ellipsize="end"
                     android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:maxWidth="220mm"
                     android:paddingLeft="10mm"
                     android:paddingTop="4mm"
                     android:paddingRight="10mm"
                     android:paddingBottom="4mm"
+                    android:singleLine="true"
                     android:textColor="@color/neon_bg"
                     android:textSize="16mm"
                     android:textStyle="bold"
