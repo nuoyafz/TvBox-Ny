@@ -10,7 +10,7 @@
             android:layout_gravity="top|center_horizontal"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:paddingRight="@dimen/vs_180"
+            android:paddingRight="40mm"
             android:scrollbars="none">
 
         <LinearLayout
@@ -27,6 +27,7 @@
             <LinearLayout
                 android:id="@+id/groupApi"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
@@ -77,20 +78,6 @@
                         android:textSize="@dimen/ts_30" />
             </LinearLayout>
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="接口"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/vs_60"
@@ -498,23 +485,10 @@
             <LinearLayout
                 android:id="@+id/groupHome"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="首页与搜索"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_60"
@@ -733,23 +707,10 @@
             <LinearLayout
                 android:id="@+id/groupPlay"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="播放"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_60"
@@ -1017,23 +978,10 @@
             <LinearLayout
                 android:id="@+id/groupSystem"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="系统"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_60"
@@ -1249,23 +1197,10 @@
             <LinearLayout
                 android:id="@+id/groupData"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="数据与外观"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_60"
@@ -1628,23 +1563,10 @@
             <LinearLayout
                 android:id="@+id/groupAbout"
                 android:layout_width="match_parent"
+                android:layout_marginTop="12mm"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <TextView
-            android:duplicateParentState="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/vs_20"
-                android:layout_marginLeft="@dimen/vs_20"
-                android:layout_marginTop="@dimen/vs_10"
-                android:layout_marginBottom="@dimen/vs_6"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:text="关于"
-                android:letterSpacing="0.16"
-                android:textColor="@color/neon_accent"
-                android:textSize="22mm" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/vs_60"
