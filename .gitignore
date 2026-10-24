@@ -106,3 +106,5 @@ output-metadata.json
 !README.md
 !COMPARISON.md
 !RELEASE-NOTES.md
+# apksigner v4 签名描述文件，不属于仓库资产
+*.idsig
