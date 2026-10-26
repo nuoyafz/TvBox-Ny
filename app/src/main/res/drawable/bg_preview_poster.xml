@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 首字母预览卡片的海报占位底色。联想接口只给片名，没有封面，
+     所以这里用一块深绿渐变当「未加载封面」的底，跟其他页面的画报风统一。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="135"
+        android:centerColor="#141E1C"
+        android:endColor="#0F1616"
+        android:startColor="#2A3B34"
+        android:type="linear" />
+    <corners android:radius="4mm" />
+</shape>

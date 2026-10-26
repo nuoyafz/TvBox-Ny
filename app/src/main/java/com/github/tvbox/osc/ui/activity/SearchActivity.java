@@ -35,6 +35,7 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.event.ServerEvent;
 import com.github.tvbox.osc.ui.adapter.PinyinAdapter;
+import com.github.tvbox.osc.ui.adapter.PreviewWordAdapter;
 import com.github.tvbox.osc.ui.adapter.SearchAdapter;
 import com.github.tvbox.osc.ui.dialog.RemoteDialog;
 import com.github.tvbox.osc.ui.dialog.SearchCheckboxDialog;
@@ -120,6 +121,15 @@ public class SearchActivity extends BaseActivity {
     private boolean showHighMatchResults = false;
     private TextView tvSearchCheckboxBtn;
 
+    /** 右侧结果区：真实结果 / 首字母预览 / 空态 三选一 */
+    private TvRecyclerView previewGrid;
+    private PreviewWordAdapter previewAdapter;
+    private TextView tvResultTitle;
+    private TextView tvResultCount;
+    private TextView tvResultEmpty;
+    /** 预览是否处于「首字母联想」状态（决定了 mGridView 要不要让位） */
+    private boolean showingPreview;
+
     private static HashMap<String, String> mCheckSources = null;
     private SearchCheckboxDialog mSearchCheckboxDialog = null;
 
@@ -143,6 +153,8 @@ public class SearchActivity extends BaseActivity {
     protected void init() {
         initView();
         initViewModel();
+        // 先给右侧一个空态；如果这个页面是被「搜索 XXX」带进来的，initData 里的真搜索会盖掉它
+        showPreviewEmpty("");
         initData();
         hasKeyBoard = true;
         isSearchBack = false;
@@ -196,6 +208,26 @@ public class SearchActivity extends BaseActivity {
         mGridViewWord = findViewById(R.id.mGridViewWord);
         historyWordGrid = findViewById(R.id.historyWordGrid);
         tvHistoryClear = findViewById(R.id.tvHistoryClear);
+        // 右侧结果区：真实结果 / 首字母预览 / 空态，叠在同一块位置切可见性
+        previewGrid = findViewById(R.id.previewGrid);
+        tvResultTitle = findViewById(R.id.tvResultTitle);
+        tvResultCount = findViewById(R.id.tvResultCount);
+        tvResultEmpty = findViewById(R.id.tvResultEmpty);
+        previewAdapter = new PreviewWordAdapter();
+        previewGrid.setHasFixedSize(true);
+        previewGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
+        previewGrid.setAdapter(previewAdapter);
+        TvPerf.apply(previewGrid);
+        previewAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                FastClickCheckUtil.check(view);
+                String word = previewAdapter.getItem(position);
+                if (!TextUtils.isEmpty(word)) {
+                    startSearch(word);
+                }
+            }
+        });
         mGridViewWord.setHasFixedSize(true);
         wordAdapter = new PinyinAdapter();
         hotWordAdapter = new PinyinAdapter();
@@ -233,33 +265,9 @@ public class SearchActivity extends BaseActivity {
                 }
             }
         });
-        wordsSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (aggregateSearchMode) {
-                    return;
-                }
-                FastClickCheckUtil.check(v);
-                // 原来是靠按钮文案反推状态，loadRec 把文案改成「猜你 想搜」后就再也切不动了。
-                // 改成显式状态位。
-                if (showingHistoryWords) {
-                    showingHistoryWords = false;
-                    wordsSwitch.setText("热词 搜索");
-                    if (hots != null && !hots.isEmpty()) {
-                        wordAdapter.setNewData(hots);
-                    }
-                } else {
-                    ArrayList<String> hisWord = Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
-                    if (hisWord == null || hisWord.isEmpty()) {
-                        Toast.makeText(mContext, "暂无历史搜索", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    showingHistoryWords = true;
-                    wordsSwitch.setText("历史 搜索");
-                    wordAdapter.setNewData(hisWord);
-                }
-            }
-        });
+        // 词栏标题现在是纯标签：历史搜索已经独立成块常驻在左下，不再需要「热词/历史」来回切
+        wordsSwitch.setFocusable(false);
+        wordsSwitch.setClickable(false);
         tvHistoryClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -311,7 +319,13 @@ public class SearchActivity extends BaseActivity {
             public void afterTextChanged(android.text.Editable s) {
                 final String key = s == null ? "" : s.toString().trim();
                 if (recPending != null) recHandler.removeCallbacks(recPending);
-                if (key.isEmpty() || showingHistoryWords) return;
+                if (key.isEmpty()) {
+                    // 清空输入 → 右侧回到空态，别留上一轮的残影
+                    showPreviewEmpty("");
+                    return;
+                }
+                // search() 会 etSearch.setText(title) 回填，那不是用户打字，别让它把结果盖成预览
+                if (!TextUtils.isEmpty(searchTitle) && key.equals(searchTitle)) return;
                 recPending = new Runnable() {
                     @Override
                     public void run() {
@@ -460,28 +474,18 @@ public class SearchActivity extends BaseActivity {
         }
         aggregateSearchModeInited = true;
         aggregateSearchMode = aggregateMode;
-        if (aggregateSearchMode) {
-            llHistoryWord.setVisibility(View.VISIBLE);
-            llLayout.setVisibility(View.GONE);
-            mGridView.setVisibility(View.GONE);
-            setAggregateHotTitle();
-            wordsSwitch.setFocusable(false);
-            wordsSwitch.setBackground(null);
-            mGridViewWord.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
-            mGridViewWord.setAdapter(hotWordAdapter);
-            refreshSearchHistoryWords();
-        } else {
-            llHistoryWord.setVisibility(View.GONE);
-            llLayout.setVisibility(View.VISIBLE);
-            if (mGridView.getVisibility() == View.GONE) {
-                mGridView.setVisibility(View.INVISIBLE);
-            }
-            setNormalWordTitle();
-            wordsSwitch.setFocusable(true);
-            wordsSwitch.setBackgroundResource(R.drawable.shape_user_focus);
-            mGridViewWord.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
-            mGridViewWord.setAdapter(wordAdapter);
-        }
+        // 左右分栏之后，左下「历史搜索」和右侧「结果预览」是两块独立区域，同屏常驻。
+        // 旧逻辑里它们互斥（aggregate 模式把 llLayout 整个 GONE 掉），那正是「右侧永远空白」的另一半原因。
+        llHistoryWord.setVisibility(View.VISIBLE);
+        llLayout.setVisibility(View.VISIBLE);
+        // 词栏不再靠按钮来回切「热词 / 历史」，标题固定成「猜你想搜」
+        wordsSwitch.setText("猜你想搜");
+        wordsSwitch.setFocusable(false);
+        wordsSwitch.setBackground(null);
+        // 2 列 × 4 行 = 8 个，跟右栏 5 列卡片对齐
+        mGridViewWord.setLayoutManager(new V7GridLayoutManager(this.mContext, 2));
+        mGridViewWord.setAdapter(aggregateMode ? hotWordAdapter : wordAdapter);
+        refreshSearchHistoryWords();
     }
 
     private void setHotWordsData(ArrayList<String> data) {
@@ -492,24 +496,26 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
+    /** 左下「历史搜索」块：2 列 × 3 行，最多 6 条，跟右栏 5 列卡片同一屏共存。 */
     private void refreshSearchHistoryWords() {
         historyWordGrid.post(new Runnable() {
             @Override
             public void run() {
-                if (!aggregateSearchMode) return;
                 ArrayList<String> history = Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
                 historyWordGrid.removeAllViews();
-                int itemHeight = getResources().getDimensionPixelSize(R.dimen.vs_50);
-                int itemMargin = getResources().getDimensionPixelSize(R.dimen.vs_5);
+                if (history == null || history.isEmpty()) return;
+                int itemHeight = getResources().getDimensionPixelSize(R.dimen.vs_40);
+                int itemMargin = getResources().getDimensionPixelSize(R.dimen.vs_4);
                 int paddingH = getResources().getDimensionPixelSize(R.dimen.vs_10);
-                int minWidth = getResources().getDimensionPixelSize(R.dimen.vs_80);
+                int minWidth = getResources().getDimensionPixelSize(R.dimen.vs_60);
                 int availableWidth = historyWordGrid.getWidth();
                 if (availableWidth <= 0) availableWidth = llHistoryWord.getWidth();
-                float textSize = getResources().getDimension(R.dimen.ts_22);
+                float textSize = getResources().getDimension(R.dimen.ts_16);
                 int textColor = getResources().getColor(R.color.color_FFFFFF);
                 LinearLayout row = null;
                 int rowWidth = 0;
-                for (int i = 0; i < history.size(); i++) {
+                int limit = Math.min(history.size(), 6);
+                for (int i = 0; i < limit; i++) {
                     final String word = history.get(i);
                     TextView item = new TextView(SearchActivity.this);
                     item.setText(word);
@@ -565,7 +571,7 @@ public class SearchActivity extends BaseActivity {
                     return;
                 }
                 showSuccess();
-                mGridView.setVisibility(View.VISIBLE);
+                showResultMode(data.movie.videoList.size());
                 searchAdapter.setNewData(data.movie.videoList);
             }
         });
@@ -597,11 +603,68 @@ public class SearchActivity extends BaseActivity {
             folderLoading = false;
             List<Movie.Video> previous = folderHistory.remove(folderHistory.size() - 1);
             showSuccess();
-            mGridView.setVisibility(View.VISIBLE);
+            showResultMode(previous.size());
             searchAdapter.setNewData(previous);
             return;
         }
         super.onBackPressed();
+    }
+
+    /**
+     * 右侧切到「首字母预览」。
+     *
+     * 以前打字只调 loadRec()（查联想词条），从来没碰过右侧结果区 ——
+     * 结果区只在 startSearch() → search() → addSearchResults() 之后才 VISIBLE，
+     * 所以打完首字母右边永远一片空。现在联想回来直接铺到右侧，打字即预览。
+     */
+    private void showPreview(List<String> words, String key) {
+        if (previewGrid == null || previewAdapter == null || tvResultTitle == null) return;
+        if (words == null || words.isEmpty()) {
+            showPreviewEmpty(key);
+            return;
+        }
+        // 作废正在跑的那一轮真实搜索，避免它回来把预览盖掉（只递增 token，不打断线程）
+        currentSearchToken = String.valueOf(searchTokenSeq.incrementAndGet());
+        showingPreview = true;
+        mGridView.setVisibility(View.GONE);
+        tvResultEmpty.setVisibility(View.GONE);
+        previewAdapter.setKeyword(key);
+        previewAdapter.setNewData(new ArrayList<>(words));
+        previewGrid.setVisibility(View.VISIBLE);
+        previewGrid.scrollToPosition(0);
+        tvResultTitle.setText("首字母 " + key.toUpperCase() + " 的预览");
+        tvResultCount.setText(words.size() + " 部");
+    }
+
+    /** 右侧切到「真实搜索结果」 */
+    private void showResultMode(int count) {
+        showingPreview = false;
+        if (previewGrid != null) previewGrid.setVisibility(View.GONE);
+        if (tvResultEmpty != null) tvResultEmpty.setVisibility(View.GONE);
+        mGridView.setVisibility(View.VISIBLE);
+        if (tvResultTitle != null) tvResultTitle.setText("搜索结果");
+        if (tvResultCount != null) tvResultCount.setText(count > 0 ? count + " 部" : "");
+    }
+
+    /** 右侧空态：没输入 / 这个首字母联想不出东西 */
+    private void showPreviewEmpty(String key) {
+        showingPreview = false;
+        if (previewGrid != null) {
+            previewGrid.setVisibility(View.GONE);
+            if (previewAdapter != null) previewAdapter.setNewData(new ArrayList<>());
+        }
+        if (mGridView != null) mGridView.setVisibility(View.GONE);
+        if (tvResultEmpty == null || tvResultTitle == null) return;
+        tvResultEmpty.setVisibility(View.VISIBLE);
+        if (TextUtils.isEmpty(key)) {
+            tvResultTitle.setText("今晚看什么");
+            tvResultCount.setText("");
+            tvResultEmpty.setText("左边打首字母\n右边立刻出候选");
+        } else {
+            tvResultTitle.setText("首字母 " + key.toUpperCase());
+            tvResultCount.setText("没联想到");
+            tvResultEmpty.setText("这个首字母没联想到片名\n换个字母，或者直接输中文片名");
+        }
     }
 
     /**
@@ -634,10 +697,10 @@ public class SearchActivity extends BaseActivity {
                                         .get("keyword_txt").getAsString();
                                 hots.add(keywordTxt.trim());
                             }
-                            wordsSwitch.setText("猜你 想搜");
-                            showingHistoryWords = false;
                             setHotWordsData(hots);
                             mGridViewWord.smoothScrollToPosition(0);
+                            // 打字即预览：把联想词铺到右侧，不用等用户按搜索
+                            showPreview(hots, key);
                         } catch (Throwable th) {
                             th.printStackTrace();
                         }
@@ -693,12 +756,7 @@ public class SearchActivity extends BaseActivity {
                 search(title);
             }
         }
-        if (aggregateSearchMode) {
-            setAggregateHotTitle();
-            refreshSearchHistoryWords();
-        } else {
-            setNormalWordTitle();
-        }
+        refreshSearchHistoryWords();
         if(hots!=null && !hots.isEmpty()){
             setHotWordsData(hots);
             return;
@@ -798,8 +856,14 @@ public class SearchActivity extends BaseActivity {
 
 
         this.searchTitle = title;
-        mGridView.setVisibility(View.INVISIBLE);
         searchAdapter.setNewData(new ArrayList<>());
+        // 进真实搜索：预览让位，右侧先挂「搜索中」，等 addSearchResults 回填
+        if (previewGrid != null) previewGrid.setVisibility(View.GONE);
+        if (tvResultEmpty != null) tvResultEmpty.setVisibility(View.GONE);
+        if (tvResultTitle != null) tvResultTitle.setText("搜索结果");
+        if (tvResultCount != null) tvResultCount.setText("搜索中…");
+        showingPreview = false;
+        mGridView.setVisibility(View.INVISIBLE);
         searchResult();
     }
 
@@ -900,9 +964,10 @@ public class SearchActivity extends BaseActivity {
         if (data == null || data.isEmpty()) return;
         if (searchAdapter.getData().size() > 0) {
             searchAdapter.addData(data);
+            if (tvResultCount != null) tvResultCount.setText(searchAdapter.getData().size() + " 部");
         } else {
             showSuccess();
-            mGridView.setVisibility(View.VISIBLE);
+            showResultMode(data.size());
             searchAdapter.setNewData(data);
         }
     }

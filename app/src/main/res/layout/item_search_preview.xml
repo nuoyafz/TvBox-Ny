@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  首字母预览卡片（右侧结果区，5 列 × 3 排）。
+
+  这张卡跟结果卡的区别：联想接口只返回「片名」这一个字段，没有封面、没有源、没有 id，
+  所以不装 ImageView，用深色渐变底 + 左上角首字母徽标撑住形，底部压片名。
+  OK 直接拿片名去真实搜索，不在这里假装有片源。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/vs_150"
+    android:layout_height="@dimen/vs_220"
+    android:background="@drawable/shape_atv_card"
+    android:focusable="true"
+    android:padding="@dimen/vs_1">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_preview_poster">
+
+        <!-- 左上角：当前输入的首字母，一眼看出这张卡是哪次按键刷出来的 -->
+        <TextView
+            android:id="@+id/tvPreviewIni"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/vs_6"
+            android:layout_marginTop="@dimen/vs_6"
+            android:background="@drawable/shape_thumb_year"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.14"
+            android:paddingLeft="@dimen/vs_5"
+            android:paddingTop="@dimen/vs_1"
+            android:paddingRight="@dimen/vs_5"
+            android:paddingBottom="@dimen/vs_1"
+            android:textColor="@color/neon_accent"
+            android:textSize="@dimen/ts_14" />
+
+        <!-- 底部：片名 -->
+        <TextView
+            android:id="@+id/tvPreviewName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/shape_thumb_bottom_name"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:paddingLeft="@dimen/vs_8"
+            android:paddingTop="@dimen/vs_6"
+            android:paddingRight="@dimen/vs_8"
+            android:paddingBottom="@dimen/vs_6"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/ts_18" />
+    </FrameLayout>
+</FrameLayout>
