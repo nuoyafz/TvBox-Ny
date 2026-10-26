@@ -410,6 +410,9 @@ public class SearchActivity extends BaseActivity {
             }
         });
         setLoadSir(llLayout);
+        // LoadSir 注册后会把 llLayout 从窗口里摘走换成占位层，不调 showSuccess()
+        // 原视图永远回不来 —— 右栏（预览/结果/空态）就一直是黑的。这里立刻还回去。
+        showSuccess();
         tvSearchCheckboxBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -619,6 +622,8 @@ public class SearchActivity extends BaseActivity {
      */
     private void showPreview(List<String> words, String key) {
         if (previewGrid == null || previewAdapter == null || tvResultTitle == null) return;
+        // 关键：把 llLayout 从 LoadSir 占位层里换回来，否则下面全是白改
+        showSuccess();
         if (words == null || words.isEmpty()) {
             showPreviewEmpty(key);
             return;
@@ -649,6 +654,7 @@ public class SearchActivity extends BaseActivity {
     /** 右侧空态：没输入 / 这个首字母联想不出东西 */
     private void showPreviewEmpty(String key) {
         showingPreview = false;
+        showSuccess();
         if (previewGrid != null) {
             previewGrid.setVisibility(View.GONE);
             if (previewAdapter != null) previewAdapter.setNewData(new ArrayList<>());
