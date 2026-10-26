@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>NOYA 搜索 · C4 首字母搜索（键盘再压缩）</title>
+<style>
+  :root{
+    --bg:#090D0F;--bg-top:#0D1315;--surface:#11191B;
+    --accent:#B8C5B8;--accent-2:#8F9F96;
+    --t1:#F1F3EF;--t2:#ABB4AF;--t3:#7F8984;--div:rgba(255,255,255,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#141719;color:var(--t1);padding:14px 14px 30px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    display:flex;flex-direction:column;align-items:center;gap:10px}
+  .tabs{display:flex;gap:8px}
+  .tab{padding:7px 16px;border-radius:999px;border:1px solid var(--div);
+    color:var(--t2);font-size:13px;cursor:pointer}
+  .tab.on{background:var(--accent);color:#0B1012;border-color:var(--accent);font-weight:600}
+  .hint{color:#6c7672;font-size:11.5px;letter-spacing:.05em}
+
+  .tv{width:1280px;height:720px;position:relative;overflow:hidden;border-radius:14px;
+    background:radial-gradient(115% 78% at 86% -16%, #17221F 0%, rgba(13,19,21,0) 56%),
+      linear-gradient(180deg,var(--bg-top),var(--bg) 64%);
+    box-shadow:0 22px 55px rgba(0,0,0,.55)}
+  .frame{display:none}.frame.on{display:block}
+  .grain{position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.024) 1px,transparent 1px);background-size:3px 3px}
+  .shell{position:relative;height:100%;padding:24px 36px 20px;display:flex;flex-direction:column}
+
+  /* 顶栏 */
+  .bar{display:flex;align-items:center;gap:18px;flex:0 0 auto}
+  .kicker{font-size:10px;letter-spacing:.34em;color:var(--accent)}
+  .h1{font-size:23px;font-weight:800;line-height:1;margin-top:5px}
+  .field{flex:1;height:54px;display:flex;align-items:center;gap:12px;padding:0 18px;
+    border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.14)}
+  .field.live{border-color:rgba(255,255,255,.6);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 0 0 4px rgba(184,197,184,.06)}
+  .typed{font-size:22px;font-weight:600;letter-spacing:.24em}
+  .ghostkey{font-size:12px;color:var(--t3);letter-spacing:.04em;margin-left:2px}
+  .caret{width:2px;height:22px;background:var(--accent);animation:blink 1.05s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .count{margin-left:auto;font-size:11px;color:var(--t3);white-space:nowrap}
+  .esc{font-size:11px;color:var(--t3);line-height:1.85;text-align:right;white-space:nowrap}
+  .esc b{color:var(--t2);font-weight:600}
+
+  /* 键盘：3 行，只字母 */
+  .mid{display:flex;gap:20px;margin:14px 0 12px;flex:0 0 auto;align-items:flex-start}
+  .kbwrap{width:796px}
+  .kb{display:grid;grid-template-columns:repeat(10,1fr);gap:7px}
+  .key{height:46px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.075);
+    font-size:16px;color:var(--t1);letter-spacing:.04em}
+  .key.fn{font-size:12px;color:var(--t2)}
+  .key.focus{background:linear-gradient(180deg,#DBE4D9,#B8C5B8);color:#0B1012;font-weight:700;
+    border-color:transparent;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 8px 18px rgba(0,0,0,.4)}
+  .key.go{grid-column:span 2;background:rgba(184,197,184,.15);
+    border-color:rgba(184,197,184,.42);font-weight:600;letter-spacing:.14em}
+
+  .tip{margin-top:9px;font-size:11px;color:var(--t3);letter-spacing:.03em}
+  .tip b{color:var(--accent);font-weight:600;letter-spacing:.16em}
+
+  .words{flex:1;min-width:0;padding-left:18px;border-left:1px solid var(--div);
+    display:flex;flex-direction:column;gap:7px}
+  .lab{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.2em;color:var(--t3)}
+  .lab::before{content:"";width:14px;height:2px;background:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.04);
+    border:1px solid var(--div);font-size:11.5px;color:var(--t2);white-space:nowrap}
+  .chip .in{color:var(--accent);font-weight:600;letter-spacing:.14em;margin-left:6px}
+  .chip.focus{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);color:#fff}
+
+  /* 结果区 */
+  .res{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding-top:6px}
+  .res-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .res-hd .cnt{font-size:11.5px;color:var(--t3)}
+  .res-hd .sort{margin-left:auto;font-size:11.5px;color:var(--accent);letter-spacing:.05em}
+  .rail{flex:1;min-height:0;display:flex;gap:10px}
+  .card{flex:1;min-width:0;display:flex;flex-direction:column;border-radius:8px;overflow:hidden;
+    background:var(--surface)}
+  .p{flex:1;position:relative;min-height:0;
+    background:linear-gradient(152deg,#243330 0%,#101718 58%,#1B2628 100%)}
+  .p::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.82) 100%)}
+  .src{position:absolute;top:5px;right:5px;z-index:2;font-size:9.5px;color:#DDE4DD;
+    background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.12);padding:2px 5px;border-radius:4px}
+  .init{position:absolute;top:5px;left:6px;z-index:2;font-size:9.5px;letter-spacing:.14em;
+    color:var(--accent);background:rgba(0,0,0,.45);padding:2px 5px;border-radius:4px;
+    border:1px solid rgba(184,197,184,.32)}
+  .cap{position:absolute;left:7px;right:7px;bottom:6px;z-index:2}
+  .cap .n{font-size:11px;font-weight:600;line-height:1.35;color:#fff;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cap .m{font-size:9.5px;color:var(--t2);margin-top:2px}
+  .card.focus{outline:2.5px solid rgba(255,255,255,.95);outline-offset:3px}
+
+  .foot{flex:0 0 auto;display:flex;align-items:center;gap:12px;margin-top:9px;
+    font-size:10.5px;color:var(--t3)}
+  .dot{width:4px;height:4px;border-radius:50%;background:var(--accent-2)}
+  .kbd{border:1px solid var(--div);border-radius:4px;padding:1px 5px;color:var(--t2);font-size:10px}
+
+  .note{margin-top:10px;max-width:1280px;font-size:12.5px;line-height:1.8;color:#8a948f}
+  .note b{color:#cfd8d2}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tab on" data-f="K">状态 1 · 打首字母（ZL）</div>
+  <div class="tab" data-f="R">状态 2 · 看结果（键盘收起）</div>
+</div>
+<div class="hint">首字母搜索：战狼 → ZL · 键盘只 3 行 46px 高 · 结果区占 60%</div>
+
+<!-- ============ 状态 1 ============ -->
+<section class="tv frame on" id="K">
+  <div class="grain"></div>
+  <div class="shell">
+    <div class="bar">
+      <div>
+        <div class="kicker">SEARCH</div>
+        <div class="h1">搜索</div>
+      </div>
+      <div class="field live">
+        <span class="typed">ZL</span><span class="caret"></span>
+        <span class="ghostkey">战狼</span>
+        <span class="count">首字母 · 已匹配 12 部</span>
+      </div>
+      <div class="esc"><b>OK</b> 输入　<b>返回</b> 收起键盘<br><b>菜单</b> 指定搜索源</div>
+    </div>
+
+    <div class="mid">
+      <div class="kbwrap">
+        <div class="kb">
+          <div class="key">q</div><div class="key">w</div><div class="key">e</div><div class="key">r</div>
+          <div class="key">t</div><div class="key">y</div><div class="key">u</div><div class="key">i</div>
+          <div class="key">o</div><div class="key">p</div>
+
+          <div class="key">a</div><div class="key">s</div><div class="key">d</div><div class="key">f</div>
+          <div class="key">g</div><div class="key">h</div><div class="key">j</div><div class="key">k</div>
+          <div class="key">l</div><div class="key fn">⌫</div>
+
+          <div class="key">z</div><div class="key">x</div><div class="key">c</div><div class="key">v</div>
+          <div class="key">b</div><div class="key">n</div><div class="key">m</div><div class="key fn">清空</div>
+          <div class="key go focus">确认</div>
+        </div>
+        <div class="tip">每个字打一个首字母：<b>ZL</b> 战狼 · <b>FH</b> 繁花 · <b>YFX</b> 与凤行 · <b>QYN</b> 庆余年</div>
+      </div>
+
+      <div class="words">
+        <div class="lab">最近搜索</div>
+        <div class="chips">
+          <div class="chip focus">战狼<span class="in">ZL</span></div>
+          <div class="chip">沙丘 2<span class="in">SQ2</span></div>
+          <div class="chip">繁花<span class="in">FH</span></div>
+        </div>
+        <div class="lab" style="margin-top:3px">热门</div>
+        <div class="chips">
+          <div class="chip">狂飙<span class="in">KB</span></div>
+          <div class="chip">三体<span class="in">ST</span></div>
+          <div class="chip">庆余年<span class="in">QYN</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="res-hd">
+        <div class="lab">首字母 ZL 的推荐</div>
+        <span class="cnt">12 部 · 38 个源</span>
+        <span class="sort">按匹配度 ▾</span>
+      </div>
+      <div class="rail">
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">量子</div>
+          <div class="cap"><div class="n">战狼</div><div class="m">电影 · 2015 · 吴京</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">非凡</div>
+          <div class="cap"><div class="n">战狼 2</div><div class="m">电影 · 2017 · 吴京</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">卧龙</div>
+          <div class="cap"><div class="n">战狼 4K 修复版</div><div class="m">电影 · 2015</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">极速</div>
+          <div class="cap"><div class="n">战狼 Ⅱ 国语中字</div><div class="m">电影 · 2017</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">小苹果</div>
+          <div class="cap"><div class="n">战龙在野</div><div class="m">电影 · 2019</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">快看</div>
+          <div class="cap"><div class="n">战雷</div><div class="m">电影 · 2021</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">量子</div>
+          <div class="cap"><div class="n">战狼 纪录片</div><div class="m">纪录 · 4 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">非凡</div>
+          <div class="cap"><div class="n">战狼行动</div><div class="m">剧集 · 24 集</div></div></div></div>
+      </div>
+      <div class="foot"><span class="dot"></span><span>打完首字母即时出推荐，不用等确认</span>
+        <span class="kbd">↓</span><span>进结果</span><span class="kbd">←→</span><span>翻看</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 状态 2 ============ -->
+<section class="tv frame" id="R">
+  <div class="grain"></div>
+  <div class="shell">
+    <div class="bar">
+      <div>
+        <div class="kicker">SEARCH</div>
+        <div class="h1">搜索</div>
+      </div>
+      <div class="field">
+        <span class="typed">ZL</span>
+        <span class="ghostkey">战狼</span>
+        <span class="count">12 部 · 38 个源</span>
+      </div>
+      <div class="esc"><b>↑</b> 回键盘改字　<b>OK</b> 进详情<br><b>菜单</b> 换搜索源</div>
+    </div>
+
+    <div class="res" style="padding-top:12px">
+      <div class="res-hd">
+        <div class="lab">首字母 ZL 的推荐</div>
+        <span class="cnt">按匹配度排序 · 共 12 部</span>
+      </div>
+      <div class="rail">
+        <div class="card focus"><div class="p"><div class="init">ZL</div><div class="src">量子</div>
+          <div class="cap"><div class="n">战狼</div><div class="m">电影 · 2015 · 吴京</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">非凡</div>
+          <div class="cap"><div class="n">战狼 2</div><div class="m">电影 · 2017 · 吴京</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">卧龙</div>
+          <div class="cap"><div class="n">战狼 4K 修复版</div><div class="m">电影 · 2015</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">极速</div>
+          <div class="cap"><div class="n">战狼 Ⅱ 国语中字</div><div class="m">电影 · 2017</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">小苹果</div>
+          <div class="cap"><div class="n">战龙在野</div><div class="m">电影 · 2019</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">快看</div>
+          <div class="cap"><div class="n">战雷</div><div class="m">电影 · 2021</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">量子</div>
+          <div class="cap"><div class="n">战狼 纪录片</div><div class="m">纪录 · 4 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">非凡</div>
+          <div class="cap"><div class="n">战狼行动</div><div class="m">剧集 · 24 集</div></div></div></div>
+      </div>
+
+      <div class="rail" style="margin-top:10px">
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">卧龙</div>
+          <div class="cap"><div class="n">战狼 3 预告</div><div class="m">短片 · 1 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">极速</div>
+          <div class="cap"><div class="n">战狼 幕后特辑</div><div class="m">纪录 · 2 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">小苹果</div>
+          <div class="cap"><div class="n">战狼 原声带</div><div class="m">音乐 · 1 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">快看</div>
+          <div class="cap"><div class="n">战狼 花絮合集</div><div class="m">短片 · 6 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">量子</div>
+          <div class="cap"><div class="n">战狼 影评解读</div><div class="m">综艺 · 3 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">非凡</div>
+          <div class="cap"><div class="n">战狼 剪辑版</div><div class="m">电影 · 2015</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">卧龙</div>
+          <div class="cap"><div class="n">战狼 国语</div><div class="m">电影 · 2015</div></div></div></div>
+        <div class="card"><div class="p"><div class="init">ZL</div><div class="src">极速</div>
+          <div class="cap"><div class="n">战狼 粤语</div><div class="m">电影 · 2015</div></div></div></div>
+      </div>
+
+      <div class="foot"><span class="dot"></span>
+        <span>键盘收起，一屏 16 部；按 ↑ 回键盘继续加字母缩小范围</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="note">
+  <div><b>这版改动</b></div>
+  <div style="margin-top:5px">· <b>键盘只 3 行、键高 46px、总宽 796px</b>（比上一版矮 100px、窄 50px），去掉数字行——首字母搜索只按字母。</div>
+  <div style="margin-top:5px">· <b>输入 ZL</b>：框里大字显示首字母，后面灰字跟着识别出的片名「战狼」，右边实时报"已匹配 12 部"。</div>
+  <div style="margin-top:5px">· <b>结果区拿到 60% 高度</b>：卡片左上角标首字母 ZL，一眼看出为什么匹配；输入中一排 8 部，收起键盘两排 16 部。</div>
+  <div style="margin-top:5px">· 最近搜索/热门也带首字母（沙丘 2 = SQ2），直接教用户怎么用这套输入法，而且能一键复用。</div>
+</div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')],frames=[...document.querySelectorAll('.frame')];
+  function select(k){tabs.forEach(t=>t.classList.toggle('on',t.dataset.f===k));
+    frames.forEach(f=>f.classList.toggle('on',f.id===k));}
+  tabs.forEach(t=>t.onclick=()=>select(t.dataset.f));
+  const init=(location.hash||'').replace('#','').toUpperCase();
+  if(init&&document.getElementById(init))select(init);
+</script>
+</body>
+</html>

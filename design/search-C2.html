@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>NOYA 搜索页 · C2 上下分区（全键盘 10×4）</title>
+<style>
+  :root{
+    --bg:#090D0F; --bg-top:#0D1315; --surface:#11191B; --surface-hi:#192326;
+    --accent:#B8C5B8; --accent-2:#8F9F96;
+    --t1:#F1F3EF; --t2:#ABB4AF; --t3:#7F8984;
+    --div:rgba(255,255,255,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#141719;color:var(--t1);padding:14px 14px 30px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .tabs{display:flex;gap:8px}
+  .tab{padding:7px 16px;border-radius:999px;border:1px solid var(--div);
+    color:var(--t2);font-size:13px;cursor:pointer}
+  .tab.on{background:var(--accent);color:#0B1012;border-color:var(--accent);font-weight:600}
+  .hint{color:#6c7672;font-size:11.5px;letter-spacing:.06em}
+
+  .tv{width:1280px;height:720px;position:relative;overflow:hidden;border-radius:14px;
+    background:
+      radial-gradient(110% 80% at 84% -14%, #17221F 0%, rgba(13,19,21,0) 58%),
+      linear-gradient(180deg,var(--bg-top),var(--bg) 62%);
+    box-shadow:0 22px 55px rgba(0,0,0,.55)}
+  .frame{display:none}.frame.on{display:block}
+  .grain{position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.024) 1px,transparent 1px);background-size:3px 3px}
+  .shell{position:relative;height:100%;padding:30px 36px 26px;display:flex;flex-direction:column}
+
+  /* ---------- 顶部：标题 + 输入 ---------- */
+  .bar{display:flex;align-items:center;gap:22px;flex:0 0 auto}
+  .title{flex:0 0 auto}
+  .kicker{font-size:10.5px;letter-spacing:.34em;color:var(--accent)}
+  .h1{font-size:27px;font-weight:800;line-height:1;margin-top:6px;letter-spacing:.01em}
+  .field{
+    flex:1;height:60px;display:flex;align-items:center;gap:12px;padding:0 20px;
+    border-radius:10px;background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.14);
+  }
+  .field.live{border-color:rgba(255,255,255,.62);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), 0 0 0 4px rgba(184,197,184,.07)}
+  .typed{font-size:20px;letter-spacing:.035em}
+  .caret{width:2px;height:24px;background:var(--accent);animation:blink 1.05s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .count{margin-left:auto;font-size:11.5px;color:var(--t3);letter-spacing:.06em;white-space:nowrap}
+  .esc{flex:0 0 auto;font-size:11.5px;color:var(--t3);letter-spacing:.05em;line-height:1.8;text-align:right}
+  .esc b{color:var(--t2);font-weight:600}
+
+  /* ---------- 键盘：10 × 4，撑满中段 ---------- */
+  .kb{display:grid;grid-template-columns:repeat(10,1fr);grid-auto-rows:1fr;gap:9px;
+    flex:1 1 auto;min-height:0;margin:16px 0 18px}
+  .key{border-radius:8px;display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.075);
+    font-size:19px;color:var(--t1);letter-spacing:.04em;
+    transition:transform .12s ease, background .12s ease}
+  .key.num{font-size:17px;color:var(--t2)}
+  .key.fn{font-size:14px;color:var(--t2);letter-spacing:.02em}
+  .key.focus{
+    background:linear-gradient(180deg,#DBE4D9,#B8C5B8);color:#0B1012;
+    border-color:transparent;font-weight:700;
+    box-shadow:0 0 0 2.5px rgba(255,255,255,.92), 0 10px 22px rgba(0,0,0,.45);
+    transform:translateY(-1px)
+  }
+  .key.go{background:rgba(184,197,184,.14);border-color:rgba(184,197,184,.42);
+    color:var(--t1);font-weight:600}
+
+  /* ---------- 结果：横向片单 ---------- */
+  .res{flex:0 0 auto}
+  .res-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .lab{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;color:var(--t3)}
+  .lab::before{content:"";width:16px;height:2px;background:var(--accent)}
+  .res-hd .cnt{font-size:11.5px;color:var(--t3);letter-spacing:.04em}
+  .res-hd .sort{margin-left:auto;font-size:11.5px;color:var(--accent);letter-spacing:.06em}
+
+  .rail{display:flex;gap:12px}
+  .card{flex:1 1 0;min-width:0;border-radius:8px;overflow:hidden;position:relative;
+    background:var(--surface);transition:transform .14s ease}
+  .card .p{aspect-ratio:2/3;position:relative;
+    background:linear-gradient(152deg,#243330 0%,#101718 58%,#1B2628 100%)}
+  .card .p::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,0) 46%,rgba(0,0,0,.78) 100%)}
+  .card .src{position:absolute;top:6px;right:6px;z-index:2;font-size:10px;color:#DDE4DD;
+    background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.12);
+    padding:2px 6px;border-radius:4px;letter-spacing:.04em}
+  .card .cap{position:absolute;left:8px;right:8px;bottom:7px;z-index:2}
+  .card .cap .n{font-size:11.5px;font-weight:600;line-height:1.35;color:#fff;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card .cap .m{font-size:10px;color:var(--t2);margin-top:2px}
+  .card.focus{outline:2.5px solid rgba(255,255,255,.95);outline-offset:3px;transform:translateY(-2px)}
+
+  .foot{display:flex;align-items:center;gap:16px;margin-top:12px;font-size:11px;
+    color:var(--t3);letter-spacing:.05em}
+  .dot{width:4px;height:4px;border-radius:50%;background:var(--accent-2)}
+  .foot .kbd{border:1px solid var(--div);border-radius:4px;padding:1px 6px;color:var(--t2);font-size:10.5px}
+
+  .note{margin-top:10px;max-width:1280px;font-size:12.5px;line-height:1.8;color:#8a948f}
+  .note b{color:#cfd8d2}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tab on" data-f="K">状态 1 · 焦点在键盘</div>
+  <div class="tab" data-f="R">状态 2 · 焦点在结果</div>
+</div>
+<div class="hint">1280 × 720 · 上下分区：键盘 55% / 结果 45% · 全键盘 10×4 · 直输不候选</div>
+
+<!-- ============ 状态 1：键盘焦点 ============ -->
+<section class="tv frame on" id="K">
+  <div class="grain"></div>
+  <div class="shell">
+    <div class="bar">
+      <div class="title">
+        <div class="kicker">SEARCH</div>
+        <div class="h1">搜索</div>
+      </div>
+      <div class="field live">
+        <span class="typed">man chang de ji jie</span><span class="caret"></span>
+        <span class="count">19 字 · 拼音或首字母</span>
+      </div>
+      <div class="esc">
+        <b>OK</b> 输入　<b>返回</b> 收起键盘<br>
+        <b>菜单</b> 指定搜索源
+      </div>
+    </div>
+
+    <div class="kb">
+      <div class="key num">1</div><div class="key num">2</div><div class="key num">3</div><div class="key num">4</div>
+      <div class="key num">5</div><div class="key num">6</div><div class="key num">7</div><div class="key num">8</div>
+      <div class="key num">9</div><div class="key num">0</div>
+
+      <div class="key">q</div><div class="key">w</div><div class="key">e</div><div class="key">r</div>
+      <div class="key">t</div><div class="key">y</div><div class="key">u</div><div class="key">i</div>
+      <div class="key">o</div><div class="key">p</div>
+
+      <div class="key">a</div><div class="key">s</div><div class="key">d</div><div class="key">f</div>
+      <div class="key">g</div><div class="key">h</div><div class="key">j</div><div class="key">k</div>
+      <div class="key">l</div><div class="key fn">⌫ 删除</div>
+
+      <div class="key">z</div><div class="key">x</div><div class="key">c</div><div class="key">v</div>
+      <div class="key">b</div><div class="key">n</div><div class="key">m</div><div class="key fn">中/英</div>
+      <div class="key fn">清空</div><div class="key go focus">确认</div>
+    </div>
+
+    <div class="res">
+      <div class="res-hd">
+        <div class="lab">搜索结果</div>
+        <span class="cnt">「man chang de ji jie」 · 正在匹配 38 个源</span>
+        <span class="sort">按匹配度 ▾</span>
+      </div>
+      <div class="rail">
+        <div class="card"><div class="p"><div class="src">量子</div>
+          <div class="cap"><div class="n">漫长的季节</div><div class="m">剧集 · 12 集全</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">非凡</div>
+          <div class="cap"><div class="n">漫长的季节 4K</div><div class="m">剧集 · 12 集全</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">卧龙</div>
+          <div class="cap"><div class="n">漫长的季节（2023）</div><div class="m">剧集 · 12 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">极速</div>
+          <div class="cap"><div class="n">漫长的季节 国语中字</div><div class="m">剧集 · 12 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">小苹果</div>
+          <div class="cap"><div class="n">漫长的告别</div><div class="m">电影 · 2019</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">快看</div>
+          <div class="cap"><div class="n">漫长的告白</div><div class="m">电影 · 2022</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">量子</div>
+          <div class="cap"><div class="n">漫长的季节 花絮</div><div class="m">短片 · 3 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">非凡</div>
+          <div class="cap"><div class="n">漫长的中场休息</div><div class="m">电影 · 2021</div></div></div></div>
+      </div>
+      <div class="foot">
+        <span class="dot"></span>
+        <span>输入即搜，结果实时刷新</span>
+        <span class="kbd">↓</span><span>进入结果</span>
+        <span class="kbd">←→</span><span>翻看</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 状态 2：结果焦点 ============ -->
+<section class="tv frame" id="R">
+  <div class="grain"></div>
+  <div class="shell">
+    <div class="bar">
+      <div class="title">
+        <div class="kicker">SEARCH</div>
+        <div class="h1">搜索</div>
+      </div>
+      <div class="field">
+        <span class="typed">漫长的季节</span>
+        <span class="count">19 字 · 126 条结果</span>
+      </div>
+      <div class="esc">
+        <b>↑</b> 回到键盘　<b>OK</b> 进详情<br>
+        <b>菜单</b> 换搜索源
+      </div>
+    </div>
+
+    <div class="kb" style="opacity:.42">
+      <div class="key num">1</div><div class="key num">2</div><div class="key num">3</div><div class="key num">4</div>
+      <div class="key num">5</div><div class="key num">6</div><div class="key num">7</div><div class="key num">8</div>
+      <div class="key num">9</div><div class="key num">0</div>
+      <div class="key">q</div><div class="key">w</div><div class="key">e</div><div class="key">r</div>
+      <div class="key">t</div><div class="key">y</div><div class="key">u</div><div class="key">i</div>
+      <div class="key">o</div><div class="key">p</div>
+      <div class="key">a</div><div class="key">s</div><div class="key">d</div><div class="key">f</div>
+      <div class="key">g</div><div class="key">h</div><div class="key">j</div><div class="key">k</div>
+      <div class="key">l</div><div class="key fn">⌫ 删除</div>
+      <div class="key">z</div><div class="key">x</div><div class="key">c</div><div class="key">v</div>
+      <div class="key">b</div><div class="key">n</div><div class="key">m</div><div class="key fn">中/英</div>
+      <div class="key fn">清空</div><div class="key go">确认</div>
+    </div>
+
+    <div class="res">
+      <div class="res-hd">
+        <div class="lab">搜索结果</div>
+        <span class="cnt">「漫长的季节」 · 126 条 · 38 个源</span>
+        <span class="sort">按匹配度 ▾</span>
+      </div>
+      <div class="rail">
+        <div class="card focus"><div class="p"><div class="src">量子</div>
+          <div class="cap"><div class="n">漫长的季节</div><div class="m">剧集 · 12 集全</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">非凡</div>
+          <div class="cap"><div class="n">漫长的季节 4K</div><div class="m">剧集 · 12 集全</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">卧龙</div>
+          <div class="cap"><div class="n">漫长的季节（2023）</div><div class="m">剧集 · 12 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">极速</div>
+          <div class="cap"><div class="n">漫长的季节 国语中字</div><div class="m">剧集 · 12 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">小苹果</div>
+          <div class="cap"><div class="n">漫长的告别</div><div class="m">电影 · 2019</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">快看</div>
+          <div class="cap"><div class="n">漫长的告白</div><div class="m">电影 · 2022</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">量子</div>
+          <div class="cap"><div class="n">漫长的季节 花絮</div><div class="m">短片 · 3 集</div></div></div></div>
+        <div class="card"><div class="p"><div class="src">非凡</div>
+          <div class="cap"><div class="n">漫长的中场休息</div><div class="m">电影 · 2021</div></div></div></div>
+      </div>
+      <div class="foot">
+        <span class="dot"></span>
+        <span>键盘变暗保留，不占焦点；按 ↑ 回键盘直接改字，结果不清空</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="note">
+  <div><b>C2 · 上下分区（按你选的三项做的）</b></div>
+  <div style="margin-top:5px">· <b>键盘 55%</b>：10×4 全键盘，单键约 111×68px，四行均匀撑满中段，不靠固定高度——屏幕矮也不会挤成一条。</div>
+  <div style="margin-top:5px">· <b>结果 45%</b>：横向片单 8 张可见（与首页「接下来放什么」同一套卡片语言），输入即搜、实时刷新；焦点在键盘时结果只是预览，按 ↓ 进结果区。</div>
+  <div style="margin-top:5px">· <b>不切页</b>：结果放大只免去跳页——状态 2 键盘降低不透明度保留，按 ↑ 立刻回来改字，输入内容不丢。</div>
+  <div style="margin-top:5px">· 键盘第 1 行是数字（片名常带年份/季），第 4 行右侧固定「中/英 · 清空 · 确认」，「确认」落在末位，打完字手自然停在它上面。</div>
+</div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')], frames=[...document.querySelectorAll('.frame')];
+  function select(k){tabs.forEach(t=>t.classList.toggle('on',t.dataset.f===k));
+    frames.forEach(f=>f.classList.toggle('on',f.id===k));}
+  tabs.forEach(t=>t.onclick=()=>select(t.dataset.f));
+  const init=(location.hash||'').replace('#','').toUpperCase();
+  if(init&&document.getElementById(init))select(init);
+</script>
+</body>
+</html>

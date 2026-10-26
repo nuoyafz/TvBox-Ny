@@ -30,7 +30,12 @@ import java.util.List;
  */
 public class SearchKeyboard extends FrameLayout {
     private RecyclerView mRecyclerView;
-    private List<String> keys = Arrays.asList("远程搜索", "删除", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    // 3 行 10 列：A-Z 占 26 格 + 删除/远程搜索各占 2 格，正好 30 格。
+    // 电视端只看首字母，数字和符号用不上，去掉后键盘高度只剩原来一半。
+    private List<String> keys = Arrays.asList(
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+            "U", "V", "W", "X", "Y", "Z", "删除", "远程搜索");
     private List<Keyboard> keyboardList = new ArrayList<>();
     private OnSearchKeyListener searchKeyListener;
     private OnFocusChangeListener focusChangeListener = new OnFocusChangeListener() {
@@ -58,7 +63,7 @@ public class SearchKeyboard extends FrameLayout {
     private void initView() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_keyborad, this);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.mRecyclerView);
-        GridLayoutManager manager = new GridLayoutManager(getContext(), 6);
+        GridLayoutManager manager = new GridLayoutManager(getContext(), 10);
         mRecyclerView.setLayoutManager(manager);
         mRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
@@ -82,11 +87,8 @@ public class SearchKeyboard extends FrameLayout {
         adapter.setSpanSizeLookup(new BaseQuickAdapter.SpanSizeLookup() {
             @Override
             public int getSpanSize(GridLayoutManager gridLayoutManager, int position) {
-                if (position == 0)
-                    return 3;
-                else if (position == 1)
-                    return 3;
-                return 1;
+                // 最后两个功能键各占 2 格，补齐第三行
+                return position >= 26 ? 2 : 1;
             }
         });
 

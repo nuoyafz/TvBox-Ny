@@ -5,9 +5,9 @@
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/vs_44"
+    android:layout_height="@dimen/vs_36"
     android:layout_gravity="center"
-    android:layout_margin="@dimen/vs_5"
+    android:layout_margin="@dimen/vs_4"
     android:background="@drawable/shape_atv_key"
     android:focusable="true">
 

@@ -124,6 +124,10 @@ public class SearchActivity extends BaseActivity {
     private SearchCheckboxDialog mSearchCheckboxDialog = null;
 
     private TextView wordsSwitch;
+    /** 词栏当前显示的是「搜索历史」还是「热词/首字母推荐」——不再靠按钮文案反推 */
+    private boolean showingHistoryWords;
+    private final android.os.Handler recHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable recPending;
     private boolean aggregateSearchMode;
     private boolean aggregateSearchModeInited = false;
 
@@ -236,21 +240,23 @@ public class SearchActivity extends BaseActivity {
                     return;
                 }
                 FastClickCheckUtil.check(v);
-                String wd = wordsSwitch.getText().toString().trim();
-                if(wd.contains("热词")){
-                    ArrayList<String> hisWord= Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
-                    if (hisWord.isEmpty()){
-                        Toast.makeText(mContext, "暂无历史搜索", Toast.LENGTH_SHORT).show();
-                    }else {
-                        wordsSwitch.setText("历史 搜索");
-                        wordAdapter.setNewData(hisWord);
-                    }
-                }
-                if(wd.equals("历史 搜索")){
+                // 原来是靠按钮文案反推状态，loadRec 把文案改成「猜你 想搜」后就再也切不动了。
+                // 改成显式状态位。
+                if (showingHistoryWords) {
+                    showingHistoryWords = false;
                     wordsSwitch.setText("热词 搜索");
-                    if(hots!=null && !hots.isEmpty()){
+                    if (hots != null && !hots.isEmpty()) {
                         wordAdapter.setNewData(hots);
                     }
+                } else {
+                    ArrayList<String> hisWord = Hawk.get(HawkConfig.SEARCH_HISTORY, new ArrayList<String>());
+                    if (hisWord == null || hisWord.isEmpty()) {
+                        Toast.makeText(mContext, "暂无历史搜索", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    showingHistoryWords = true;
+                    wordsSwitch.setText("历史 搜索");
+                    wordAdapter.setNewData(hisWord);
                 }
             }
         });
@@ -288,6 +294,31 @@ public class SearchActivity extends BaseActivity {
                 FastClickCheckUtil.check(v);
                 initData();
                 etSearch.setText("");
+            }
+        });
+
+        // 首字母推荐：打字即联想（ZL → 战狼 / 遮天），防抖 350ms 避免每敲一下就请求一次
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                final String key = s == null ? "" : s.toString().trim();
+                if (recPending != null) recHandler.removeCallbacks(recPending);
+                if (key.isEmpty() || showingHistoryWords) return;
+                recPending = new Runnable() {
+                    @Override
+                    public void run() {
+                        loadRec(key);
+                    }
+                };
+                recHandler.postDelayed(recPending, 350);
             }
         });
 
@@ -342,14 +373,7 @@ public class SearchActivity extends BaseActivity {
         keyboard.setOnSearchKeyListener(new SearchKeyboard.OnSearchKeyListener() {
             @Override
             public void onSearchKey(int pos, String key) {
-                if (pos > 1) {
-                    String text = etSearch.getText().toString().trim();
-                    text += key;
-                    etSearch.setText(text);
-                    if (text.length() > 0) {
-                        loadRec(text);
-                    }
-                } else if (pos == 1) {
+                if ("删除".equals(key)) {
                     String text = etSearch.getText().toString().trim();
                     if (text.length() > 0) {
                         text = text.substring(0, text.length() - 1);
@@ -358,9 +382,16 @@ public class SearchActivity extends BaseActivity {
                     if (text.length() > 0) {
                         loadRec(text);
                     }
-                } else if (pos == 0) {
+                } else if ("远程搜索".equals(key)) {
                     remoteDialog = new RemoteDialog(mContext);
                     remoteDialog.show();
+                } else {
+                    String text = etSearch.getText().toString().trim();
+                    text += key;
+                    etSearch.setText(text);
+                    if (text.length() > 0) {
+                        loadRec(text);
+                    }
                 }
             }
         });
@@ -604,6 +635,7 @@ public class SearchActivity extends BaseActivity {
                                 hots.add(keywordTxt.trim());
                             }
                             wordsSwitch.setText("猜你 想搜");
+                            showingHistoryWords = false;
                             setHotWordsData(hots);
                             mGridViewWord.smoothScrollToPosition(0);
                         } catch (Throwable th) {
