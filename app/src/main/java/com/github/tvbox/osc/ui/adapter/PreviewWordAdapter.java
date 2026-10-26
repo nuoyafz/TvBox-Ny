@@ -29,5 +29,7 @@ public class PreviewWordAdapter extends BaseQuickAdapter<String, BaseViewHolder>
     protected void convert(BaseViewHolder helper, String item) {
         helper.setText(R.id.tvPreviewName, item == null ? "" : item);
         helper.setText(R.id.tvPreviewIni, keyword);
+        helper.setText(R.id.tvPreviewIdx,
+                String.format("%02d", helper.getLayoutPosition() + 1));
     }
 }

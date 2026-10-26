@@ -215,7 +215,7 @@ public class SearchActivity extends BaseActivity {
         tvResultEmpty = findViewById(R.id.tvResultEmpty);
         previewAdapter = new PreviewWordAdapter();
         previewGrid.setHasFixedSize(true);
-        previewGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
+        previewGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 4));
         previewGrid.setAdapter(previewAdapter);
         TvPerf.apply(previewGrid);
         previewAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
