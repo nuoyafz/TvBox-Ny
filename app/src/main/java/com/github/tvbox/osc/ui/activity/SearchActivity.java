@@ -111,7 +111,7 @@ public class SearchActivity extends BaseActivity {
     private EditText etSearch;
     private TextView tvSearch;
     private TextView tvClear;
-    private ImageView tvHistoryClear;
+    private TextView tvHistoryClear;
     private SearchKeyboard keyboard;
     private SearchAdapter searchAdapter;
     private PinyinAdapter wordAdapter;
