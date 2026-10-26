@@ -271,6 +271,12 @@ public class UserFragment extends BaseLazyFragment {
                     Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show();
                 } else if (vod.id != null && vod.id.startsWith("msearch:")) {
                     jumpSearch(vod);
+                } else if (TextUtils.isEmpty(vod.id) || TextUtils.isEmpty(vod.sourceKey)
+                        || ApiConfig.get().getSource(vod.sourceKey) == null) {
+                    // 豆瓣热播条目没有 id/sourceKey，进详情页只会是空壳（用户说的"假数据"），
+                    // 这类直接拿片名去搜，搜到就能点播。
+                    Toast.makeText(mContext, "豆瓣片单没有片源，正在为你搜索《" + vod.name + "》", Toast.LENGTH_SHORT).show();
+                    jumpSearch(vod);
                 } else {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", vod.id);
