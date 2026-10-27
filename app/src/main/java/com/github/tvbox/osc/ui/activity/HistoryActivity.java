@@ -41,7 +41,9 @@ public class HistoryActivity extends BaseActivity {
     private ImageView tvClear;
     private TextView tvDelTip;
     private TvRecyclerView mGridView;
-    public static HistoryAdapter historyAdapter;
+    private HistoryAdapter historyAdapter;
+    /** 清理对话框需要清空列表，但不能用静态强引用持有 Activity 的 adapter（会泄漏），改用弱引用 */
+    private static java.lang.ref.WeakReference<HistoryAdapter> sAdapterRef;
     private boolean delMode = false;
 
     @Override
@@ -76,6 +78,7 @@ public class HistoryActivity extends BaseActivity {
         mGridView.setHasFixedSize(true);
         mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 5 : 6));
         historyAdapter = new HistoryAdapter();
+        sAdapterRef = new java.lang.ref.WeakReference<>(historyAdapter);
         mGridView.setAdapter(historyAdapter);
         TvPerf.apply(mGridView);
         tvDelete.setOnClickListener(new View.OnClickListener() {
@@ -199,5 +202,13 @@ public class HistoryActivity extends BaseActivity {
             return;
         }
         super.onBackPressed();
+    }
+
+    /** 历史全清后刷新列表（供 ConfirmClearDialog 调用，避免静态持有 adapter） */
+    public static void refreshAfterClear(java.util.List<com.github.tvbox.osc.bean.VodInfo> list) {
+        HistoryAdapter a = sAdapterRef == null ? null : sAdapterRef.get();
+        if (a == null) return;
+        a.setNewData(list);
+        a.notifyDataSetChanged();
     }
 }

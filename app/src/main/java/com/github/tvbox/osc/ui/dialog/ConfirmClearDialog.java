@@ -35,14 +35,12 @@ public class ConfirmClearDialog extends BaseDialog {
                 // if removing all Favorites
                 if (type == "Collect") {
                     List<VodCollect> vodInfoList = new ArrayList<>();
-                    CollectActivity.collectAdapter.setNewData(vodInfoList);
-                    CollectActivity.collectAdapter.notifyDataSetChanged();
+                    CollectActivity.refreshAfterClear(vodInfoList);
                     RoomDataManger.deleteVodCollectAll();
                     // if removing all History
                 } else if (type == "History") {
                     List<VodInfo> vodInfoList = new ArrayList<>();
-                    HistoryActivity.historyAdapter.setNewData(vodInfoList);
-                    HistoryActivity.historyAdapter.notifyDataSetChanged();
+                    HistoryActivity.refreshAfterClear(vodInfoList);
                     RoomDataManger.deleteVodRecordAll();
                 }
 

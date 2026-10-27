@@ -120,14 +120,21 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
      */
     private static final float TOPBAR_HEIGHT_MM = 90f;
     private static final float TOPBAR_MARGIN_MM = 0f;
+    /** 时钟只显示到分钟，30s 刷一次足够；formatter 静态复用，避免每秒 new SimpleDateFormat */
+    private static final SimpleDateFormat CLOCK_FORMAT = new SimpleDateFormat("yyyy/MM/dd  E  HH:mm", Locale.CHINA);
+    private static final long CLOCK_INTERVAL_MS = 30_000L;
     private final Runnable mRunnable = new Runnable() {
         @SuppressLint("SetTextI18n")
         @Override
         public void run() {
-            Date date = new Date();
-            SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd  E  HH:mm", Locale.CHINA);
-            tvDate.setText(timeFormat.format(date));
-            mHandler.postDelayed(this, 1000);
+            try {
+                synchronized (CLOCK_FORMAT) {
+                    tvDate.setText(CLOCK_FORMAT.format(new Date()));
+                }
+            } catch (Throwable ignored) {
+                LOG.i("HomeActivity clock format fail");
+            }
+            mHandler.postDelayed(this, CLOCK_INTERVAL_MS);
         }
     };
     private final Runnable refreshTopInfoTextSizeRunnable = new Runnable() {
@@ -905,7 +912,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         // 如果处于 VOD 删除模式，则退出该模式并刷新界面
         if (HawkConfig.hotVodDelete) {
             HawkConfig.hotVodDelete = false;
-            UserFragment.homeHotVodAdapter.notifyDataSetChanged();
+            if (UserFragment.hotAdapter() != null) UserFragment.hotAdapter().notifyDataSetChanged();
             return;
         }
 
@@ -932,9 +939,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             } else {
                 doExit();
             }
-        } else if (baseLazyFragment instanceof UserFragment && UserFragment.tvHotList.canScrollHorizontally(-1)) {
+        } else if (baseLazyFragment instanceof UserFragment && UserFragment.canHotListScrollLeft()) {
             // 片单改成横向单行，回退就是把这一行滚回最左边
-            UserFragment.tvHotList.scrollToPosition(0);
+            UserFragment.scrollHotListToStart();
             this.mGridView.setSelection(0);
         } else {
             doExit();
@@ -1307,8 +1314,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
     private void refreshHomeSort() {
         refreshHomeRec = true;
-        if (UserFragment.homeHotVodAdapter != null) {
-            UserFragment.homeHotVodAdapter.setNewData(new ArrayList<Movie.Video>());
+        if (UserFragment.hotAdapter() != null) {
+            UserFragment.hotAdapter().setNewData(new ArrayList<Movie.Video>());
         }
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         if (home != null) {
@@ -1321,7 +1328,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (!refreshHomeRec) return;
         refreshHomeRec = false;
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) != 1) return;
-        if (absXml == null || absXml.videoList == null || UserFragment.homeHotVodAdapter == null) return;
+        if (absXml == null || absXml.videoList == null || UserFragment.hotAdapter() == null) return;
         // 口味画像排序：看过的类型优先（纯本地统计，分数=1+3×观看次数）
         try {
             java.util.Collections.sort(absXml.videoList, (a, b) ->
@@ -1329,7 +1336,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                             TasteProfile.scoreOf(a == null ? null : a.type)));
         } catch (Throwable ignored) {
         }
-        UserFragment.homeHotVodAdapter.setNewData(absXml.videoList);
+        UserFragment.hotAdapter().setNewData(absXml.videoList);
     }
 
     private void refreshHome(final boolean restart)

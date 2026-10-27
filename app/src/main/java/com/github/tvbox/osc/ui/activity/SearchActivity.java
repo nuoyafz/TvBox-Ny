@@ -43,6 +43,8 @@ import com.github.tvbox.osc.ui.tv.widget.SearchKeyboard;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.HistoryHelper;
+import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.PosterLookup;
 import com.github.tvbox.osc.util.SearchHelper;
 import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
@@ -222,6 +224,8 @@ public class SearchActivity extends BaseActivity {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 FastClickCheckUtil.check(view);
+                // 点击瞬间若刚 setNewData 变短，getItem 会越界
+                if (position < 0 || position >= previewAdapter.getData().size()) return;
                 PreviewWordAdapter.Item item = previewAdapter.getItem(position);
                 if (item != null && !TextUtils.isEmpty(item.word)) {
                     startSearch(item.word);
@@ -634,11 +638,14 @@ public class SearchActivity extends BaseActivity {
         mGridView.setVisibility(View.GONE);
         tvResultEmpty.setVisibility(View.GONE);
         previewAdapter.setKeyword(key);
-        // 联想只给片名，海报先查本地缓存；缓存里没有的交给 fetchPosters 逐条去豆瓣补
+        // 联想只给片名，海报先查本地缓存；缓存里没有的交给 fetchPosters 补。
+        // 联想结果可能含重复词（同一部片多版本），这里按词去重，避免重复卡片占位。
         ArrayList<PreviewWordAdapter.Item> items = new ArrayList<>(words.size());
+        java.util.LinkedHashSet<String> seen = new java.util.LinkedHashSet<>();
         for (String w : words) {
+            if (TextUtils.isEmpty(w) || !seen.add(w)) continue;
             PreviewWordAdapter.Item it = new PreviewWordAdapter.Item(w);
-            String[] cached = posterCache.get(w);
+            String[] cached = PosterLookup.getCached(w);
             if (cached != null) {
                 it.pic = cached[0];
                 it.meta = cached[1];
@@ -649,168 +656,49 @@ public class SearchActivity extends BaseActivity {
         previewGrid.setVisibility(View.VISIBLE);
         previewGrid.scrollToPosition(0);
         tvResultTitle.setText("首字母 " + key.toUpperCase() + " 的预览");
-        tvResultCount.setText(words.size() + " 部");
+        tvResultCount.setText(items.size() + " 部");
         fetchPosters(items);
     }
 
-    /** 片名 → {海报URL, 类型·年份}，进程内缓存，避免来回打字重复请求豆瓣 */
-    private final java.util.HashMap<String, String[]> posterCache = new java.util.HashMap<>();
-    /** 正在查豆瓣的片名，防止同一词重复发请求 */
-    private final java.util.HashSet<String> posterPending = new java.util.HashSet<>();
-
     /**
-     * 给预览词条补海报。
-     *
-     * 图源实测（2026-10-27）：
-     * - 豆瓣 subject_suggest：有图，但**连发约 5 次后限流**，之后 200 却返回空数组 → 出图率低，只做兜底；
-     * - 爱奇艺 html5 搜索：12 连发不限流，出图 ~11/12，字段 albumVImage/channel/releaseDate 齐全 → 主源。
-     *
-     * 另外爱奇艺返回的第一条不一定是正片（测「斩神」时首条是「精神病面前，鬼东西算个球」），
-     * 所以按「完全相等 &gt; 前缀 &gt; 包含」给候选打分挑最像的，避免张冠李戴。
-     * 单次最多补 12 条（一屏 4×3），命中缓存的不再请求；结果回来原地刷新对应卡片。
+     * 给预览词条补海报：网络请求、图源解析、缓存都在 {@link PosterLookup} 里。
+     * 一屏 4×3 最多 12 张全部要补，但同时在跑的请求限制在 {@link PosterLookup#MAX_CONCURRENT}，
+     * 超出的排队等前一批回来再补，避免快速输入时请求堆叠。
      */
     private void fetchPosters(final List<PreviewWordAdapter.Item> items) {
         if (items == null || items.isEmpty()) return;
-        final int limit = Math.min(items.size(), 12);
-        for (int i = 0; i < limit; i++) {
-            final PreviewWordAdapter.Item it = items.get(i);
-            if (!TextUtils.isEmpty(it.pic)) continue;
-            if (TextUtils.isEmpty(it.word)) continue;
-            if (posterPending.contains(it.word)) continue;
-            posterPending.add(it.word);
-            final String word = it.word;
-            OkGo.<String>get("https://search.video.iqiyi.com/o")
-                    .tag("preview-poster")
-                    .params("if", "html5")
-                    .params("key", word)
-                    .execute(new AbsCallback<String>() {
-                        @Override
-                        public void onSuccess(Response<String> response) {
-                            String[] hit = parseIqiyi(response.body(), word);
-                            if (hit != null) {
-                                posterPending.remove(word);
-                                posterCache.put(word, hit);
-                                applyPoster(word, hit[0], hit[1]);
-                            } else {
-                                // 爱奇艺没图再兜底豆瓣（豆瓣有限流，只给少数漏网词用）
-                                fetchPosterFromDouban(word);
-                            }
-                        }
-
-                        @Override
-                        public String convertResponse(okhttp3.Response response) throws Throwable {
-                            return response.body() == null ? "" : response.body().string();
-                        }
-
-                        @Override
-                        public void onError(Response<String> response) {
-                            super.onError(response);
-                            fetchPosterFromDouban(word);
-                        }
-                    });
+        ArrayList<PreviewWordAdapter.Item> todo = new ArrayList<>();
+        for (int i = 0; i < items.size() && i < 12; i++) {
+            PreviewWordAdapter.Item it = items.get(i);
+            if (it == null || TextUtils.isEmpty(it.word) || !TextUtils.isEmpty(it.pic)) continue;
+            todo.add(it);
         }
+        drainPosterQueue(todo, 0);
     }
 
-    /**
-     * 解析爱奇艺搜索结果，返回 {海报URL, 类型·年份}；没有可信匹配返回 null。
-     * 匹配打分：完全相等 100 / 前缀 80 / 包含 60，减去候选次序，0 分视为没匹配上。
-     */
-    private String[] parseIqiyi(String body, String word) {
-        if (TextUtils.isEmpty(body)) return null;
-        try {
-            JsonObject root = new Gson().fromJson(body, JsonObject.class);
-            if (root == null || !root.has("data")) return null;
-            JsonObject data = root.getAsJsonObject("data");
-            if (data == null || !data.has("docinfos")) return null;
-            JsonArray docs = data.getAsJsonArray("docinfos");
-            String bestImg = null;
-            String bestMeta = "";
-            int bestScore = 0;
-            for (int i = 0; i < docs.size() && i < 6; i++) {
-                JsonElement el = docs.get(i);
-                if (el == null || !el.isJsonObject()) continue;
-                JsonObject wrap = el.getAsJsonObject();
-                if (!wrap.has("albumDocInfo") || !wrap.get("albumDocInfo").isJsonObject()) continue;
-                JsonObject a = wrap.getAsJsonObject("albumDocInfo");
-                String title = optStr(a, "albumTitle");
-                String img = optStr(a, "albumVImage");
-                if (TextUtils.isEmpty(img)) img = optStr(a, "albumImg");
-                if (TextUtils.isEmpty(img) || TextUtils.isEmpty(title)) continue;
-                int score;
-                if (title.equals(word)) score = 100;
-                else if (title.startsWith(word)) score = 80;
-                else if (title.contains(word)) score = 60;
-                else score = 0;
-                score -= i;
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestImg = img;
-                    String ch = optStr(a, "channel");
-                    int comma = ch.indexOf(',');
-                    String type = comma > 0 ? ch.substring(0, comma) : ch;
-                    String date = optStr(a, "releaseDate");
-                    String year = date.length() >= 4 ? date.substring(0, 4) : "";
-                    bestMeta = TextUtils.isEmpty(type) ? year
-                            : (TextUtils.isEmpty(year) ? type : type + " · " + year);
+    /** 分批把队列灌进 PosterLookup：这一批满了就 500ms 后再来，直到补完 */
+    private void drainPosterQueue(final List<PreviewWordAdapter.Item> todo, final int from) {
+        if (todo == null || from >= todo.size()) return;
+        int idx = from;
+        while (idx < todo.size() && PosterLookup.pendingCount() < PosterLookup.MAX_CONCURRENT) {
+            final PreviewWordAdapter.Item it = todo.get(idx++);
+            PosterLookup.fetch(it.word, new PosterLookup.Callback() {
+                @Override
+                public void onResult(String word, String pic, String meta) {
+                    applyPoster(word, pic, meta);
                 }
-            }
-            if (TextUtils.isEmpty(bestImg)) return null;
-            return new String[]{bestImg, bestMeta};
-        } catch (Throwable t) {
-            return null;
+            });
         }
-    }
-
-    private static String optStr(JsonObject o, String key) {
-        try {
-            return o != null && o.has(key) && !o.get(key).isJsonNull() ? o.get(key).getAsString().trim() : "";
-        } catch (Throwable t) {
-            return "";
+        if (idx < todo.size()) {
+            final int next = idx;
+            recHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (isFinishing()) return;
+                    drainPosterQueue(todo, next);
+                }
+            }, 500);
         }
-    }
-
-    /** 兜底图源：豆瓣 subject_suggest（有限流，返回空数组时直接放弃，不重试） */
-    private void fetchPosterFromDouban(final String word) {
-        OkGo.<String>get("https://movie.douban.com/j/subject_suggest")
-                .tag("preview-poster")
-                .params("q", word)
-                .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
-                .headers("Referer", "https://www.douban.com/")
-                .execute(new AbsCallback<String>() {
-                    @Override
-                    public void onSuccess(Response<String> response) {
-                        posterPending.remove(word);
-                        String body = response.body();
-                        if (TextUtils.isEmpty(body)) return;
-                        try {
-                            JsonArray arr = new Gson().fromJson(body, JsonArray.class);
-                            if (arr == null || arr.size() == 0) return;
-                            JsonObject o = arr.get(0).getAsJsonObject();
-                            String pic = optStr(o, "img");
-                            String type = optStr(o, "type");
-                            String year = optStr(o, "year");
-                            if (TextUtils.isEmpty(pic)) return;
-                            String meta = ("movie".equals(type) ? "电影" : "tv".equals(type) ? "剧集" : type);
-                            if (!TextUtils.isEmpty(year)) {
-                                meta = TextUtils.isEmpty(meta) ? year : meta + " · " + year;
-                            }
-                            posterCache.put(word, new String[]{pic, meta});
-                            applyPoster(word, pic, meta);
-                        } catch (Throwable ignored) {
-                        }
-                    }
-
-                    @Override
-                    public String convertResponse(okhttp3.Response response) throws Throwable {
-                        return response.body() == null ? "" : response.body().string();
-                    }
-
-                    @Override
-                    public void onError(Response<String> response) {
-                        super.onError(response);
-                        posterPending.remove(word);
-                    }
-                });
     }
 
     /** 海报回来后原地刷新对应卡片（按片名匹配，防止联想词已换批导致错位） */
@@ -864,7 +752,10 @@ public class SearchActivity extends BaseActivity {
      * 拼音联想
      */
     private void loadRec(String key) {
+        // 先取消上一轮联想：快速输入时旧请求的结果后到，会把新输入的结果盖掉
+        OkGo.getInstance().cancelTag("preview-rec");
         OkGo.get("https://tv.aiseet.atianqi.com/i-tvbin/qtv_video/search/get_search_smart_box")
+                .tag("preview-rec")
                 .params("format", "json")
                 .params("page_num", 0)
                 .params("page_size", 20)
@@ -872,6 +763,9 @@ public class SearchActivity extends BaseActivity {
                 .execute(new AbsCallback() {
                     @Override
                     public void onSuccess(Response response) {
+                        // 过期响应保护：输入已经变了，这份结果直接丢
+                        String current = etSearch == null ? "" : etSearch.getText().toString().trim();
+                        if (!key.equals(current)) return;
                         try {
                             ArrayList hots = new ArrayList<>();
                             String result = (String) response.body();
@@ -895,13 +789,23 @@ public class SearchActivity extends BaseActivity {
                             // 打字即预览：把联想词铺到右侧，不用等用户按搜索
                             showPreview(hots, key);
                         } catch (Throwable th) {
-                            th.printStackTrace();
+                            // 接口结构变了 / 返回异常：别静默失败，给右侧一个明确空态
+                            LOG.i("SearchActivity loadRec parse fail: " + key + " " + th.getMessage());
+                            showPreviewEmpty(key);
                         }
                     }
 
                     @Override
                     public String convertResponse(okhttp3.Response response) throws Throwable {
                         return response.body().string();
+                    }
+
+                    @Override
+                    public void onError(Response response) {
+                        super.onError(response);
+                        LOG.i("SearchActivity loadRec error: " + key);
+                        String current = etSearch == null ? "" : etSearch.getText().toString().trim();
+                        if (key.equals(current)) showPreviewEmpty(key);
                     }
                 });
     }
@@ -1490,6 +1394,10 @@ public class SearchActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         cancel();
+        // 联想防抖任务 + 海报请求：不取消的话回调会打到已销毁的 Activity 上
+        recHandler.removeCallbacksAndMessages(null);
+        recPending = null;
+        PosterLookup.cancelAll();
         try {
             if (searchExecutorService != null) {
                 searchExecutorService.shutdownNow();

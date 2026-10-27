@@ -82,9 +82,11 @@ public class UserFragment extends BaseLazyFragment {
     private TextView tvHeroEp;
     private View heroPosterBox;
 
-    public static HomeHotVodAdapter homeHotVodAdapter;
+    private HomeHotVodAdapter homeHotVodAdapter;
+    /** 首页需要从 Activity 侧拿 adapter / 列表，静态强引用会泄漏整页，改弱引用 + 静态访问器 */
+    private static java.lang.ref.WeakReference<UserFragment> sInstance;
     private List<Movie.Video> homeSourceRec;
-    public static TvRecyclerView tvHotList;
+    private TvRecyclerView tvHotList;
     private static boolean immersiveMode;
     private SourceViewModel sourceViewModel;
 
@@ -95,14 +97,17 @@ public class UserFragment extends BaseLazyFragment {
     /** Expand the recommendation strip when the TV chrome is tucked away. */
     public static void setImmersiveMode(boolean enabled) {
         immersiveMode = enabled;
-        if (tvHotList != null) {
-            android.view.ViewGroup.LayoutParams params = tvHotList.getLayoutParams();
+        // 静态方法只能通过弱引用拿到当前实例，Fragment 不在时只记标志，等重建时再应用
+        UserFragment f = sInstance == null ? null : sInstance.get();
+        if (f == null) return;
+        if (f.tvHotList != null) {
+            android.view.ViewGroup.LayoutParams params = f.tvHotList.getLayoutParams();
             if (params != null) {
-                params.height = AutoSizeUtils.mm2px(tvHotList.getContext(), enabled ? 150 : 112);
-                tvHotList.setLayoutParams(params);
+                params.height = AutoSizeUtils.mm2px(f.tvHotList.getContext(), enabled ? 150 : 112);
+                f.tvHotList.setLayoutParams(params);
             }
         }
-        if (homeHotVodAdapter != null) homeHotVodAdapter.setImmersiveMode(enabled);
+        if (f.homeHotVodAdapter != null) f.homeHotVodAdapter.setImmersiveMode(enabled);
     }
 
     public static boolean isImmersiveMode() {
@@ -144,6 +149,30 @@ public class UserFragment extends BaseLazyFragment {
         }
         // 每次回到首页都刷新主视觉：刚看完一集回来，这里要立刻变成新的那一部
         loadHero();
+    }
+
+    /** 首页热播列表 adapter；Fragment 已销毁时返回 null（调用方需判空） */
+    public static HomeHotVodAdapter hotAdapter() {
+        UserFragment f = sInstance == null ? null : sInstance.get();
+        return f == null ? null : f.homeHotVodAdapter;
+    }
+
+    /** 横向片单能否左滚（顶栏「返回」键用） */
+    public static boolean canHotListScrollLeft() {
+        UserFragment f = sInstance == null ? null : sInstance.get();
+        return f != null && f.tvHotList != null && f.tvHotList.canScrollHorizontally(-1);
+    }
+
+    /** 横向片单回到开头 */
+    public static void scrollHotListToStart() {
+        UserFragment f = sInstance == null ? null : sInstance.get();
+        if (f != null && f.tvHotList != null) f.tvHotList.scrollToPosition(0);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (sInstance != null && sInstance.get() == this) sInstance = null;
+        super.onDestroyView();
     }
 
     @Override
@@ -234,6 +263,7 @@ public class UserFragment extends BaseLazyFragment {
         tvHeroEp = findViewById(R.id.tvHeroEp);
         heroPosterBox = findViewById(R.id.heroPosterBox);
 
+        sInstance = new java.lang.ref.WeakReference<>(this);
         tvHotList = findViewById(R.id.tvHotList);
         if (tvHotList != null) tvHotList.setNextFocusUpId(R.id.tvHeroPlay);
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1 && homeSourceRec != null) {

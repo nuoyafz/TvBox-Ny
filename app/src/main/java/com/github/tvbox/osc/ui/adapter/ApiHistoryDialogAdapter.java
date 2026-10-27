@@ -42,6 +42,16 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
     private final java.util.Map<String, String> speedMap = new java.util.HashMap<>();
 
     private final android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    /** 测速线程池：daemon + 固定 4 并发，避免连点十几条时堆出一堆线程 */
+    private static final java.util.concurrent.ExecutorService SPEED_POOL =
+            java.util.concurrent.Executors.newFixedThreadPool(4, new java.util.concurrent.ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "cfg-speed");
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
 
     private SelectDialogInterface dialogInterface = null;
 
@@ -138,7 +148,7 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
         speedMap.put(value, "测速中…");
         notifyDataSetChanged();
         final String fUrl = url;
-        new Thread(new Runnable() {
+        SPEED_POOL.execute(new Runnable() {
             @Override
             public void run() {
                 String result;
@@ -173,6 +183,6 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
                     }
                 });
             }
-        }, "cfg-speed").start();
+        });
     }
 }

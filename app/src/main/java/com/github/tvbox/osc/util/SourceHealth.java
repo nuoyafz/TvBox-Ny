@@ -101,59 +101,66 @@ public final class SourceHealth {
     /** 判死：24h 内失败≥3 且多于成功 */
     public static boolean isDead(String key) {
         synchronized (LOCK) {
-            String[] p = raw(key).split(",");
-            long lastFail = parseLong(p, 4);
-            if (lastFail <= 0 || System.currentTimeMillis() - lastFail > FAIL_WINDOW_MS) return false;
-            int ok = parseInt(p, 0);
-            int fail = parseInt(p, 1);
-            return fail >= DEAD_STREAK && fail > ok;
+            return deadOf(raw(key).split(","));
         }
     }
 
     public static long avgCost(String key) {
         synchronized (LOCK) {
-            String[] p = raw(key).split(",");
-            int ok = parseInt(p, 0);
-            long total = parseLong(p, 3);
-            if (ok <= 0) return -1;
-            return total / ok;
+            return avgOf(raw(key).split(","));
         }
     }
 
     /** 评分：越高越健康；无数据 50 分（中性） */
     public static float score(String key) {
         synchronized (LOCK) {
-            String[] p = raw(key).split(",");
-            int ok = parseInt(p, 0);
-            int fail = parseInt(p, 1);
-            if (ok == 0 && fail == 0) return 50f;
-            float rate = (float) ok / (ok + fail);
-            long avg = avgCost(key);
-            float latencyPenalty = avg < 0 ? 10f : Math.min(avg / 50f, 25f);
-            float s = rate * 100f - fail * 8f - latencyPenalty;
-            // 死源直接压到底
-            return isDead(key) ? Math.min(s, 5f) : s;
+            return scoreOf(raw(key).split(","));
         }
     }
 
     /** 卡片小注 */
     public static String label(String key) {
-        if (isDead(key)) return "源已失效";
-        long avg = avgCost(key);
-        if (avg < 0) return "";
-        // 蜘蛛源命中本地缓存时耗时是函数调用级（<50ms），跟网络无关，别冒充「快」
-        if (avg < 50 && isCachedKind(key)) return "缓存 · " + avg + "ms";
-        if (avg <= 800) return "快 · " + avg + "ms";
-        if (avg <= 2500) return "一般 · " + avg + "ms";
-        return "慢 · " + avg + "ms";
+        synchronized (LOCK) {
+            // 一次 raw 解析出全部字段：原来 isDead/avgCost/kind 各读一次，50+ 源排序时放大成几倍开销
+            String[] p = raw(key).split(",");
+            if (deadOf(p)) return "源已失效";
+            long avg = avgOf(p);
+            if (avg < 0) return "";
+            // 蜘蛛源命中本地缓存时耗时是函数调用级（<50ms），跟网络无关，别冒充「快」
+            if (avg < 50 && p.length > 6 && parseInt(p, 6) == 1) return "缓存 · " + avg + "ms";
+            if (avg <= 800) return "快 · " + avg + "ms";
+            if (avg <= 2500) return "一般 · " + avg + "ms";
+            return "慢 · " + avg + "ms";
+        }
     }
 
-    /** 最近一次成功是否来自本地缓存路径（蜘蛛 homeContent 命中缓存） */
-    private static boolean isCachedKind(String key) {
-        synchronized (LOCK) {
-            String[] p = raw(key).split(",");
-            return p.length > 6 && parseInt(p, 6) == 1;
-        }
+    /** 判死（纯计算，调用方已持锁） */
+    private static boolean deadOf(String[] p) {
+        long lastFail = parseLong(p, 4);
+        if (lastFail <= 0 || System.currentTimeMillis() - lastFail > FAIL_WINDOW_MS) return false;
+        int ok = parseInt(p, 0);
+        int fail = parseInt(p, 1);
+        return fail >= DEAD_STREAK && fail > ok;
+    }
+
+    /** 平均耗时（纯计算，调用方已持锁）；无成功记录返回 -1 */
+    private static long avgOf(String[] p) {
+        int ok = parseInt(p, 0);
+        if (ok <= 0) return -1;
+        return parseLong(p, 3) / ok;
+    }
+
+    /** 评分（纯计算，调用方已持锁） */
+    private static float scoreOf(String[] p) {
+        int ok = parseInt(p, 0);
+        int fail = parseInt(p, 1);
+        if (ok == 0 && fail == 0) return 50f;
+        float rate = (float) ok / (ok + fail);
+        long avg = avgOf(p);
+        float latencyPenalty = avg < 0 ? 10f : Math.min(avg / 50f, 25f);
+        float s = rate * 100f - fail * 8f - latencyPenalty;
+        // 死源直接压到底
+        return deadOf(p) ? Math.min(s, 5f) : s;
     }
 
     /** 按健康度排序；调用方负责是否启用（默认设置里是关的，避免打乱用户习惯） */
