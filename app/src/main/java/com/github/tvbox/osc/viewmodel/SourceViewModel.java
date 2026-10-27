@@ -126,13 +126,39 @@ public class SourceViewModel extends ViewModel {
     public static final ExecutorService spThreadPool = Executors.newSingleThreadExecutor();
     private static final ExecutorService httpPrepareThreadPool = Executors.newFixedThreadPool(3);
 
+    /**
+     * 承载「带超时控制」的蜘蛛调用（getSort / detail / content / search 里的 future.get）。
+     *
+     * 原来这 8 处每次调用都 Executors.newSingleThreadExecutor() 建一个线程池，用完再 shutdown。
+     * 电视盒子多为 2~4 核，反复建销线程是实打实的开销；这里改成进程内共享：
+     * 用 SynchronousQueue + 0 核 + 空闲 60s 回收，卡死的任务自己占一条线程不影响别人，
+     * 也能像原来那样随时 future.cancel(true) 打断，但不再重复创建线程池。
+     */
+    private static final ExecutorService taskPool = new java.util.concurrent.ThreadPoolExecutor(
+            0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+            new java.util.concurrent.SynchronousQueue<Runnable>(),
+            new java.util.concurrent.ThreadFactory() {
+                private final AtomicInteger seq = new AtomicInteger(0);
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "noya-spider-" + seq.incrementAndGet());
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+
     //homeContent缓存，最多存储5个sourceKey的AbsSortXml对象
-    private static final Map<String, AbsSortXml> sortCache = new LinkedHashMap<String, AbsSortXml>(5, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Entry<String, AbsSortXml> eldest) {
-            return size() > 5;
-        }
-    };
+    // 必须线程安全：getSort 的实际工作在 httpPrepareThreadPool（3 线程）里跑，
+    // 连续切源时会有多个线程并发 get/put。而 accessOrder=true 的 LinkedHashMap
+    // 连 get() 都会重排链表（是写操作），裸用并发访问可能把链表搞成环 → CPU 100% 假死。
+    private static final Map<String, AbsSortXml> sortCache = Collections.synchronizedMap(
+            new LinkedHashMap<String, AbsSortXml>(5, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Entry<String, AbsSortXml> eldest) {
+                    return size() > 5;
+                }
+            });
 
     private static void cacheSort(String sourceKey, AbsSortXml sortXml) {
         attachSortSource(sourceKey, sortXml);
@@ -249,7 +275,7 @@ public class SourceViewModel extends ViewModel {
             Runnable waitResponse = new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() throws Exception {
@@ -298,11 +324,8 @@ public class SourceViewModel extends ViewModel {
                             SourceHealth.reportFail(sourceKey);
                             postSortResult(sourceKey, null);
                         }
-                        try {
-                            executor.shutdown();
-                        } catch (Throwable th) {
-                            th.printStackTrace();
-                        }
+                        // taskPool 是进程内共享池，这里不能 shutdown（关了下次就用不了），
+                        // 空闲线程 60s 后由池自己回收。
                     }
                 }
             };
@@ -474,7 +497,7 @@ public class SourceViewModel extends ViewModel {
             spThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() throws Exception {
@@ -495,7 +518,6 @@ public class SourceViewModel extends ViewModel {
                         LOG.i("echo--getList-error--" + homeSourceBean.getKey() + "--" + e.getClass().getSimpleName() + "--" + (cause != null ? cause.getClass().getSimpleName() + ":" + cause.getMessage() : e.getMessage()));
                         e.printStackTrace();
                     } finally {
-                        executor.shutdown();
                         if (json != null) {
                             json(listResult, json,homeSourceBean.getKey());
                         } else {
@@ -612,7 +634,7 @@ public class SourceViewModel extends ViewModel {
             spThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() throws Exception {
@@ -627,7 +649,6 @@ public class SourceViewModel extends ViewModel {
                     } catch (Throwable ignored) {
                         future.cancel(true);
                     } finally {
-                        executor.shutdown();
                         if (json != null) {
                             json(listResult, json, sourceBean.getKey());
                         } else {
@@ -704,7 +725,7 @@ public class SourceViewModel extends ViewModel {
             Runnable waitResponse = new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() throws Exception {
@@ -732,11 +753,6 @@ public class SourceViewModel extends ViewModel {
                             }
                         } else {
                             callback.done(null);
-                        }
-                        try {
-                            executor.shutdown();
-                        } catch (Throwable th) {
-                            th.printStackTrace();
                         }
                     }
                 }
@@ -828,7 +844,7 @@ public class SourceViewModel extends ViewModel {
             spThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() {
@@ -856,7 +872,6 @@ public class SourceViewModel extends ViewModel {
                         LOG.i("echo--getDetail--error: " + e.getMessage());
                     } finally {
                         json(target, json, sourceBean.getKey());
-                        executor.shutdown();
                     }
                 }
             });
@@ -1197,7 +1212,7 @@ public class SourceViewModel extends ViewModel {
             spThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    ExecutorService executor = taskPool;
                     Future<String> future = executor.submit(new Callable<String>() {
                         @Override
                         public String call() throws Exception {
@@ -1242,8 +1257,6 @@ public class SourceViewModel extends ViewModel {
                         // 捕获其他异常
                         LOG.i("echo--getPlay--error: " + e.getMessage());
                         postTarget(target, requestSeq, realPlay, null);
-                    } finally {
-                        executor.shutdown();
                     }
                 }
             });
@@ -1539,6 +1552,17 @@ public class SourceViewModel extends ViewModel {
     }
 
     private static final ConcurrentHashMap<String, String> extendCache = new ConcurrentHashMap<>();
+    /** 配置 extend 缓存上限：key 是按内容算的 MD5，长期刷剧会单调增长，必须封顶 */
+    private static final int EXTEND_CACHE_MAX = 200;
+
+    /** 写入 extend 缓存，超过上限整体清空（重下一份配置远比重演一次 OOM 便宜） */
+    private static void putExtendCache(String key, String value) {
+        extendCache.putIfAbsent(key, value);
+        if (extendCache.size() > EXTEND_CACHE_MAX) {
+            extendCache.clear();
+            LOG.i("echo-extendCache cleared, size over " + EXTEND_CACHE_MAX);
+        }
+    }
 
     private String getFixUrl(final String extend) {
         return getFixUrl(extend, 20);
@@ -1561,13 +1585,13 @@ public class SourceViewModel extends ViewModel {
                     path = path.replaceAll("localhost/", "/");
                     result = FileUtils.readFileToString(path, "UTF-8");
                     result = tryMinifyJson(result);
-                    extendCache.putIfAbsent(key, result);
+                    putExtendCache(key, result);
                 } else if (extend.startsWith("http")) {
                     result = OkHttp.string(extend, null);
                     if (!result.isEmpty()) {
                         result = tryMinifyJson(result);
                         if(result.length()>2500)result = extend;
-                        extendCache.putIfAbsent(key, result);
+                        putExtendCache(key, result);
                     }
                 }
                 return result;
@@ -1742,7 +1766,7 @@ public class SourceViewModel extends ViewModel {
                                 final AbsXml[] resData = {null};
 
                                 final CountDownLatch countDownLatch = new CountDownLatch(1);
-                                ExecutorService threadPool = Executors.newSingleThreadExecutor();
+                                ExecutorService threadPool = taskPool;
                                 String finalPushUrl = pushUrl;
                                 threadPool.execute(new Runnable() {
                                     @Override
@@ -1814,7 +1838,6 @@ public class SourceViewModel extends ViewModel {
                                 });
                                 try {
                                     countDownLatch.await(15, TimeUnit.SECONDS);
-                                    threadPool.shutdown();
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -2032,13 +2055,13 @@ public class SourceViewModel extends ViewModel {
                 path = path.replaceAll("localhost/", "/");
                 result = FileUtils.readFileToString(path, "UTF-8");
                 result = tryMinifyJson(result);
-                extendCache.putIfAbsent(key, result);
+                putExtendCache(key, result);
             } else {
                 result = OkHttp.string(extend, null);
                 if (!TextUtils.isEmpty(result)) {
                     result = tryMinifyJson(result);
                     if (result.length() > 2500) result = extend;
-                    extendCache.putIfAbsent(key, result);
+                    putExtendCache(key, result);
                 }
             }
         } catch (Throwable th) {

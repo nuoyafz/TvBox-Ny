@@ -20,6 +20,7 @@ import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.AtvFocusHelper;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.TvPerf;
+import com.github.tvbox.osc.util.Threads;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
@@ -172,13 +173,27 @@ public class HistoryActivity extends BaseActivity {
     }
 
     private void initData() {
-        List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(100);
-        List<VodInfo> vodInfoList = new ArrayList<>();
-        for (VodInfo vodInfo : allVodRecord) {
-            if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())vodInfo.note = "上次看到" + vodInfo.playNote;
-            vodInfoList.add(vodInfo);
-        }
-        historyAdapter.setNewData(vodInfoList);
+        // 主线程同步查 100 条历史在低端盒子上会明显卡；查询移到 IO，回主线程刷列表
+        Threads.io(() -> {
+            List<VodInfo> allVodRecord;
+            try {
+                allVodRecord = RoomDataManger.getAllVodRecord(100);
+            } catch (Throwable th) {
+                allVodRecord = null;
+            }
+            final List<VodInfo> vodInfoList = new ArrayList<>();
+            if (allVodRecord != null) {
+                for (VodInfo vodInfo : allVodRecord) {
+                    if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
+                        vodInfo.note = "上次看到" + vodInfo.playNote;
+                    vodInfoList.add(vodInfo);
+                }
+            }
+            Threads.main(() -> {
+                if (isFinishing() || historyAdapter == null) return;
+                historyAdapter.setNewData(vodInfoList);
+            });
+        });
     }
 
 

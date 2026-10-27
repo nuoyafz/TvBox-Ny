@@ -37,6 +37,8 @@ import com.github.tvbox.osc.ui.dialog.RandomPickDialog;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ImgUtil;
+import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.Threads;
 import com.github.tvbox.osc.util.TvPerf;
 import com.github.tvbox.osc.util.UA;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
@@ -133,19 +135,33 @@ public class UserFragment extends BaseLazyFragment {
         int half = tvHotList.mHorizontalSpacingWithMargins / 2;
         tvHotList.setPadding(-half, 0, -half, 0);
         if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2) {
-            List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(20);
-            List<Movie.Video> vodList = new ArrayList<>();
-            for (VodInfo vodInfo : allVodRecord) {
-                Movie.Video vod = new Movie.Video();
-                vod.id = vodInfo.id;
-                vod.sourceKey = vodInfo.sourceKey;
-                vod.name = vodInfo.name;
-                vod.pic = vodInfo.pic;
-                if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
-                    vod.note = "上次看到" + vodInfo.playNote;
-                vodList.add(vod);
-            }
-            homeHotVodAdapter.setNewData(vodList);
+            // 原来在主线程同步查 Room（onFragmentResume 每次都跑），低端盒子上回首页会顿一下。
+            // 查询丢到 IO 线程，拼好列表再回主线程刷 adapter。
+            Threads.io(() -> {
+                List<VodInfo> allVodRecord;
+                try {
+                    allVodRecord = RoomDataManger.getAllVodRecord(20);
+                } catch (Throwable th) {
+                    allVodRecord = null;
+                }
+                final List<Movie.Video> vodList = new ArrayList<>();
+                if (allVodRecord != null) {
+                    for (VodInfo vodInfo : allVodRecord) {
+                        Movie.Video vod = new Movie.Video();
+                        vod.id = vodInfo.id;
+                        vod.sourceKey = vodInfo.sourceKey;
+                        vod.name = vodInfo.name;
+                        vod.pic = vodInfo.pic;
+                        if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty())
+                            vod.note = "上次看到" + vodInfo.playNote;
+                        vodList.add(vod);
+                    }
+                }
+                Threads.main(() -> {
+                    if (!isAdded() || homeHotVodAdapter == null) return;
+                    homeHotVodAdapter.setNewData(vodList);
+                });
+            });
         }
         // 每次回到首页都刷新主视觉：刚看完一集回来，这里要立刻变成新的那一部
         loadHero();
@@ -295,10 +311,22 @@ public class UserFragment extends BaseLazyFragment {
 
                 if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2) && HawkConfig.hotVodDelete) {
                     homeHotVodAdapter.remove(position);
-                    VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
-                    assert vodInfo != null;
-                    RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
-                    Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show();
+                    final String delSourceKey = vod.sourceKey;
+                    final String delVodId = vod.id;
+                    // 原来这里写的是 assert，release 构建里 assert 会被剥离，等于没判空：
+                    // 记录已经被清掉时 getVodInfo 返回 null，直接传给 deleteVodRecord 就是 NPE。
+                    // 顺带把查库 + 删除挪到 IO 线程。
+                    Threads.io(() -> {
+                        try {
+                            VodInfo vodInfo = RoomDataManger.getVodInfo(delSourceKey, delVodId);
+                            if (vodInfo == null) return;
+                            RoomDataManger.deleteVodRecord(delSourceKey, vodInfo);
+                        } catch (Throwable th) {
+                            LOG.longE("home-del-record", "delete failed: " + th.getClass().getSimpleName());
+                            return;
+                        }
+                        Threads.main(() -> Toast.makeText(mContext, "已删除当前记录", Toast.LENGTH_SHORT).show());
+                    });
                 } else if (vod.id != null && vod.id.startsWith("msearch:")) {
                     jumpSearch(vod);
                 } else if (TextUtils.isEmpty(vod.id) || TextUtils.isEmpty(vod.sourceKey)
@@ -368,10 +396,25 @@ public class UserFragment extends BaseLazyFragment {
      */
     private void loadHero() {
         if (tvHeroBlock == null || tvHeroTitle == null || tvHeroMeta == null) return;
+        // 查库不再占主线程：拿最近一条记录 → 回主线程渲染
+        Threads.io(() -> {
+            VodInfo picked;
+            try {
+                List<VodInfo> records = RoomDataManger.getAllVodRecord(1);
+                picked = (records == null || records.isEmpty()) ? null : records.get(0);
+                if (picked != null && (picked.id == null || picked.id.isEmpty())) picked = null;
+            } catch (Throwable th) {
+                picked = null;
+            }
+            final VodInfo vod = picked;
+            Threads.main(() -> renderHero(vod));
+        });
+    }
+
+    /** 主视觉渲染（主线程）；vod 为 null 时进欢迎模式 */
+    private void renderHero(VodInfo vod) {
+        if (!isAdded() || tvHeroBlock == null || tvHeroTitle == null) return;
         try {
-            List<VodInfo> records = RoomDataManger.getAllVodRecord(1);
-            VodInfo vod = (records == null || records.isEmpty()) ? null : records.get(0);
-            if (vod != null && (vod.id == null || vod.id.isEmpty())) vod = null;
             if (vod == null) {
                 showWelcomeHero();
                 return;

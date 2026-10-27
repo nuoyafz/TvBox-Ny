@@ -33,6 +33,22 @@ public final class TasteProfile {
         return 1f + 3f * Math.min(c, 10);
     }
 
+    /**
+     * 排序时用：先把计数表取一次，再逐条算分。
+     * 原来比较器里每个元素都调 scoreOf → 每次都 Hawk.get + map 查，列表一大就是白烧 CPU。
+     */
+    public static float scoreOf(Map<String, Integer> snapshot, String type) {
+        if (type == null || snapshot == null) return 1f;
+        Integer c = snapshot.get(type.trim());
+        if (c == null || c <= 0) return 1f;
+        return 1f + 3f * Math.min(c, 10);
+    }
+
+    /** 当前计数快照（不会阻塞主线程） */
+    public static Map<String, Integer> snapshot() {
+        return counts();
+    }
+
     /** 前 N 个最爱类型（按次数），没有历史返回空列表 */
     public static List<String> topGenres(int n) {
         Map<String, Integer> counts = counts();
@@ -60,6 +76,27 @@ public final class TasteProfile {
         if (cached != null && System.currentTimeMillis() - ts < CACHE_MS) {
             return cached;
         }
+        // 缓存过期：主线程绝不能在这里同步扫 80 条历史（首页排序就在主线程）。
+        // 先把手里的旧值返回，另起 IO 线程重建，下次刷新自然用上新的。
+        requestRebuild();
+        return cached != null ? cached : java.util.Collections.<String, Integer>emptyMap();
+    }
+
+    private static final java.util.concurrent.atomic.AtomicBoolean REBUILDING =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+
+    private static void requestRebuild() {
+        if (!REBUILDING.compareAndSet(false, true)) return;
+        Threads.io(() -> {
+            try {
+                rebuild();
+            } finally {
+                REBUILDING.set(false);
+            }
+        });
+    }
+
+    private static void rebuild() {
         Map<String, Integer> fresh = new HashMap<>();
         try {
             List<com.github.tvbox.osc.bean.VodInfo> history = RoomDataManger.getAllVodRecord(80);
@@ -72,10 +109,11 @@ public final class TasteProfile {
                     fresh.put(t, c == null ? 1 : c + 1);
                 }
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable th) {
+            LOG.longE("taste-profile", "rebuild failed: " + th.getClass().getSimpleName());
+            return;
         }
         Hawk.put(KEY, fresh);
         Hawk.put(KEY_TS, System.currentTimeMillis());
-        return fresh;
     }
 }

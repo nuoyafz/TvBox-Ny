@@ -20,6 +20,7 @@ import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.AtvFocusHelper;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.TvPerf;
+import com.github.tvbox.osc.util.Threads;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.orhanobut.hawk.Hawk;
@@ -158,12 +159,20 @@ public class CollectActivity extends BaseActivity {
     }
 
     private void initData() {
-        List<VodCollect> allVodRecord = RoomDataManger.getAllVodCollect();
-        List<VodCollect> vodInfoList = new ArrayList<>();
-        for (VodCollect vodInfo : allVodRecord) {
-            vodInfoList.add(vodInfo);
-        }
-        collectAdapter.setNewData(vodInfoList);
+        // 原来在主线程同步查 Room；收藏多了进页面会卡。查询移到 IO，回主线程刷列表。
+        Threads.io(() -> {
+            List<VodCollect> list;
+            try {
+                list = RoomDataManger.getAllVodCollect();
+            } catch (Throwable th) {
+                list = null;
+            }
+            final List<VodCollect> data = (list == null) ? new ArrayList<>() : new ArrayList<>(list);
+            Threads.main(() -> {
+                if (isFinishing() || collectAdapter == null) return;
+                collectAdapter.setNewData(data);
+            });
+        });
     }
 
 

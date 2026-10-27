@@ -97,6 +97,17 @@ public class JsonParallel {
             }
         } catch (Throwable th) {
             SpiderDebug.log(th);
+        } finally {
+            // 原来只在正常走完时 shutdownNow：take() 抛中断、提前 return 的路径会漏掉，
+            // 解析失败几次就攒下几个 5 线程池。这里兜底关掉。
+            if (executorService != null) {
+                try {
+                    executorService.shutdownNow();
+                } catch (Throwable t) {
+                    SpiderDebug.log(t);
+                }
+                executorService = null;
+            }
         }
         return new JSONObject();
     }

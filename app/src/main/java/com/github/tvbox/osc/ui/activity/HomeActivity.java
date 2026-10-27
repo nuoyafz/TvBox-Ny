@@ -1331,9 +1331,11 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (absXml == null || absXml.videoList == null || UserFragment.hotAdapter() == null) return;
         // 口味画像排序：看过的类型优先（纯本地统计，分数=1+3×观看次数）
         try {
+            // 计数表只取一次；原来比较器里每条都调 scoreOf，相当于每条都 Hawk.get 两遍
+            final java.util.Map<String, Integer> taste = TasteProfile.snapshot();
             java.util.Collections.sort(absXml.videoList, (a, b) ->
-                    Float.compare(TasteProfile.scoreOf(b == null ? null : b.type),
-                            TasteProfile.scoreOf(a == null ? null : a.type)));
+                    Float.compare(TasteProfile.scoreOf(taste, b == null ? null : b.type),
+                            TasteProfile.scoreOf(taste, a == null ? null : a.type)));
         } catch (Throwable ignored) {
         }
         UserFragment.hotAdapter().setNewData(absXml.videoList);

@@ -42,6 +42,17 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
     private final java.util.Map<String, String> speedMap = new java.util.HashMap<>();
 
     private final android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+
+    /**
+     * 测速专用 client，进程内只建一次。
+     * 原来每次点 ⚡ 都 new OkHttpClient.Builder()，一个 client = 一套连接池 + Dispatcher 线程池，
+     * 点十几条就残留十几套（旧的不 close），纯浪费。
+     */
+    private static final okhttp3.OkHttpClient SPEED_CLIENT = new okhttp3.OkHttpClient.Builder()
+            .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+            .build();
+
     /** 测速线程池：daemon + 固定 4 并发，避免连点十几条时堆出一堆线程 */
     private static final java.util.concurrent.ExecutorService SPEED_POOL =
             java.util.concurrent.Executors.newFixedThreadPool(4, new java.util.concurrent.ThreadFactory() {
@@ -154,11 +165,7 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
                 String result;
                 long t0 = System.currentTimeMillis();
                 try {
-                    okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
-                            .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
-                            .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
-                            .build();
-                    okhttp3.Response resp = client.newCall(
+                    okhttp3.Response resp = SPEED_CLIENT.newCall(
                             new okhttp3.Request.Builder().url(fUrl).build()).execute();
                     // 配置要整个下下来才能用，所以量到 body 读完为止，跟真实加载口径一致
                     String body = resp.body() == null ? "" : resp.body().string();

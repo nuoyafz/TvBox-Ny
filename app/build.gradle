@@ -102,6 +102,9 @@ android {
         }
         release {
             minifyEnabled true
+            // 之前只开了代码混淆/裁剪，没开资源裁剪：无引用的 drawable/layout 全被打进包。
+            // 工程里没有任何 getIdentifier() 动态取资源，开这个安全。
+            shrinkResources true
         }
     }
 

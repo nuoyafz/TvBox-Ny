@@ -123,7 +123,9 @@ import xyz.doikki.videoplayer.player.VideoView;
  * @description:
  */
 public class LivePlayActivity extends BaseActivity {
-    public static Context context;
+    // 原来这里是 public static Context context = this：
+    // 静态字段持有 Activity 实例，退出直播页后整个 View 树（含 SurfaceView / 播放内核）无法回收，
+    // 电视盒子内存小，反复进出直播页容易 OOM。已全部改用 LivePlayActivity.this。
     private VideoView<xyz.doikki.videoplayer.player.AbstractPlayer> mVideoView;
     private View switchChannelSnapshotOverlay;
     private ImageView switchChannelSnapshotImage;
@@ -259,7 +261,6 @@ public class LivePlayActivity extends BaseActivity {
 
     @Override
     protected void init() {
-        context = this;
         epgStringAddress = getConfiguredEpgAddress();
 
         setLoadSir(findViewById(R.id.live_root));
@@ -349,7 +350,7 @@ public class LivePlayActivity extends BaseActivity {
                 mVideoView.start();
                 iv_play.setVisibility(View.INVISIBLE);
                 countDownTimer.start();
-                iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
             }
         });
 
@@ -360,12 +361,12 @@ public class LivePlayActivity extends BaseActivity {
                     mVideoView.pause();
                     countDownTimer.cancel();
                     iv_play.setVisibility(View.VISIBLE);
-                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.icon_play));
                 }else{
                     mVideoView.start();
                     iv_play.setVisibility(View.INVISIBLE);
                     countDownTimer.start();
-                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
                 }
             }
         });
@@ -405,12 +406,12 @@ public class LivePlayActivity extends BaseActivity {
                             mVideoView.pause();
                             countDownTimer.cancel();
                             iv_play.setVisibility(View.VISIBLE);
-                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.icon_play));
                         }else{
                             mVideoView.start();
                             iv_play.setVisibility(View.INVISIBLE);
                             countDownTimer.start();
-                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
                         }
                     }
                 }
@@ -3486,7 +3487,7 @@ public class LivePlayActivity extends BaseActivity {
                 mVideoView.start();
                 iv_play.setVisibility(View.INVISIBLE);
                 countDownTimer.start();
-                iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
             }
         });
 
@@ -3497,12 +3498,12 @@ public class LivePlayActivity extends BaseActivity {
                     mVideoView.pause();
                     countDownTimer.cancel();
                     iv_play.setVisibility(View.VISIBLE);
-                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.icon_play));
                 }else{
                     mVideoView.start();
                     iv_play.setVisibility(View.INVISIBLE);
                     countDownTimer.start();
-                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                    iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
                 }
             }
         });
@@ -3539,12 +3540,12 @@ public class LivePlayActivity extends BaseActivity {
                             mVideoView.pause();
                             countDownTimer.cancel();
                             iv_play.setVisibility(View.VISIBLE);
-                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.icon_play));
                         }else{
                             mVideoView.start();
                             iv_play.setVisibility(View.INVISIBLE);
                             countDownTimer.start();
-                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+                            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
                         }
                     }
                 }
@@ -3553,10 +3554,10 @@ public class LivePlayActivity extends BaseActivity {
         });
         if(mVideoView.isPlaying()){
             iv_play.setVisibility(View.INVISIBLE);
-            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.vod_pause));
+            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.vod_pause));
         }else{
             iv_play.setVisibility(View.VISIBLE);
-            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.context, R.drawable.icon_play));
+            iv_playpause.setBackground(ContextCompat.getDrawable(LivePlayActivity.this, R.drawable.icon_play));
         }
         if(countDownTimer3==null){
             countDownTimer3 = new CountDownTimer(postTimeout, 1000) {
