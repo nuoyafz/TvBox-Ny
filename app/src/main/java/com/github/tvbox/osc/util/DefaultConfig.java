@@ -27,30 +27,26 @@ import java.util.regex.Pattern;
 public class DefaultConfig {
 
     /**
-     * 内置片源配置地址。
+     * 内置片源配置地址（首次安装 / 用户清空接口时自动启用）。
      *
-     * 2026-10-19 实测替换：原「饭太硬」主源 http://tvbox.xn--4kq62z5rby2qupq9ub.top/
-     * 已只返回 9 字节空内容，两个备用（fty.xxooo.cf / cdn.qiaoji8.com）也已无法连接，
-     * 会导致首次安装后首页空白。
-     *
-     * 下面四个地址均为本次用真实 HTTP 请求验证过可返回 TVBox 标准配置的：
-     *   9280.kstore.vip/newwex.json  99 个站点，spider 可下载
-     *   xhztv.top/xhz                54 个站点
-     *   xhztv.top/4k.json            53 个站点，偏 4K
-     *   api.hgyx.vip/hgyx.json       26 个站点
-     *
-     * 用途：首次安装或用户清空接口时自动启用，用户仍可在设置里改。
+     * 2026-10-27 实测：15 个内置源里 3 个失效（老刘备/拾光多仓超时、潇洒 403），
+     * 其余 12 个按真实下载耗时排序，最快的是「影仓」(http://124.71.19.220/c/1, ~558ms)。
+     * 选它做主源，首次启动就能最快拿到片单。
      */
-    public static final String BUILTIN_API = "https://9280.kstore.vip/newwex.json";
+    public static final String BUILTIN_API = "http://124.71.19.220/c/1";
 
     /**
-     * 内置片源候选。主用拉取失败时由 ApiConfig 按此顺序自动降级，不需要用户手动切。
+     * 内置片源降级链：主源拉取失败时由 ApiConfig 按此顺序自动换下一个，用户无需手改。
+     * 顺序按 2026-10-27 实测速度排（最快在前），后段保留此前验证过可返回标准配置的四家做深兜底。
      */
     public static final String[] BUILTIN_API_FALLBACK = {
-            "https://9280.kstore.vip/newwex.json",
-            "http://xhztv.top/xhz",
-            "http://xhztv.top/4k.json",
-            "https://api.hgyx.vip/hgyx.json"
+            "http://124.71.19.220/c/1",                  // 影仓 ~558ms
+            "https://szyyds.cn/tv/x.json",               // 小马 ~574ms
+            "https://ys.cxkjg.cn/api/provide/tvbox",     // 创享影视 ~579ms
+            "http://xhztv.top/4k.json",                 // 小盒子4K ~603ms
+            "https://9280.kstore.vip/newwex.json",      // 原主源，99 个站点
+            "http://xhztv.top/xhz",                     // 54 个站点
+            "https://api.hgyx.vip/hgyx.json"            // 26 个站点
     };
 
     /** 取内置主用片源 */
