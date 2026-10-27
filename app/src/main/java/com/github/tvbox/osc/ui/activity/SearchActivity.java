@@ -222,9 +222,9 @@ public class SearchActivity extends BaseActivity {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 FastClickCheckUtil.check(view);
-                String word = previewAdapter.getItem(position);
-                if (!TextUtils.isEmpty(word)) {
-                    startSearch(word);
+                PreviewWordAdapter.Item item = previewAdapter.getItem(position);
+                if (item != null && !TextUtils.isEmpty(item.word)) {
+                    startSearch(item.word);
                 }
             }
         });
@@ -634,11 +634,95 @@ public class SearchActivity extends BaseActivity {
         mGridView.setVisibility(View.GONE);
         tvResultEmpty.setVisibility(View.GONE);
         previewAdapter.setKeyword(key);
-        previewAdapter.setNewData(new ArrayList<>(words));
+        // 联想只给片名，海报先查本地缓存；缓存里没有的交给 fetchPosters 逐条去豆瓣补
+        ArrayList<PreviewWordAdapter.Item> items = new ArrayList<>(words.size());
+        for (String w : words) {
+            PreviewWordAdapter.Item it = new PreviewWordAdapter.Item(w);
+            String[] cached = posterCache.get(w);
+            if (cached != null) {
+                it.pic = cached[0];
+                it.meta = cached[1];
+            }
+            items.add(it);
+        }
+        previewAdapter.setNewData(items);
         previewGrid.setVisibility(View.VISIBLE);
         previewGrid.scrollToPosition(0);
         tvResultTitle.setText("首字母 " + key.toUpperCase() + " 的预览");
         tvResultCount.setText(words.size() + " 部");
+        fetchPosters(items);
+    }
+
+    /** 片名 → {海报URL, 类型·年份}，进程内缓存，避免来回打字重复请求豆瓣 */
+    private final java.util.HashMap<String, String[]> posterCache = new java.util.HashMap<>();
+    /** 正在查豆瓣的片名，防止同一词重复发请求 */
+    private final java.util.HashSet<String> posterPending = new java.util.HashSet<>();
+
+    /**
+     * 给预览词条补海报：豆瓣 subject_suggest 支持中文片名，第一条结果基本就是正片。
+     * 联想接口（腾讯 smart_box）本身没有图，这一步是海报的唯一来源。
+     * 单次最多补 12 条（一屏 4×3），命中缓存的不再请求；结果回来原地刷新对应卡片。
+     */
+    private void fetchPosters(final List<PreviewWordAdapter.Item> items) {
+        if (items == null || items.isEmpty()) return;
+        final int limit = Math.min(items.size(), 12);
+        for (int i = 0; i < limit; i++) {
+            final PreviewWordAdapter.Item it = items.get(i);
+            if (!TextUtils.isEmpty(it.pic)) continue;
+            if (TextUtils.isEmpty(it.word)) continue;
+            if (posterPending.contains(it.word)) continue;
+            posterPending.add(it.word);
+            final String word = it.word;
+            OkGo.<String>get("https://movie.douban.com/j/subject_suggest")
+                    .tag("preview-poster")
+                    .params("q", word)
+                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+                    .headers("Referer", "https://www.douban.com/")
+                    .execute(new AbsCallback<String>() {
+                        @Override
+                        public void onSuccess(Response<String> response) {
+                            posterPending.remove(word);
+                            String body = response.body();
+                            if (TextUtils.isEmpty(body)) return;
+                            try {
+                                JsonArray arr = new Gson().fromJson(body, JsonArray.class);
+                                if (arr == null || arr.size() == 0) return;
+                                JsonObject o = arr.get(0).getAsJsonObject();
+                                String pic = o.has("img") ? o.get("img").getAsString() : "";
+                                String type = o.has("type") ? o.get("type").getAsString() : "";
+                                String year = o.has("year") ? o.get("year").getAsString() : "";
+                                if (TextUtils.isEmpty(pic)) return;
+                                String meta = ("movie".equals(type) ? "电影" : "tv".equals(type) ? "剧集" : type);
+                                if (!TextUtils.isEmpty(year)) {
+                                    meta = TextUtils.isEmpty(meta) ? year : meta + " · " + year;
+                                }
+                                posterCache.put(word, new String[]{pic, meta});
+                                applyPoster(word, pic, meta);
+                            } catch (Throwable ignored) {
+                            }
+                        }
+
+                        @Override
+                        public String convertResponse(okhttp3.Response response) throws Throwable {
+                            return response.body() == null ? "" : response.body().string();
+                        }
+                    });
+        }
+    }
+
+    /** 海报回来后原地刷新对应卡片（按片名匹配，防止联想词已换批导致错位） */
+    private void applyPoster(String word, String pic, String meta) {
+        if (previewAdapter == null) return;
+        List<PreviewWordAdapter.Item> data = previewAdapter.getData();
+        for (int i = 0; i < data.size(); i++) {
+            PreviewWordAdapter.Item it = data.get(i);
+            if (it != null && word.equals(it.word)) {
+                it.pic = pic;
+                it.meta = meta;
+                previewAdapter.notifyItemChanged(i);
+                break;
+            }
+        }
     }
 
     /** 右侧切到「真实搜索结果」 */
