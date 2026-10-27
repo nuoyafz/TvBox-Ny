@@ -24,6 +24,21 @@
         android:textSize="@dimen/ts_26"
         tools:text="11111111111111" />
 
+    <!-- 测速：点一下实测该配置 URL 的下载耗时，结果拼在名字后面 -->
+    <TextView
+        android:id="@+id/tvSpeed"
+        android:layout_width="@dimen/vs_50"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/vs_5"
+        android:layout_marginLeft="@dimen/vs_5"
+        android:background="@drawable/button_danmu_setting"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="⚡"
+        android:textColor="@color/neon_accent"
+        android:textSize="@dimen/ts_26" />
+
     <ImageView
         android:id="@+id/tvDel"
         android:layout_width="@dimen/vs_50"

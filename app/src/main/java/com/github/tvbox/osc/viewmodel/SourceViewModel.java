@@ -872,6 +872,8 @@ public class SourceViewModel extends ViewModel {
             if (extend != null && !extend.isEmpty()) {
                 request.params("extend", extend);
             }
+            // 详情耗时真计时：之前写死 reportSuccess(key, 400)，不管实际 50ms 还是 5s 都记 400，直接污染健康度 avg
+            final long healthT0 = System.currentTimeMillis();
             request.execute(new AbsCallback<String>() {
 
                         @Override
@@ -885,7 +887,7 @@ public class SourceViewModel extends ViewModel {
 
                         @Override
                         public void onSuccess(Response<String> response) {
-                            SourceHealth.reportSuccess(sourceBean.getKey(), 400);
+                            SourceHealth.reportSuccess(sourceBean.getKey(), System.currentTimeMillis() - healthT0);
                             if (type == 0) {
                                 String xml = response.body();
                                 xml(target, xml, sourceBean.getKey());

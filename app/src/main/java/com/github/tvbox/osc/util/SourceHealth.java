@@ -58,13 +58,24 @@ public final class SourceHealth {
 
     /** 成功一次：costMs 本次耗时；成功即复活（fail 清零） */
     public static void reportSuccess(String key, long costMs) {
+        reportSuccess(key, costMs, false);
+    }
+
+    /**
+     * 成功一次（带来源类型）。
+     *
+     * cached=true 表示这次耗时是「本地缓存/纯本地拼装」打出来的——典型是蜘蛛源的
+     * homeContent() 命中 jar 内缓存，1~2ms 就返回，跟网络快慢无关。label() 会把
+     * 这类数据显示成「缓存 · Nms」，不然用户看到「快 · 1ms」会以为源真的快。
+     */
+    public static void reportSuccess(String key, long costMs, boolean cached) {
         if (key == null) return;
         synchronized (LOCK) {
             String[] p = raw(key).split(",");
             int ok = parseInt(p, 0) + 1;
             long last = Math.max(0, costMs);
             long total = parseLong(p, 3) + Math.max(0, costMs);
-            put(key, ok + ",0," + last + "," + total + ",0," + System.currentTimeMillis());
+            put(key, ok + ",0," + last + "," + total + ",0," + System.currentTimeMillis() + "," + (cached ? 1 : 0));
         }
     }
 
@@ -78,7 +89,8 @@ public final class SourceHealth {
             long now = System.currentTimeMillis();
             int fail = (now - lastFail > FAIL_WINDOW_MS) ? 1 : parseInt(p, 1) + 1;
             long lastOk = parseLong(p, 5);
-            put(key, ok + "," + fail + "," + parseLong(p, 2) + "," + parseLong(p, 3) + "," + now + "," + lastOk);
+            int kind = p.length > 6 ? parseInt(p, 6) : 0;
+            put(key, ok + "," + fail + "," + parseLong(p, 2) + "," + parseLong(p, 3) + "," + now + "," + lastOk + "," + kind);
         }
     }
 
@@ -129,9 +141,19 @@ public final class SourceHealth {
         if (isDead(key)) return "源已失效";
         long avg = avgCost(key);
         if (avg < 0) return "";
+        // 蜘蛛源命中本地缓存时耗时是函数调用级（<50ms），跟网络无关，别冒充「快」
+        if (avg < 50 && isCachedKind(key)) return "缓存 · " + avg + "ms";
         if (avg <= 800) return "快 · " + avg + "ms";
         if (avg <= 2500) return "一般 · " + avg + "ms";
         return "慢 · " + avg + "ms";
+    }
+
+    /** 最近一次成功是否来自本地缓存路径（蜘蛛 homeContent 命中缓存） */
+    private static boolean isCachedKind(String key) {
+        synchronized (LOCK) {
+            String[] p = raw(key).split(",");
+            return p.length > 6 && parseInt(p, 6) == 1;
+        }
     }
 
     /** 按健康度排序；调用方负责是否启用（默认设置里是关的，避免打乱用户习惯） */
@@ -329,7 +351,8 @@ public final class SourceHealth {
             } catch (Throwable ignored) {
             }
             if (!settled.compareAndSet(false, true)) return;
-            if (ok) reportSuccess(s.getKey(), System.currentTimeMillis() - t0);
+            // cached=true：homeContent 大概率是 jar 内缓存/本地拼装，label 里标「缓存」不冒充网络快
+            if (ok) reportSuccess(s.getKey(), System.currentTimeMillis() - t0, true);
             else reportFail(s.getKey());
             st.step();
         }, "src-probe-" + s.getKey());

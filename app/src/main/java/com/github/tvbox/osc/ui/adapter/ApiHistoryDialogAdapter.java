@@ -38,6 +38,11 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
 
     private String select = "";
 
+    /** 测速结果：key = 原始条目串，value = 展示文案（823ms / 2.4s / 测速中… / 非链接 / 超时） */
+    private final java.util.Map<String, String> speedMap = new java.util.HashMap<>();
+
+    private final android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+
     private SelectDialogInterface dialogInterface = null;
 
     public ApiHistoryDialogAdapter(SelectDialogInterface dialogInterface) {
@@ -82,6 +87,10 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
             name = "[仓] " + name;
         if (select.equals(value))
             name = "√ " + name;
+        // 测速结果拼在名字后面，随条目一起刷新
+        String speed = speedMap.get(value);
+        if (speed != null)
+            name = name + " · " + speed;
         ((TextView) holder.itemView.findViewById(R.id.tvName)).setText(name);
         holder.itemView.findViewById(R.id.tvName).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +103,12 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
                 dialogInterface.click(value);
             }
         });
+        holder.itemView.findViewById(R.id.tvSpeed).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSpeedTest(value);
+            }
+        });
         holder.itemView.findViewById(R.id.tvDel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,5 +119,60 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
                 dialogInterface.del(value, data);
             }
         });
+    }
+
+    /**
+     * 单条配置测速：真实下载配置文件（和 App 加载配置走的是同一个动作），量总耗时。
+     * 非链接条目（本地文件/片段仓）标「非链接」；6 秒读超时/4 秒连超按失败算。
+     * 不阻塞 UI，结果回来刷对应行。
+     */
+    private void startSpeedTest(final String value) {
+        String testing = speedMap.get(value);
+        if ("测速中…".equals(testing)) return;
+        String url = HistoryHelper.getApiLineUrl(value).trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            speedMap.put(value, "非链接");
+            notifyDataSetChanged();
+            return;
+        }
+        speedMap.put(value, "测速中…");
+        notifyDataSetChanged();
+        final String fUrl = url;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String result;
+                long t0 = System.currentTimeMillis();
+                try {
+                    okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                            .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+                            .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+                            .build();
+                    okhttp3.Response resp = client.newCall(
+                            new okhttp3.Request.Builder().url(fUrl).build()).execute();
+                    // 配置要整个下下来才能用，所以量到 body 读完为止，跟真实加载口径一致
+                    String body = resp.body() == null ? "" : resp.body().string();
+                    long ms = System.currentTimeMillis() - t0;
+                    if (resp.isSuccessful() && body.length() > 0) {
+                        result = ms < 1000 ? ms + "ms" : String.format("%.1fs", ms / 1000.0);
+                    } else if (!resp.isSuccessful()) {
+                        result = "HTTP " + resp.code();
+                    } else {
+                        result = "空响应";
+                    }
+                    resp.close();
+                } catch (Throwable t) {
+                    result = "超时/失败";
+                }
+                final String fResult = result;
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        speedMap.put(value, fResult);
+                        notifyDataSetChanged();
+                    }
+                });
+            }
+        }, "cfg-speed").start();
     }
 }

@@ -457,7 +457,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 if (history.contains(current))
                     idx = history.indexOf(current);
                 ApiHistoryDialog dialog = new ApiHistoryDialog(mActivity);
-                dialog.setTip("历史配置列表");
+                dialog.setTip("历史配置列表（点 ⚡ 测速）");
                 dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
                     @Override
                     public void click(String value) {
