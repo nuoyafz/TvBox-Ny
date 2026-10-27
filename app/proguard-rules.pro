@@ -223,8 +223,7 @@
 }
 -keep class com.github.tvbox.osc.bean.ProxyRule { *; }
 -keep class com.github.tvbox.osc.util.net.** { *; }
-# 迅雷下载模块
--keep class com.xunlei.downloadlib.** {*;}
+# 迅雷下载模块已整体移除（磁力/BT 用不到，白占 6.9MB so），这条 keep 一并删掉
 # quickjs引擎
 #-keep class com.github.tvbox.quickjs.** {*;}
 -keep class com.whl.quickjs.** {*;}

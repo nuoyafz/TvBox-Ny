@@ -52,8 +52,6 @@ import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.ScreenUtils;
 import com.github.tvbox.osc.util.SubtitleHelper;
 import com.github.tvbox.osc.util.VideoParseRuler;
-import com.github.tvbox.osc.util.thunder.Jianpian;
-import com.github.tvbox.osc.util.thunder.Thunder;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.HttpHeaders;
@@ -2067,8 +2065,6 @@ public class VodController extends BaseController {
 
     public void stopOther()
     {
-        Thunder.stop(false);//停止磁力下载
-        Jianpian.finish();//停止p2p下载
         App.getInstance().setDashData(null);
     }
 

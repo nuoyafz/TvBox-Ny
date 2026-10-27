@@ -85,8 +85,6 @@ import com.github.tvbox.osc.util.SubtitleHelper;
 import com.github.tvbox.osc.util.VideoParseRuler;
 import com.github.tvbox.osc.util.XWalkUtils;
 import com.github.tvbox.osc.util.parser.SuperParse;
-import com.github.tvbox.osc.util.thunder.Jianpian;
-import com.github.tvbox.osc.util.thunder.Thunder;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
@@ -2041,38 +2039,7 @@ public class PlayFragment extends BaseLazyFragment {
             }
         }
 
-        if(Jianpian.isJpUrl(vs.url)){//荐片地址特殊判断
-            String jp_url= vs.url;
-            mController.showParse(false);
-            if(vs.url.startsWith("tvbox-xg:")){
-                playUrl(Jianpian.JPUrlDec(jp_url.substring(9)), null);
-            }else {
-                playUrl(Jianpian.JPUrlDec(jp_url), null);
-            }
-            return;
-        }
-        if (Thunder.play(vs.url, new Thunder.ThunderCallback() {
-            @Override
-            public void status(int code, String info) {
-                if (code < 0) {
-                    setTip(info, false, true);
-                } else {
-                    setTip(info, true, false);
-                }
-            }
-
-            @Override
-            public void list(Map<Integer, String> urlMap) {
-            }
-
-            @Override
-            public void play(String url) {
-                playUrl(url, null);
-            }
-        })) {
-            mController.showParse(false);
-            return;
-        }
+        // 荐片(p2p)与磁力/迅雷播放在这里直接交给源给的 http 直链，相关链路已整体移除
         sourceViewModel.getPlay(sourceKey, mVodInfo.playFlag, progressKey, vs.url, subtitleCacheKey);
         // 选中/开播即预热下一集：解析结果进缓存，用户切下一集时直接命中，免去解析等待
         preloadNextEpisode();
